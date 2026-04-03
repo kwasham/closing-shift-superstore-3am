@@ -1,0 +1,2 @@
+-- Legacy placeholder kept inert.
+-- Server startup is handled by Bootstrap.server.lua.

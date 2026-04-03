@@ -1,0 +1,9 @@
+Packages/
+build/
+sourcemap.json
+*.rbxlx.lock
+*.rbxl.lock
+*.log
+.rokit/
+aftman-install.log
+.DS_Store

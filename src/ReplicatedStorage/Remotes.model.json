@@ -1,0 +1,18 @@
+{
+  "ClassName": "Folder",
+  "Name": "Remotes",
+  "Children": [
+    {
+      "ClassName": "RemoteEvent",
+      "Name": "RoundStateChanged"
+    },
+    {
+      "ClassName": "RemoteEvent",
+      "Name": "AlertRaised"
+    },
+    {
+      "ClassName": "RemoteEvent",
+      "Name": "TaskProgressChanged"
+    }
+  ]
+}
