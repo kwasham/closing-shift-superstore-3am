@@ -13,6 +13,14 @@
     {
       "ClassName": "RemoteEvent",
       "Name": "TaskProgressChanged"
+    },
+    {
+      "ClassName": "RemoteEvent",
+      "Name": "ProfileChanged"
+    },
+    {
+      "ClassName": "RemoteFunction",
+      "Name": "ShopAction"
     }
   ]
 }

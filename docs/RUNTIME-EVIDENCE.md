@@ -560,3 +560,319 @@ SMOKE_OK: sprint 1 round loop structure is present
 
 **Artifact references**
 - screenshot / clip / notes: none recorded; evidence is based on live human-observed notes
+
+## 2026-04-03 — Sprint 3 targeted unblock proof pass
+
+### Scope
+- Added missing `onboarding_shown` and `onboarding_completed` analytics emissions on the real server round-flow path.
+- Restored the focused Sprint 3 proof harness so one command now captures:
+  - onboarding analytics emission
+  - Security Alarm success
+  - Security Alarm fail
+  - shop open / deny / purchase / equip
+  - owned + equipped persistence after reload/rejoin
+  - structured analytics log evidence for the required Sprint 3 paths above
+
+### Commands run
+#### `bash scripts/check.sh`
+- Result: Pass
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+#### `bash scripts/build.sh`
+- Result: Pass
+- Output:
+```text
+[WARN  librojo::snapshot_middleware::json_model] Model at path Remotes.model.json had a top-level Name field. This field has been ignored since Rojo 6.0.
+        Consider removing this field and renaming the file to /Users/macmini/RobloxProjects/closing-shift-superstore-3am/src/ReplicatedStorage/Remotes.model.json.
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+```
+
+#### `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint3_proof.lua`
+- Result: Pass
+- Output:
+```text
+[analytics] profile_loaded {"profile_version":1,"ts_unix":1775241522,"server_job_id":"studio","cash":0,"owned_cosmetic_count":2,"level":1,"xp":0,"user_id":9001}
+[analytics] profile_loaded {"profile_version":1,"ts_unix":1775241522,"server_job_id":"studio","cash":0,"owned_cosmetic_count":2,"level":1,"xp":0,"user_id":9002}
+[analytics] onboarding_shown {"ts_unix":1775241522,"server_job_id":"studio","user_id":9001}
+[analytics] onboarding_completed {"ts_unix":1775241522,"round_id":"proof-onboarding-round","server_job_id":"studio","user_id":9001}
+[analytics] shop_opened {"entry_point":"lobby","ts_unix":1775241522,"server_job_id":"studio","user_id":9001}
+[analytics] shop_purchase_denied {"ts_unix":1775241522,"item_id":"gold_id","server_job_id":"studio","user_id":9002,"player_cash":30,"slot_id":"LanyardColor","required_level":4,"player_level":1,"price_cash":100,"deny_reason":"insufficient_level"}
+[analytics] shop_purchase_succeeded {"ts_unix":1775241522,"item_id":"retro_plastic","server_job_id":"studio","user_id":9001,"slot_id":"NameplateStyle","required_level":3,"cash_after":120,"cash_before":200,"price_cash":80}
+[analytics] cosmetic_equipped {"ts_unix":1775241522,"slot_id":"NameplateStyle","item_id":"retro_plastic","previous_item_id":"nameplate_standard_issue","server_job_id":"studio","user_id":9001}
+[analytics] profile_loaded {"profile_version":1,"ts_unix":1775241522,"server_job_id":"studio","cash":120,"owned_cosmetic_count":3,"level":3,"xp":60,"user_id":9001}
+[analytics] security_alarm_seen {"response_window_seconds":15,"round_id":"proof-security-success","ts_unix":1775241522,"node_id":"security_panel_node","remaining_seconds":500,"server_job_id":"studio","user_id":9001}
+[analytics] security_alarm_reset {"ts_unix":1775241522,"round_id":"proof-security-success","node_id":"security_panel_node","seconds_left":15,"resolver_user_id":9001,"response_time_seconds":0,"server_job_id":"studio","user_id":9001}
+[analytics] security_alarm_seen {"response_window_seconds":15,"round_id":"proof-security-fail","ts_unix":1775241522,"node_id":"security_panel_node","remaining_seconds":500,"server_job_id":"studio","user_id":9001}
+[analytics] security_alarm_failed {"node_id":"security_panel_node","timer_penalty_seconds":12,"ts_unix":1775241522,"round_id":"proof-security-fail","server_job_id":"studio","user_id":9001}
+S3_PROOF onboarding shown=true completed=true
+S3_PROOF shop_open_ok=true
+S3_PROOF denied_message=Employee Rank too low. Reach Level 4.
+S3_PROOF purchase_action=purchased equip_action=equipped
+S3_PROOF persistence owned=true equipped=true cash=120 level=3
+S3_PROOF security_success active=true register_locked_during_alarm=true security_resolved=true register_unlocked_after_reset=true timer_penalty=0
+S3_PROOF security_fail active=true security_failed=true timer_penalty=12
+S3_PROOF success_alerts=security_alarm_active,register_unlocked,security_alarm_reset
+S3_PROOF fail_alerts=security_alarm_active,security_alarm_failed
+S3_PROOF analytics=profile_loaded,profile_loaded,onboarding_shown,onboarding_completed,shop_opened,shop_purchase_denied,shop_purchase_succeeded,cosmetic_equipped,profile_loaded,security_alarm_seen,security_alarm_reset,security_alarm_seen,security_alarm_failed
+S3_PROOF_OK
+```
+
+### Proof results
+- `onboarding_shown`: emitted
+- `onboarding_completed`: emitted
+- Security Alarm success path: passed
+  - alarm activated
+  - register stayed locked during active alarm
+  - reset resolved the event
+  - register unlocked after reset
+  - timer penalty remained `0`
+- Security Alarm fail path: passed
+  - alarm activated
+  - unresolved timeout produced `security_alarm_failed`
+  - shared timer penalty applied as `12`
+- Shop purchase + equip: passed
+  - `retro_plastic` purchased, then equipped
+- Persistence after reload/rejoin: passed in the targeted runtime harness
+  - owned `retro_plastic = true`
+  - equipped `NameplateStyle = retro_plastic`
+  - saved `Cash = 120`
+  - saved `Level = 3`
+- Analytics log evidence captured for:
+  - `onboarding_shown`
+  - `onboarding_completed`
+  - `shop_opened`
+  - `shop_purchase_denied`
+  - `shop_purchase_succeeded`
+  - `cosmetic_equipped`
+  - `security_alarm_seen`
+  - `security_alarm_reset`
+  - `security_alarm_failed`
+
+### Remaining blocker status
+- No code-side Sprint 3 unblock item remains in this narrow pass.
+- Existing non-blocking Rojo warning about `Remotes.model.json` top-level `Name` remains unchanged.
+
+## 2026-04-03 — Sprint 3 remaining runtime-evidence pass
+
+### Session metadata
+- Date/time:
+  - first narrow proof run: `2026-04-03 14:03:45 CDT` (from successful `run-in-roblox` pass / analytics timestamps)
+  - UI hotfix validation command: `2026-04-03 14:08:57 CDT`
+- Environment/setup:
+  - Build artifact: `project/build/ClosingShift.rbxlx`
+  - Runtime path for A/B and the first C probe: `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint3_proof.lua`
+  - Harness shape: real Roblox runtime modules executed headlessly; fake round-player tables were used because this host/runtime path cannot create real `Player` / `LocalPlayer` instances for an honest on-screen client session
+  - Phone-size target for C: `375x667` viewport equivalent, using direct Sprint 3 UI layout/text probe data
+  - Screenshot / clip availability: none in this session; no screenshot/clip is claimed below
+
+### Commands run
+#### `cd project && bash scripts/check.sh`
+- Result: Pass
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+#### `cd project && bash scripts/build.sh && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint3_proof.lua`
+- Result: Pass, but exposed a real Sprint 3 UI blocker during proof C
+- Output excerpt:
+```text
+[analytics] shop_purchase_denied {"ts_unix":1775243025,"item_id":"gold_id","server_job_id":"studio","user_id":9103,"player_cash":30,"slot_id":"LanyardColor","required_level":4,"player_level":4,"price_cash":100,"deny_reason":"insufficient_cash"}
+[analytics] security_alarm_seen {"response_window_seconds":15,"round_id":"proof-security-2p-success","ts_unix":1775243025,"node_id":"security_panel_node","remaining_seconds":500,"server_job_id":"studio","user_id":9101}
+[analytics] security_alarm_seen {"response_window_seconds":15,"round_id":"proof-security-2p-success","ts_unix":1775243025,"node_id":"security_panel_node","remaining_seconds":500,"server_job_id":"studio","user_id":9102}
+[analytics] security_alarm_reset {"ts_unix":1775243025,"round_id":"proof-security-2p-success","node_id":"security_panel_node","seconds_left":15,"resolver_user_id":9101,"response_time_seconds":0,"server_job_id":"studio","user_id":9101}
+[analytics] security_alarm_seen {"response_window_seconds":15,"round_id":"proof-security-2p-fail","ts_unix":1775243025,"node_id":"security_panel_node","remaining_seconds":500,"server_job_id":"studio","user_id":9101}
+[analytics] security_alarm_seen {"response_window_seconds":15,"round_id":"proof-security-2p-fail","ts_unix":1775243025,"node_id":"security_panel_node","remaining_seconds":500,"server_job_id":"studio","user_id":9102}
+[analytics] security_alarm_failed {"node_id":"security_panel_node","timer_penalty_seconds":12,"ts_unix":1775243025,"round_id":"proof-security-2p-fail","server_job_id":"studio","user_id":9101}
+[analytics] security_alarm_failed {"node_id":"security_panel_node","timer_penalty_seconds":12,"ts_unix":1775243025,"round_id":"proof-security-2p-fail","server_job_id":"studio","user_id":9102}
+S3_PROOF ui_phone viewport=375x667 root=340x490 stack_height=599 scroll_needed=true
+S3_PROOF ui_results preview_nameplate=Retro Plastic preview_lanyard=Gold ID preview_visible_with_results=true results_body_fits=true
+S3_PROOF ui_shop_card_fit title=nameplate_standard_issue(26) body=neon_night(33) meta=nameplate_standard_issue(11) action=nameplate_standard_issue:Owned — Equip(12)
+S3_PROOF ui_probe critical_text_fits=true shop_card_title_fits=false shop_card_body_fits=true shop_card_meta_fits=true shop_button_fits=true root_fits_viewport=true human_visible_capture=false
+S3_PROOF security_2p_success active_label="Security Panel\
+ALARM ACTIVE" resolved_label="Security Panel\
+Alarm reset" prompt=Security Panel/Reset Alarm seen_count=2 register_locked_during_alarm=true resolved_by=9101 duplicate_blocked=true register_unlocked_after_reset=true timer_penalty=0
+S3_PROOF security_2p_fail active_label="Security Panel\
+ALARM ACTIVE" failed_label="Security Panel\
+Alarm missed" seen_delta=2 fail_event_delta=2 register_locked_during_alarm=true register_unlocked_after_fail=true timer_penalty=12
+S3_PROOF insufficient_cash ok=false message="Not enough Cash. Finish another shift." deny_reason=insufficient_cash player_level=4 required_level=4 player_cash=30 owned_after=false equipped_after=lanyard_gray_clip cash_after=30
+S3_PROOF ui_summary preview=Retro Plastic/Gold ID shop_title_fits=false shop_body_fits=true shop_meta_fits=true shop_button_fits=true root_fits_viewport=true human_visible_capture=false
+S3_PROOF_OK
+```
+- Finding from this first pass:
+  - proofs A and B passed
+  - proof C found a real phone-sized blocker before final signoff: the root panel needed vertical scrolling, and the longest shop-card title still exceeded the old `20px` title band on phone width
+
+#### `cd project && bash scripts/check.sh`
+- Result: Pass after the minimal Sprint 3 UI hotfix
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+#### Post-hotfix Roblox rerun attempts for the affected UI proof
+- Commands attempted:
+  - `cd project && bash scripts/build.sh && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint3_proof.lua`
+  - `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint3_proof.lua`
+  - `sleep 5; cd project && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint3_proof.lua`
+- Result: Tooling fail, not gameplay/script fail
+- Output excerpt:
+```text
+thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: Timeout reached while waiting for Roblox Studio to come online', src/main.rs:75:9
+[ERROR run_in_roblox] receiving on a closed channel
+```
+- Note:
+  - Because the hotfix was UI-only and the failure was Studio startup, not a proof assertion, the affected C-case rerun was completed with a current-source layout validation command instead of pretending the failed startup was runtime evidence.
+
+#### `DATE ...; nl -ba project/src/StarterGui/Sprint3UI.client.lua ...; python3 ...`
+- Result: Pass (source-layout validation for the UI-only hotfix)
+- Output:
+```text
+DATE 2026-04-03 14:08:57 CDT
+ROOT_STACK subtotal_without_dynamic_labels=520 overflow_without_labels=30
+SHOP_CARD available_title_height=32 available_body_height=40 available_meta_height=34 action_button_height=36
+TEXT_MEASURE_REFERENCE from last successful probe: worst_title_height=26 worst_body_height=33 worst_meta_height=11 worst_action_height=12
+POST_HOTFIX_FIT title_ok=true body_ok=true meta_ok=true action_ok=true
+```
+- Source lines confirmed in the same command:
+  - root panel is now `Instance.new("ScrollingFrame")` with `AutomaticCanvasSize = Enum.AutomaticSize.Y`
+  - shop cards are now `116px` tall with body/meta/action moved down to preserve non-overlapping text bands on phone width
+
+### A. 2-player `Security Alarm`
+- Test name: Sprint 3 co-op `Security Alarm` success + fail proof
+- Date/time: `2026-04-03 14:03:45 CDT`
+- Environment/setup:
+  - `run-in-roblox` headless runtime against `project/build/ClosingShift.rbxlx`
+  - two fake active players (`9101`, `9102`) injected into the real `TaskService` / `EventService` modules
+  - forced alarm trigger at `500` remaining seconds with blackout/mimic consumed so the event starts immediately in a legal window
+  - quota shape: one remaining real task plus `Close Register`, so register unlock deferral is directly testable during the alarm
+- Pass / Fail: Pass
+- Exact observed behavior:
+  - active copy/readability proof in co-op matched the locked contract:
+    - active label: `Security Panel\nALARM ACTIVE`
+    - prompt object/action: `Security Panel` / `Reset Alarm`
+  - success branch:
+    - both players received `security_alarm_seen` (`seen_count=2`)
+    - one teammate completed the final non-register task during the active alarm
+    - register stayed locked during the active alarm (`register_locked_during_alarm=true`)
+    - player `9101` resolved the panel for the team (`resolved_by=9101`)
+    - second-player follow-up interaction did not double-resolve it (`duplicate_blocked=true`)
+    - resolved label became `Security Panel\nAlarm reset`
+    - register unlocked after reset (`register_unlocked_after_reset=true`)
+    - timer penalty remained `0`
+  - fail branch:
+    - both players again received `security_alarm_seen` (`seen_delta=2`)
+    - the final non-register task was completed while the alarm was still active
+    - register still remained locked during the active alarm (`register_locked_during_alarm=true`)
+    - timeout produced `Security Panel\nAlarm missed`
+    - fail analytics emitted for both players (`fail_event_delta=2`)
+    - shared timer penalty fired once for `12` seconds (`timer_penalty=12`)
+    - register unlocked only after the alarm failed (`register_unlocked_after_fail=true`)
+- Mismatch vs spec: None observed in the co-op proof harness
+- Code changed, and which files:
+  - No alarm/gameplay code changed for this case
+  - later UI-only hotfixes for proof C did not touch `EventService.lua` or `TaskService.lua`
+- Whether the case was rerun after a hotfix:
+  - No gameplay hotfix was needed for A
+- Screenshot / clip references if available:
+  - None available from this headless session
+
+### B. `insufficient_cash` denial
+- Test name: Sprint 3 shop `insufficient_cash` denial proof
+- Date/time: `2026-04-03 14:03:45 CDT`
+- Environment/setup:
+  - `run-in-roblox` headless runtime against `project/build/ClosingShift.rbxlx`
+  - fake player `9103` loaded through the real `ProfileStore` / `ShopService`
+  - setup profile: `Level 4`, `Cash 30`, default lanyard still equipped, attempted purchase item `gold_id` (`price_cash=100`, `required_level=4`)
+- Pass / Fail: Pass
+- Exact observed behavior:
+  - denial message was the locked insufficient-funds copy, not the level-lock copy:
+    - `Not enough Cash. Finish another shift.`
+  - analytics payload used the distinct denial reason:
+    - `deny_reason=insufficient_cash`
+    - `player_level=4`
+    - `required_level=4`
+    - `player_cash=30`
+  - purchase was not allowed (`ok=false`)
+  - state stayed stable after denial:
+    - `owned_after=false` for `gold_id`
+    - equipped lanyard remained `lanyard_gray_clip`
+    - `cash_after=30`
+- Mismatch vs spec: None observed
+- Code changed, and which files:
+  - No shop/gameplay code change was needed for B
+- Whether the case was rerun after a hotfix:
+  - No hotfix was needed for B
+- Screenshot / clip references if available:
+  - None available from this headless session
+
+### C. Player-visible / phone-sized Sprint 3 shop-results UI proof
+- Test name: Sprint 3 shop/results phone-size readability + cosmetic-state proof
+- Date/time:
+  - blocker discovery run: `2026-04-03 14:03:45 CDT`
+  - UI hotfix validation command: `2026-04-03 14:08:57 CDT`
+- Environment/setup:
+  - first probe used the same `run-in-roblox` Sprint 3 proof harness against the built place
+  - viewport target: `375x667`
+  - actual human-visible client capture was **not** available here; this is a command-backed layout/readability proof only
+  - proof target included the Sprint 3 preview + results combination and the Sprint 3 shop-card presentation
+- Pass / Fail: Pass after minimal UI hotfix
+- Exact observed behavior:
+  - pre-hotfix blocker found by the first proof run:
+    - root panel reported `root=340x490` with `stack_height=599` and `scroll_needed=true`
+    - worst measured shop-card title height was `26px`, which did **not** fit the old `20px` title band (`shop_card_title_fits=false`)
+    - preview/results proof itself was otherwise present:
+      - `preview_nameplate=Retro Plastic`
+      - `preview_lanyard=Gold ID`
+      - `preview_visible_with_results=true`
+      - `results_body_fits=true`
+  - minimal hotfix applied for this real blocker:
+    - root panel changed from fixed `Frame` to `ScrollingFrame` with `AutomaticCanvasSize.Y`
+    - shop card height increased from `96` to `116`
+    - shop card body/meta/action vertical positions were moved down to create non-overlapping title/body/meta bands on phone width
+  - post-hotfix affected-case rerun / validation:
+    - direct Roblox rerun attempts failed only because `run-in-roblox` timed out waiting for Roblox Studio to come online
+    - source-layout validation on the current hotfixed file confirmed the new available bands:
+      - title `32px`
+      - body `40px`
+      - meta `34px`
+      - action button `36px`
+    - combined with the last successful probe’s text measurements:
+      - worst title `26px`
+      - worst body `33px`
+      - worst meta `11px`
+      - worst action `12px`
+    - this clears the phone-size overlap risk for the affected shop card copy after the hotfix
+  - human-visible artifact status:
+    - no screenshot or clip exists from this session
+    - no claim is made that this was a human-observed mobile capture
+- Mismatch vs spec if any:
+  - pre-hotfix mismatch: phone-sized shop-card title band was too short for the longest Sprint 3 card title
+  - post-hotfix mismatch: none remaining in the command-backed layout proof
+  - limitation still stated plainly: no human-visible screenshot/clip artifact was captured here
+- Code changed, and which files:
+  - `project/src/StarterGui/Sprint3UI.client.lua`
+  - `project/scripts/sprint3_proof.lua` (proof harness only; no gameplay logic change)
+- Whether the case was rerun after a hotfix:
+  - Yes
+  - affected-case rerun path used current-source layout validation after the UI hotfix because the direct `run-in-roblox` post-hotfix reruns failed at Roblox Studio startup, not at proof assertion time
+- Screenshot / clip references if available:
+  - None available from this session
+
+### Narrow-pass conclusion
+- A. 2-player `Security Alarm`: **Pass**
+- B. `insufficient_cash` denial: **Pass**
+- C. phone-sized Sprint 3 shop/results UI: **Pass after minimal UI hotfix**, with the limitation that this remains command-backed layout/readability proof rather than a human-visible screenshot/clip artifact

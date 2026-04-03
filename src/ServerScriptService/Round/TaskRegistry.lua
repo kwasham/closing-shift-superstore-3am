@@ -60,4 +60,11 @@ TaskRegistry.Nodes = {
 	},
 }
 
+TaskRegistry.SecurityAlarm = {
+	nodeId = Constants.Events.SecurityAlarm.NodeId,
+	position = ARENA_ORIGIN + Vector3.new(0, 3, -2),
+	size = Vector3.new(5, 5, 2),
+	color = Color3.fromRGB(161, 64, 64),
+}
+
 return TaskRegistry

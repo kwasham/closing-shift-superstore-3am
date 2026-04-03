@@ -1,0 +1,2 @@
+-- Legacy placeholder kept for smoke compatibility.
+-- The active HUD lives in StarterGui/HUD.client.lua and Sprint3UI.client.lua.

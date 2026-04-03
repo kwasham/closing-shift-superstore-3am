@@ -51,35 +51,28 @@ To reduce merge conflicts:
 
 ## Current status
 ### Ready for delegation
-- Sprint 3 / next milestone planning
+- Sprint 4 / Milestone 4 planning
 - follow-up cleanup for non-blocking warnings like the Rojo `Remotes.model.json` warning
+- broader analytics/dashboard follow-up beyond the accepted local structured-log proof
 
 ### In progress
-- no Sprint 2 blockers
+- no Sprint 3 blockers
 
 ### Done
 - OpenClaw multi-agent pipeline scaffolded
 - Rojo/Rokit project scaffolded
 - starter round loop and HUD placeholders committed
-- design handoff completed with locked task quotas, task values, blackout/mimic behavior, payout math, and solo-fair anti-frustration rules
-- engineering implementation landed for the Sprint 1 round loop, quota tracking, gated `Close Register`, blackout/mimic events, banked payout flow, generated MVP task nodes, HUD updates, and smoke script coverage
-- content handoff completed for art direction, store beats, onboarding/signage/task copy, and blackout/mimic messaging
-- `bash scripts/check.sh` passed
-- `bash scripts/build.sh` passed
-- smoke harness hotfix landed and `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua` now passes with required smoke output
-- headless Roblox-engine runtime proof now covers solo success/failure, register gating, blackout behavior, mimic expire/trigger behavior, exact `-8s` timer loss, personal-only `-$12` mimic penalty in co-op, and leave-before-payout behavior
-- Sev 2 phone HUD clipping issue found during runtime validation, hotfixed in `project/src/StarterGui/HUD.client.lua`, and rerun evidence recorded
-- late-join HUD wait-state hotfix landed and narrow proof confirmed excluded mid-round joiners cannot participate, cannot add banked pay, and receive `Shift in progress. Wait for the next one.`
-- QA cleared the final blocker and Sprint 1 is now **Ready**
-- Sprint 2 design handoff completed for tutorial flow, HUD hierarchy, active-task/register feedback, blackout+mimic presentation, round-end payout explanation, and no-regression guardrails
-- Sprint 2 engineering pass completed for session-only tutorial, phone-safe HUD/alert hierarchy, task feedback states, blackout+mimic presentation hooks, round-end summary, client effects, audio fallback hooks, and smoke coverage
-- Sprint 2 content docs completed for signage/landmark rules, lit-vs-blackout readability, tutorial/alert/summary copy, revised store readability beats, and sound cue intent
-- Sprint 2 QA docs and smoke plan updated through the final gate: regression baseline is green, phone-sized HUD and co-op presentation have runtime-backed evidence, the human-observed no-coaching pass is accepted, and Sprint 2 is now **Ready**
+- Sprint 1 is **Ready**
+- Sprint 2 is **Ready**
+- Sprint 3 design handoff completed for `Security Alarm`, persistent XP/Level profile schema, a 2-slot / 6-item cosmetic shop with persistent purchase+equip state, and the exact Sprint 3 analytics event contract
+- Sprint 3 engineering pass completed for Security Alarm, persistent profile expansion, shop purchase/equip flow, minimal Sprint 3 lobby/results UI, analytics/log plumbing, and Sprint 3 smoke/runtime harness updates
+- Sprint 3 content pass completed for Security Alarm presentation, progression/shop copy, and the locked 6-item catalog with QA-visible 2D presentation notes
+- Sprint 3 QA gate is **Ready** after structural/build proof, Security Alarm runtime proof, persistence/shop proof, and Sprint 3 analytics/log proof closed the remaining evidence gaps
 
 ## Risks
-- Sprint 2 must stay a clarity-and-feel pass and not drift into feature expansion
-- content/audio asset sourcing could lag the implementation contract even though engineering is unblocked
 - workers may collide if they all edit `SPRINT.md`; keep ownership with `main`
+- non-blocking build warning remains on `Remotes.model.json`
+- structured local analytics proof is accepted for Sprint 3, but broader dashboard/production telemetry validation is still a future follow-up
 
 ## Next producer action
-Start the next sprint from a Ready Sprint 2 baseline.
+Start Sprint 4 / Milestone 4 planning from a Ready Sprint 3 baseline.

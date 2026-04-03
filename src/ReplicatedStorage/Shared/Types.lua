@@ -1,33 +1,9 @@
 export type RoundState = "Waiting" | "Intermission" | "Playing" | "Ended"
-export type RoundResult = "success" | "failure"
 
-export type TaskId =
-	"restock_shelf"
-	| "clean_spill"
-	| "take_out_trash"
-	| "return_cart"
-	| "check_freezer"
-	| "close_register"
-
-export type TaskConfig = {
-	id: TaskId,
-	name: string,
-	promptText: string,
-	reward: number,
-	holdDuration: number,
-	reuseCooldown: number,
-	finalTask: boolean,
-	lockedPromptText: string?,
-}
-
-export type QuotaMap = {
-	[TaskId]: number,
-}
-
-export type ProgressSnapshot = {
+export type TaskProgress = {
 	totalRequired: number,
 	completed: number,
-	remainingByTask: QuotaMap,
+	remainingByTask: { [string]: number },
 	bankedPay: number,
 	projectedSuccessPay: number,
 	projectedFailPay: number,
@@ -35,23 +11,20 @@ export type ProgressSnapshot = {
 	registerCompleted: boolean,
 	personalPenalties: { [number]: number },
 	blackoutActive: boolean,
+	securityAlarmActive: boolean,
+	securityAlarmState: string,
 }
 
-export type AlertPayload = {
-	id: string,
-	message: string,
-	priority: number,
-	duration: number?,
-	pinned: boolean?,
-	cueId: string?,
-}
-
-export type RoundSnapshot = {
-	state: RoundState,
-	timerSeconds: number,
-	progress: ProgressSnapshot?,
-	activeUserIds: { number },
-	roundResult: RoundResult?,
+export type ProfilePublic = {
+	profileVersion: number,
+	cash: number,
+	xp: number,
+	level: number,
+	shiftsPlayed: number,
+	shiftsCleared: number,
+	ownedCosmetics: { [string]: boolean },
+	equippedCosmetics: { [string]: string },
+	lastRoundResult: { [string]: any }?,
 }
 
 return {}

@@ -1,198 +1,121 @@
-# Art Direction
+# Art direction
 
-## Sprint 2 clarity-and-feel goal
-Keep the proven Sprint 1 store and make it easier for a first-time player to read, trust, and navigate. Sprint 2 should improve landmarks, signage, cue clarity, and phone readability before it adds any extra density or spectacle.
+## Visual tone
+- Familiar suburban supermarket
+- fluorescent lighting
+- uneasy emptiness
+- retail realism with subtle paranormal wrongness
 
-## Sprint 1 visual goal
-Build a compact late-night supermarket that feels immediately familiar, slightly wrong, and always readable on a phone screen. The first pass should sell fluorescent dread and clear task navigation before it tries to sell deep environmental detail.
+## Asset constraints
+- MVP should use simple, readable assets
+- strong silhouettes and lighting contrast matter more than detail density
+- avoid requiring a large custom animation pipeline early
 
-## Visual pillars
-1. **Ordinary retail first, horror second**
-   - The store should read as a believable small supermarket in one glance.
-   - Horror comes from emptiness, lighting failure, hum, and isolation instead of complex monster visuals.
-2. **Readable landmarks over decoration**
-   - Players should instantly identify the front doors, checkout, aisles, freezer wall, back trash door, and cart return.
-   - Every major zone needs a strong silhouette and simple signage.
-3. **Cold fluorescent unease**
-   - The default store mood is overbright, washed out, and slightly sickly.
-   - The space should feel open enough to navigate, but empty enough to feel wrong at 3AM.
-4. **Task clarity beats clutter**
-   - Interactable spots must sit in clean readable pockets.
-   - Players should not have to hunt through dense props to find a task node.
-5. **Compact map, tense travel**
-   - The farthest Sprint 1 task route should feel short enough for solo play.
-   - The store should support pressure from time and events, not from getting lost.
+## UI tone
+- short verbs
+- mobile readable
+- practical with a slightly eerie edge
 
-## Lighting mood
+## Sprint 3 — alpha return loop presentation rules
 
-### Base lighting
-- Use cool white fluorescent lighting with a slight green-blue cast.
-- Keep overall brightness high enough that shelves, floor decals, and doorway silhouettes are readable on mobile.
-- Avoid warm cozy lighting. The store should feel sterile, late, and tired.
+### Security Alarm readability rules
+- `Security Alarm` is a **front-of-store panic beat**, not a full-screen chaos layer.
+- The alarm should pull attention to one readable destination: `security_panel_node` / `Security Panel`.
+- Treat alarm presentation as the only Sprint 3 state that owns **red urgency**:
+  - red pulse / red highlight is allowed here
+  - brief siren-like audio sting is allowed here
+  - do not reuse the same red flash language for blackout or mimic
+- Keep the event distinct from other hazards:
+  - **blackout** = loss of light / dimness / visibility pressure
+  - **mimic** = local wrongness / suspicious interactable / uncanny beat
+  - **security alarm** = loud, clear, front-of-store emergency reset
+- The alarm should feel urgent but fair:
+  - one alert line
+  - one world target
+  - one clear action
+  - one clear outcome
+- Do not stack extra warning banners, lore text, or tutorial paragraphs on top of the alarm.
+- If a world indicator is used, it should reinforce the front-panel location rather than add another destination.
 
-### Brightness hierarchy
-- **Brightest:** checkout lane and front entrance
-- **Mid:** center aisles and shelf endcaps
-- **Darkest:** freezer wall, back trash area, and corners beyond direct ceiling lights
-- **Exterior:** dim parking-lot spill with storefront light reflecting through front glass
+### Shop and results readability rules
+Mandatory information should always beat flavor.
 
-### Blackout mood rules
-- Blackout should feel alarming, but never fully blind the player.
-- Keep emergency readability through:
-  - exit sign glow
-  - weak storefront window spill
-  - freezer door strips or residual cold light
-  - faint ambient fill so paths and silhouettes still read
-- Blackout is a readability event, not a navigation trap.
-- Do not rely on heavy strobe or rapid flashing that could hurt comfort or clarity.
+#### Shop card hierarchy
+Each shop item should clearly show, in this order:
+1. display name
+2. price or level gate state
+3. slot identity (`NameplateStyle` or `LanyardColor`) only if needed for clarity
+4. readable preview
+5. short flavor line
 
-### Fixture guidance
-- Use repeating fluorescent ceiling fixtures in a simple grid.
-- Let 1 to 2 fixtures flicker occasionally in the freezer/back half of the store.
-- Keep the checkout area steadier than the rear zones so players retain an anchor point.
+#### Results hierarchy
+Results should prioritize:
+1. round outcome
+2. `Cash earned`
+3. `XP earned`
+4. `Employee Rank`
+5. local equipped cosmetic preview
+6. optional CTA into shop
 
-## Material and color rules
+#### Decorative versus mandatory
+Mandatory:
+- `Cash`
+- `Level` / `Employee Rank`
+- XP progress or XP total relevant to next level
+- item state (`Buy`, `Requires Level`, `Owned — Equip`, `Equipped`)
+- local cosmetic preview that QA can verify
 
-### Core palette
-- **Floors:** off-white or pale gray tile with subtle grime
-- **Shelving:** desaturated beige, gray, or dull retail metal
-- **Walls:** flat white, cream, or light institutional gray
-- **Checkout:** darker gray counter with small red accents only where needed
-- **Freezer area:** colder blue-cyan tint, but still low saturation
-- **Back/trash area:** dirty gray-green, concrete, black bags, worn plastic bins
-- **Exterior:** dark asphalt, faded curb paint, metal cart corral
+Decorative only:
+- flavor lines
+- subtle striping / trim
+- tiny icons
+- soft background texture
 
-### Accent color rules
-- Reserve stronger color for wayfinding and task recognition:
-  - red = exit / warning / register closed indicator
-  - yellow = sale tags / caution signage / spill support props
-  - cyan-blue = freezer alarm emphasis
-- Do not fill shelves with rainbow-bright packaging in the first pass.
-- Bright packaging should appear in small patches, not as full-scene noise.
+If space is tight, decorative elements should disappear before mandatory information does.
 
-### Surface finish
-- Favor matte and lightly worn materials.
-- Keep reflections low so prompts and silhouettes stay readable.
-- Use dirt and wear sparingly; this is a normal store on a bad night, not a ruined building.
+### Reward-surface discipline
+- Sprint 3 reward surfaces must explain the return loop in one glance: earn `Cash`, earn `XP`, unlock cosmetics, buy/equip cosmetics.
+- Do not present Sprint 3 like a full battle pass, inventory wall, or seasonal reward track.
+- Show only the currencies and progression that already exist in the locked contract:
+  - `Cash`
+  - `XP`
+  - `Level` / `Employee Rank`
+- Use one primary action at a time on reward surfaces.
+  - Example: after results, the primary next step may be `Open Shop`.
+  - Do not compete with multiple equal-weight buttons.
+- Cosmetics should be shown through simple 2D UI treatment:
+  - `NameplateStyle` = frame/border/plate treatment
+  - `LanyardColor` = strap/swatch treatment
+- Results should show the **local player's** equipped cosmetics clearly enough that QA can confirm persistence without needing 3D accessories.
+- Do not overload results with extra reward callouts, fake rarity bursts, or unrelated unlock messaging.
+- If no unlock threshold changed, do not invent a larger celebration state.
 
-## Prop density guidance
+### Phone readability constraints
+Sprint 3 shop/results/readout surfaces must remain readable on phone-sized screens.
 
-| Zone | Density target | Guidance |
-| --- | --- | --- |
-| Entrance / vestibule | Medium | Doors, mats, posters, one promo bin, clear walking lane |
-| Checkout lane | Medium-high | Counter, bag rack, impulse shelves, queue markers, but keep register silhouette clean |
-| Center aisles | Medium | 3 short gondolas max, readable endcaps, no maze feeling |
-| Freezer wall | Medium-low | Strong doors/panels first, only light surrounding clutter |
-| Back trash area | Low-medium | Bags, bins, mop bucket, utility shelves, leave task route readable |
-| Exterior / cart return | Low | Corral, 2 to 4 carts, curb, bollards, maybe one trash can |
+#### Layout target
+- Use the proven phone-safe baseline from runtime evidence as the minimum readability target:
+  - panel width target: `260px`
+  - inner text width target: `236px`
+- Critical copy must survive that width without clipping.
+- Auto-growing vertical layouts are preferred over fixed-height text containers.
 
-### Density rules for interactables
-- Keep at least a **3-stud clean pocket** around each task prompt anchor.
-- Do not bury interactable objects behind hanging signs, tall clutter, or busy decals.
-- Large props should frame tasks, not hide them.
-- If a prop does not improve silhouette, navigation, or mood, cut it for Sprint 1.
+#### Copy budget
+- Alert lines: target one line; allow wrap only if the layout grows cleanly.
+- Button/state labels: keep to one short line.
+- Flavor lines: maximum two lines.
+- Helper/explainer text: maximum two short lines on a given surface.
+- Do not place multiple helper paragraphs on the same shop or results screen.
 
-## Silhouette and readability notes
-- The store should read through **big shapes first**:
-  - front glass wall and doors
-  - checkout counter
-  - aisle gondolas
-  - freezer door wall
-  - employees-only back door
-  - cart corral outside
-- Limit the map to **3 short shelf aisles** so players can understand the plan instantly.
-- Use hanging aisle markers or endcap headers large enough to read from mid-store.
-- Restock locations should be readable from aisle mouths through obvious half-empty shelf gaps.
-- Spill spots should use dark glossy decals with a clear edge and not blend into tile grout.
-- The freezer interaction should live on a visible alarm panel or handle cluster, not on a generic wall patch.
-- The register should be visually unique:
-  - only checkout counter with a clear terminal
-  - visible `LANE 1` / `REGISTER` signage
-  - optional red closed indicator before unlock
+#### Composition rules
+- Keep one dominant header per surface.
+- Avoid stacking more than two banners/notices at once.
+- Do not place shop clutter on top of results clutter; if both exist in sequence, results should resolve first, then hand off to shop.
+- Preserve strong contrast between text and background; fluorescent-store atmosphere should never reduce UI legibility.
+- Any preview treatment must read with flat color, simple borders, and text labels alone; finished custom art is a bonus, not a requirement.
 
-## Mobile readability constraints
-- Prompt copy should stay at **1 short sentence**.
-- Target **2 lines max** for any world prompt or alert.
-- Avoid punctuation-heavy or lore-heavy text.
-- Key HUD/event text should remain readable over bright floors and white shelves; prefer dark translucent backing.
-- Important signs should use **1 to 3 words**.
-- Use title case or clear all-caps signage sparingly; too much all-caps becomes noise.
-- Do not stack multiple decals, posters, and signs directly behind prompt anchors.
-- The first-time player should be able to identify the next objective in under 3 seconds.
-
-## Atmosphere rules
-- Audio and light carry most of the horror tone.
-- The store should feel empty, humming, and watched, not overtly supernatural all the time.
-- Use small wrong details:
-  - one cart left out front
-  - one freezer door slightly brighter or noisier
-  - a back corner that feels underlit
-  - a checkout lane that looks too still
-- Save the strongest mood shift for blackout and mimic tension.
-- Never let atmosphere reduce task comprehension.
-
-## Sprint 1 art priority
-1. Landmark silhouettes
-2. Lighting hierarchy
-3. Clean task readability
-4. Signage and decals
-5. Ambient clutter and polish
-
-## Sprint 2 readability pass
-
-### Signage and landmark rules
-- Every major zone should answer a first-time player's "where do I go next?" question in under 2 seconds.
-- The strongest fixed landmarks remain:
-  - front doors / vestibule
-  - checkout / `LANE 1`
-  - aisle headers `Aisle A`, `Aisle B`, `Aisle C`
-  - `FROZEN`
-  - `EMPLOYEES ONLY`
-  - `CART RETURN`
-- `CHECKOUT` and `LANE 1` should be readable from the front half of the store at all times.
-- Aisle labels should hang high enough to read over shelf clutter and be visible from aisle mouths.
-- `Close Register` should always sit inside the clearest landmark cluster in the store.
-
-### Lit vs blackout readability rules
-- Lit state should feel sterile and overbright, with the checkout/front area remaining the most readable anchor.
-- Blackout must preserve orientation through silhouette and fallback glow, not through guesswork.
-- During blackout, preserve readable contrast for:
-  - aisle headers
-  - exit signage
-  - freezer door outlines
-  - checkout silhouette
-  - task nodes that are visible but temporarily disabled
-- Do not let blackout remove the player's sense of store layout; it should reduce confidence, not destroy wayfinding.
-
-### Prop-density guidance for Sprint 2
-- Add readability props before atmosphere props.
-- Checkout: medium density, but keep the register lane, queue edge, and final-task silhouette clean.
-- Aisles: keep endcaps clear, avoid side-stacked promo clutter that blocks shelf-gap readability.
-- Freezer wall: maintain a clean panel/alarm silhouette and avoid busy sticker clutter around the task anchor.
-- Back trash nook: keep the route obvious; utility props should frame the interaction, not bury it.
-- Exterior/cart return: low density, strong corral silhouette, minimal decorative noise.
-
-### HUD copy tone and readability constraints
-- Tone should sound practical, slightly tense, and never jokey.
-- Use short command-style wording over flavor prose.
-- Prefer one clean sentence over two clever fragments.
-- Avoid exclamation-point spam, long warnings, or decorative wording.
-- If a line cannot be read quickly at phone width, cut words before adding more UI space.
-
-### Audio tone guidance
-- Audio should support tension without becoming constant irritation.
-- Baseline store audio should be low-intensity fluorescent / freezer / HVAC hum.
-- State changes should be more noticeable than ambience:
-  - blackout start/end
-  - register unlock
-  - false-task trigger
-  - round result
-- Mimic trigger audio should feel wrong and interruptive, but not so loud that it masks the HUD explanation.
-- If final assets are missing, placeholder tones should still communicate priority cleanly.
-
-## Sprint 2 art priority
-1. Landmark/sign clarity
-2. Lock/unlock and active-task readability
-3. Blackout-safe navigation contrast
-4. Phone-safe HUD copy support
-5. Atmosphere polish that does not reduce comprehension
+### Sprint 3 item visual guidance
+- `NameplateStyle` variants should differ through border shape, trim, laminate wear, and color blocking that reads in a small card.
+- `LanyardColor` variants should differ through strong strap color and clip/swatch treatment that remains visible in a compact preview.
+- Every cosmetic should be identifiable in the lobby preview and the post-round local results card at a glance.
+- If an item cannot be distinguished in a simple 2D mockup, it is too subtle for Sprint 3.

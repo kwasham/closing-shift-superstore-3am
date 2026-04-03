@@ -25,7 +25,7 @@ local function createBillboard(part: BasePart)
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "TaskBillboard"
 	billboard.AlwaysOnTop = true
-	billboard.Size = UDim2.fromOffset(220, 64)
+	billboard.Size = UDim2.fromOffset(240, 72)
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, 4.5, 0)
 	billboard.Parent = part
 
@@ -62,7 +62,13 @@ local function createBillboard(part: BasePart)
 	return label
 end
 
-local function createNodePart(nodeDefinition, taskConfig)
+local function setNodeAttribute(instance, attributeName, value)
+	if instance:GetAttribute(attributeName) ~= value then
+		instance:SetAttribute(attributeName, value)
+	end
+end
+
+local function createTaskNodePart(nodeDefinition, taskConfig)
 	local part = Instance.new("Part")
 	part.Name = nodeDefinition.nodeId
 	part.Anchored = true
@@ -89,10 +95,34 @@ local function createNodePart(nodeDefinition, taskConfig)
 	return part, prompt
 end
 
-local function setNodeAttribute(node, attributeName, value)
-	if node.part:GetAttribute(attributeName) ~= value then
-		node.part:SetAttribute(attributeName, value)
-	end
+local function createSecurityNodePart(definition)
+	local part = Instance.new("Part")
+	part.Name = definition.nodeId
+	part.Anchored = true
+	part.CanCollide = true
+	part.Size = definition.size
+	part.Position = definition.position
+	part.Material = Enum.Material.Metal
+	part.Color = definition.color
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	part:SetAttribute("NodeId", Constants.Events.SecurityAlarm.NodeId)
+	part:SetAttribute("EventId", Constants.Events.SecurityAlarm.EventId)
+	part:SetAttribute("FeedbackState", Constants.Events.SecurityAlarm.FeedbackState.Idle)
+	part:SetAttribute("PromptEnabled", false)
+
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "Prompt"
+	prompt.ActionText = "Reset Alarm"
+	prompt.ObjectText = "Security Panel"
+	prompt.HoldDuration = Constants.Events.SecurityAlarm.HoldDuration
+	prompt.KeyboardKeyCode = Enum.KeyCode.E
+	prompt.RequiresLineOfSight = false
+	prompt.MaxActivationDistance = 12
+	prompt.Enabled = false
+	prompt.Parent = part
+
+	return part, prompt
 end
 
 function TaskService.new(options)
@@ -100,16 +130,21 @@ function TaskService.new(options)
 	self.sendAlert = options.sendAlert
 	self.onRoundSuccess = options.onRoundSuccess
 	self.onProgressChanged = options.onProgressChanged
+	self.onTaskCompleted = options.onTaskCompleted
 	self.onMimicTriggered = options.onMimicTriggered
+	self.onMimicExpired = options.onMimicExpired
+	self.onSecurityAlarmTriggered = options.onSecurityAlarmTriggered
 	self.taskFolder = nil
+	self.eventFolder = nil
 	self.floor = nil
 	self.spawn = nil
 	self.nodes = {}
 	self.nodesById = {}
-	self.nodesByTaskId = {}
+	self.securityNode = nil
 	self.round = nil
 	self:_ensureArena()
 	self:_ensureNodes()
+	self:_ensureSecurityNode()
 	return self
 end
 
@@ -152,6 +187,48 @@ function TaskService:_ensureArena()
 		folder.Parent = Workspace
 		self.taskFolder = folder
 	end
+
+	self.eventFolder = Workspace:FindFirstChild("EventNodes")
+	if self.eventFolder == nil then
+		local folder = Instance.new("Folder")
+		folder.Name = "EventNodes"
+		folder.Parent = Workspace
+		self.eventFolder = folder
+	end
+end
+
+function TaskService:_connectPromptSignals(node)
+	node.prompt.PromptButtonHoldBegan:Connect(function(player)
+		node.holders[player] = true
+		if self.round ~= nil and self.round.blackoutActive then
+			if node.allowedDuringBlackout[player.UserId] ~= true then
+				node.blockedDuringBlackout[player.UserId] = true
+			end
+		end
+	end)
+
+	node.prompt.PromptButtonHoldEnded:Connect(function(player)
+		node.holders[player] = nil
+		node.blockedDuringBlackout[player.UserId] = nil
+		node.allowedDuringBlackout[player.UserId] = nil
+	end)
+
+	node.prompt.Triggered:Connect(function(player)
+		self:_handlePromptTriggered(node, player)
+		node.holders[player] = nil
+		node.blockedDuringBlackout[player.UserId] = nil
+		node.allowedDuringBlackout[player.UserId] = nil
+	end)
+end
+
+function TaskService:_connectSecuritySignals()
+	if self.securityNode == nil then
+		return
+	end
+
+	self.securityNode.prompt.Triggered:Connect(function(player)
+		self:_handleSecurityPromptTriggered(player)
+	end)
 end
 
 function TaskService:_ensureNodes()
@@ -160,7 +237,7 @@ function TaskService:_ensureNodes()
 		local part = self.taskFolder:FindFirstChild(nodeDefinition.nodeId)
 		local prompt
 		if part == nil or not part:IsA("BasePart") then
-			part, prompt = createNodePart(nodeDefinition, taskConfig)
+			part, prompt = createTaskNodePart(nodeDefinition, taskConfig)
 			part.Parent = self.taskFolder
 		else
 			prompt = part:FindFirstChild("Prompt")
@@ -205,14 +282,12 @@ function TaskService:_ensureNodes()
 				lockoutUntil = 0,
 				isMimic = false,
 				mimicExpiresAt = 0,
-				mimicTriggered = false,
 				holders = {},
 				allowedDuringBlackout = {},
 				blockedDuringBlackout = {},
 			}
 			self.nodesById[node.nodeId] = node
 			table.insert(self.nodes, node)
-			self.nodesByTaskId[node.taskId] = node
 			self:_connectPromptSignals(node)
 		else
 			node.part = part
@@ -224,28 +299,46 @@ function TaskService:_ensureNodes()
 	end
 end
 
-function TaskService:_connectPromptSignals(node)
-	node.prompt.PromptButtonHoldBegan:Connect(function(player)
-		node.holders[player] = true
-		if self.round ~= nil and self.round.blackoutActive then
-			if node.allowedDuringBlackout[player.UserId] ~= true then
-				node.blockedDuringBlackout[player.UserId] = true
-			end
+function TaskService:_ensureSecurityNode()
+	local definition = TaskRegistry.SecurityAlarm
+	local part = self.eventFolder:FindFirstChild(definition.nodeId)
+	local prompt
+	if part == nil or not part:IsA("BasePart") then
+		part, prompt = createSecurityNodePart(definition)
+		part.Parent = self.eventFolder
+	else
+		prompt = part:FindFirstChild("Prompt")
+		if prompt == nil or not prompt:IsA("ProximityPrompt") then
+			prompt = Instance.new("ProximityPrompt")
+			prompt.Name = "Prompt"
+			prompt.Parent = part
 		end
-	end)
+	end
 
-	node.prompt.PromptButtonHoldEnded:Connect(function(player)
-		node.holders[player] = nil
-		node.blockedDuringBlackout[player.UserId] = nil
-		node.allowedDuringBlackout[player.UserId] = nil
-	end)
+	local billboard = part:FindFirstChild("TaskBillboard")
+	local label = nil
+	if billboard ~= nil and billboard:IsA("BillboardGui") then
+		local frame = billboard:FindFirstChild("Frame")
+		if frame ~= nil then
+			label = frame:FindFirstChild("Label")
+		end
+	end
+	if label == nil or not label:IsA("TextLabel") then
+		if billboard ~= nil then
+			billboard:Destroy()
+		end
+		label = createBillboard(part)
+	end
 
-	node.prompt.Triggered:Connect(function(player)
-		self:_handlePromptTriggered(node, player)
-		node.holders[player] = nil
-		node.blockedDuringBlackout[player.UserId] = nil
-		node.allowedDuringBlackout[player.UserId] = nil
-	end)
+	self.securityNode = {
+		nodeId = definition.nodeId,
+		part = part,
+		prompt = prompt,
+		label = label,
+		baseColor = definition.color,
+	}
+	self:_applySecurityVisual(Constants.Events.SecurityAlarm.FeedbackState.Idle)
+	self:_connectSecuritySignals()
 end
 
 function TaskService:_applyNodeVisual(node, text, promptEnabled, feedbackState)
@@ -273,23 +366,57 @@ function TaskService:_applyNodeVisual(node, text, promptEnabled, feedbackState)
 		partColor = node.baseColor:Lerp(Color3.fromRGB(24, 28, 36), 0.65)
 	elseif feedbackState == "mimic_lockout" then
 		partColor = node.baseColor:Lerp(Color3.fromRGB(176, 72, 72), 0.55)
+	elseif feedbackState == "mimic_active" then
+		partColor = node.baseColor:Lerp(Color3.fromRGB(188, 62, 62), 0.25)
 	end
 
 	node.part.Color = partColor
-	setNodeAttribute(node, "FeedbackState", feedbackState)
-	setNodeAttribute(node, "PromptEnabled", promptEnabled)
+	setNodeAttribute(node.part, "FeedbackState", feedbackState)
+	setNodeAttribute(node.part, "PromptEnabled", promptEnabled)
 	setNodeAttribute(
-		node,
+		node.part,
 		"RemainingCount",
 		if self.round ~= nil then self.round.remainingByTask[node.taskId] or 0 else 0
 	)
+end
+
+function TaskService:_applySecurityVisual(feedbackState)
+	if self.securityNode == nil then
+		return
+	end
+
+	local text = "Security Panel"
+	local promptEnabled = false
+	local color = self.securityNode.baseColor
+	if feedbackState == Constants.Events.SecurityAlarm.FeedbackState.Active then
+		text = "Security Panel\nALARM ACTIVE"
+		promptEnabled = true
+		color = Color3.fromRGB(216, 74, 74)
+	elseif feedbackState == Constants.Events.SecurityAlarm.FeedbackState.Resolved then
+		text = "Security Panel\nAlarm reset"
+		color = Color3.fromRGB(82, 183, 117)
+	elseif feedbackState == Constants.Events.SecurityAlarm.FeedbackState.Failed then
+		text = "Security Panel\nAlarm missed"
+		color = Color3.fromRGB(145, 72, 72)
+	else
+		text = "Security Panel\nIdle"
+		color = self.securityNode.baseColor:Lerp(Color3.fromRGB(42, 45, 54), 0.35)
+	end
+
+	self.securityNode.label.Text = text
+	self.securityNode.prompt.Enabled = promptEnabled
+	self.securityNode.prompt.ActionText = "Reset Alarm"
+	self.securityNode.prompt.ObjectText = "Security Panel"
+	self.securityNode.prompt.HoldDuration = Constants.Events.SecurityAlarm.HoldDuration
+	self.securityNode.part.Color = color
+	setNodeAttribute(self.securityNode.part, "FeedbackState", feedbackState)
+	setNodeAttribute(self.securityNode.part, "PromptEnabled", promptEnabled)
 end
 
 function TaskService:_isRoundPlayer(player)
 	if self.round == nil then
 		return false
 	end
-
 	return self.round.activePlayerLookup[player.UserId] == true
 end
 
@@ -314,21 +441,22 @@ function TaskService:_setRegisterUnlocked(unlocked)
 	if self.round == nil then
 		return
 	end
-
 	self.round.registerUnlocked = unlocked
 end
 
 function TaskService:_getNodePresentation(node, now)
 	local taskConfig = Constants.Tasks[node.taskId]
-
 	if self.round == nil then
 		return Constants.Prompts.Waiting, false, "waiting"
 	end
 
 	if self.round.blackoutActive then
-		local canCarry = node.allowedDuringBlackout ~= nil
-			and next(node.allowedDuringBlackout) ~= nil
+		local canCarry = next(node.allowedDuringBlackout) ~= nil
 		return Constants.Prompts.Blackout, canCarry, "blackout"
+	end
+
+	if node.isMimic then
+		return "False task", true, "mimic_active"
 	end
 
 	if node.lockoutUntil > now then
@@ -371,6 +499,11 @@ function TaskService:_refreshAllNodes(now)
 		local text, promptEnabled, feedbackState = self:_getNodePresentation(node, now)
 		self:_applyNodeVisual(node, text, promptEnabled, feedbackState)
 	end
+	if self.round ~= nil then
+		self:_applySecurityVisual(self.round.securityAlarmFeedbackState)
+	else
+		self:_applySecurityVisual(Constants.Events.SecurityAlarm.FeedbackState.Idle)
+	end
 end
 
 function TaskService:_completeRealTask(node, player, now)
@@ -380,6 +513,10 @@ function TaskService:_completeRealTask(node, player, now)
 	self.round.totalCompleted += 1
 	self.round.basePay += taskConfig.reward
 
+	if self.onTaskCompleted ~= nil then
+		self.onTaskCompleted(player, node.taskId, now)
+	end
+
 	if
 		node.taskId ~= Constants.TaskId.CloseRegister
 		and self.round.remainingByTask[node.taskId] > 0
@@ -388,10 +525,14 @@ function TaskService:_completeRealTask(node, player, now)
 	end
 
 	if self:_nonRegisterTasksComplete() then
-		self:_setRegisterUnlocked(true)
-		if self.round.registerAnnounced ~= true then
-			self.round.registerAnnounced = true
-			self.sendAlert("register_unlocked")
+		if self.round.securityAlarmActive then
+			self.round.registerUnlockDeferred = true
+		else
+			self:_setRegisterUnlocked(true)
+			if self.round.registerAnnounced ~= true then
+				self.round.registerAnnounced = true
+				self.sendAlert("register_unlocked")
+			end
 		end
 	end
 
@@ -406,13 +547,11 @@ end
 function TaskService:_resolveMimic(node, player, now)
 	node.isMimic = false
 	node.mimicExpiresAt = 0
-	node.mimicTriggered = true
 	node.lockoutUntil = now + Constants.Events.Mimic.NodeLockSeconds
 	self.round.personalPenalties[player.UserId] = (self.round.personalPenalties[player.UserId] or 0)
 		+ Constants.Events.Mimic.CashPenalty
-
 	if self.onMimicTriggered ~= nil then
-		self.onMimicTriggered(player)
+		self.onMimicTriggered(player, node.nodeId)
 	end
 end
 
@@ -422,7 +561,7 @@ function TaskService:_handlePromptTriggered(node, player)
 	end
 
 	if not self:_isRoundPlayer(player) then
-		self.sendAlert("late_join_wait", player)
+		self.sendAlert(Constants.Alerts.MidRoundJoin, player)
 		return
 	end
 
@@ -462,6 +601,37 @@ function TaskService:_handlePromptTriggered(node, player)
 	self:_broadcastProgress()
 end
 
+function TaskService:_handleSecurityPromptTriggered(player)
+	if self.round == nil then
+		return
+	end
+	if not self:_isRoundPlayer(player) then
+		self.sendAlert(Constants.Alerts.MidRoundJoin, player)
+		return
+	end
+	if not self.round.securityAlarmActive then
+		return
+	end
+
+	local now = os.clock()
+	if self.onSecurityAlarmTriggered ~= nil and self.onSecurityAlarmTriggered(player, now) then
+		self:_refreshAllNodes(now)
+		self:_broadcastProgress()
+	end
+end
+
+function TaskService:handlePromptTriggeredForNodeId(nodeId, player)
+	if self.securityNode ~= nil and nodeId == self.securityNode.nodeId then
+		self:_handleSecurityPromptTriggered(player)
+		return
+	end
+
+	local node = self.nodesById[nodeId]
+	if node ~= nil then
+		self:_handlePromptTriggered(node, player)
+	end
+end
+
 function TaskService:startRound(activePlayers, quotas)
 	local activePlayerLookup = {}
 	for _, player in ipairs(activePlayers) do
@@ -479,7 +649,10 @@ function TaskService:startRound(activePlayers, quotas)
 		registerUnlocked = false,
 		registerCompleted = false,
 		registerAnnounced = false,
+		registerUnlockDeferred = false,
 		blackoutActive = false,
+		securityAlarmActive = false,
+		securityAlarmFeedbackState = Constants.Events.SecurityAlarm.FeedbackState.Idle,
 	}
 
 	for _, node in ipairs(self.nodes) do
@@ -487,7 +660,6 @@ function TaskService:startRound(activePlayers, quotas)
 		node.lockoutUntil = 0
 		node.isMimic = false
 		node.mimicExpiresAt = 0
-		node.mimicTriggered = false
 		clearDictionary(node.holders)
 		clearDictionary(node.allowedDuringBlackout)
 		clearDictionary(node.blockedDuringBlackout)
@@ -503,7 +675,6 @@ function TaskService:setBlackoutActive(active, now)
 	end
 
 	self.round.blackoutActive = active
-
 	for _, node in ipairs(self.nodes) do
 		clearDictionary(node.allowedDuringBlackout)
 		clearDictionary(node.blockedDuringBlackout)
@@ -515,6 +686,70 @@ function TaskService:setBlackoutActive(active, now)
 	end
 
 	self:_refreshAllNodes(now)
+	self:_broadcastProgress()
+end
+
+function TaskService:setSecurityAlarmState(state, now)
+	if self.round == nil then
+		return
+	end
+
+	self.round.securityAlarmActive = state == "active"
+	if state == "active" then
+		self.round.securityAlarmFeedbackState = Constants.Events.SecurityAlarm.FeedbackState.Active
+	elseif state == "resolved" then
+		self.round.securityAlarmFeedbackState =
+			Constants.Events.SecurityAlarm.FeedbackState.Resolved
+		if
+			self.round.registerUnlockDeferred
+			and self:_nonRegisterTasksComplete()
+			and not self.round.registerCompleted
+		then
+			self:_setRegisterUnlocked(true)
+			if self.round.registerAnnounced ~= true then
+				self.round.registerAnnounced = true
+				self.sendAlert("register_unlocked")
+			end
+		end
+	elseif state == "failed" then
+		self.round.securityAlarmFeedbackState = Constants.Events.SecurityAlarm.FeedbackState.Failed
+		if
+			self.round.registerUnlockDeferred
+			and self:_nonRegisterTasksComplete()
+			and not self.round.registerCompleted
+		then
+			self:_setRegisterUnlocked(true)
+			if self.round.registerAnnounced ~= true then
+				self.round.registerAnnounced = true
+				self.sendAlert("register_unlocked")
+			end
+		end
+	else
+		self.round.securityAlarmFeedbackState = Constants.Events.SecurityAlarm.FeedbackState.Idle
+	end
+
+	self:_refreshAllNodes(now)
+	self:_broadcastProgress()
+end
+
+function TaskService:isRegisterUnlocked()
+	return self.round ~= nil and self.round.registerUnlocked == true
+end
+
+function TaskService:isRegisterCompleted()
+	return self.round ~= nil and self.round.registerCompleted == true
+end
+
+function TaskService:isBlackoutActive()
+	return self.round ~= nil and self.round.blackoutActive == true
+end
+
+function TaskService:isSecurityAlarmActive()
+	return self.round ~= nil and self.round.securityAlarmActive == true
+end
+
+function TaskService:getSecurityNodeId()
+	return Constants.Events.SecurityAlarm.NodeId
 end
 
 function TaskService:getRemainingRealTasks()
@@ -532,9 +767,18 @@ function TaskService:getRemainingRealTasks()
 	return remaining
 end
 
+function TaskService:hasActiveMimic()
+	for _, node in ipairs(self.nodes) do
+		if node.isMimic then
+			return true
+		end
+	end
+	return false
+end
+
 function TaskService:activateMimic(now)
-	if self.round == nil then
-		return false
+	if self.round == nil or self.round.securityAlarmActive then
+		return nil
 	end
 
 	local eligibleNodes = {}
@@ -552,14 +796,14 @@ function TaskService:activateMimic(now)
 	end
 
 	if #eligibleNodes == 0 then
-		return false
+		return nil
 	end
 
 	local selectedNode = eligibleNodes[Random.new():NextInteger(1, #eligibleNodes)]
 	selectedNode.isMimic = true
 	selectedNode.mimicExpiresAt = now + Constants.Events.Mimic.LifetimeSeconds
 	self:_refreshAllNodes(now)
-	return true
+	return selectedNode.nodeId
 end
 
 function TaskService:update(now)
@@ -573,6 +817,9 @@ function TaskService:update(now)
 			node.isMimic = false
 			node.mimicExpiresAt = 0
 			shouldRefresh = true
+			if self.onMimicExpired ~= nil then
+				self.onMimicExpired(node.nodeId)
+			end
 		end
 		if node.cooldownUntil > 0 and now >= node.cooldownUntil then
 			node.cooldownUntil = 0
@@ -593,7 +840,6 @@ function TaskService:getPersonalPenalties()
 	if self.round == nil then
 		return {}
 	end
-
 	return shallowCopy(self.round.personalPenalties)
 end
 
@@ -601,7 +847,6 @@ function TaskService:getBasePay()
 	if self.round == nil then
 		return 0
 	end
-
 	return self.round.basePay
 end
 
@@ -618,6 +863,8 @@ function TaskService:getProgressSnapshot()
 			registerCompleted = false,
 			personalPenalties = {},
 			blackoutActive = false,
+			securityAlarmActive = false,
+			securityAlarmState = "idle",
 		}
 	end
 
@@ -626,6 +873,22 @@ function TaskService:getProgressSnapshot()
 	for _, penalty in pairs(self.round.personalPenalties) do
 		successPenalty = math.max(successPenalty, penalty)
 		failPenalty = math.max(failPenalty, penalty)
+	end
+
+	local alarmState = "idle"
+	if
+		self.round.securityAlarmFeedbackState == Constants.Events.SecurityAlarm.FeedbackState.Active
+	then
+		alarmState = "active"
+	elseif
+		self.round.securityAlarmFeedbackState
+		== Constants.Events.SecurityAlarm.FeedbackState.Resolved
+	then
+		alarmState = "resolved"
+	elseif
+		self.round.securityAlarmFeedbackState == Constants.Events.SecurityAlarm.FeedbackState.Failed
+	then
+		alarmState = "failed"
 	end
 
 	return {
@@ -647,6 +910,8 @@ function TaskService:getProgressSnapshot()
 		registerCompleted = self.round.registerCompleted,
 		personalPenalties = shallowCopy(self.round.personalPenalties),
 		blackoutActive = self.round.blackoutActive,
+		securityAlarmActive = self.round.securityAlarmActive,
+		securityAlarmState = alarmState,
 	}
 end
 
@@ -662,6 +927,7 @@ function TaskService:endRound()
 		clearDictionary(node.blockedDuringBlackout)
 		self:_applyNodeVisual(node, Constants.Prompts.Waiting, false, "waiting")
 	end
+	self:_applySecurityVisual(Constants.Events.SecurityAlarm.FeedbackState.Idle)
 end
 
 return TaskService

@@ -1,247 +1,389 @@
-# Engineering handoff — Sprint 2 clarity and feel
+# Engineering handoff
+
+Use this file when design has a concrete implementation brief for engineering.
 
 ## Objective
-Implement the Sprint 2 onboarding, HUD readability, task feedback, event presentation, and round-end explanation pass for **Closing Shift: Superstore 3AM** without reopening the proven Sprint 1 gameplay baseline.
+Implement Sprint 3's alpha return loop without destabilizing the ready Sprint 1 + Sprint 2 baseline.
+
+Locked Sprint 3 scope only:
+- `Security Alarm`
+- persistent `XP` / `Level`
+- simple non-playing cosmetic shop with persistent purchase/equip state
+- KPI / analytics + structured log contract
 
 ## Read first
 - `project/docs/GDD.md`
 - `project/docs/DECISIONS.md`
-- `project/docs/SPRINT2-PLAN.md`
+- `project/docs/KPI-CANDIDATES-S3.md`
+- `project/docs/SPRINT3-PLAN.md`
 - `project/docs/QA.md`
 - `project/docs/RUNTIME-EVIDENCE.md`
 
 ## Files to edit
-- `project/src/**`
-- `project/scripts/smoke_runner.lua` only if the Sprint 2 UI / state pass needs narrow smoke coverage
+Expected engineering touch points are likely under:
+- `project/src/ServerScriptService/**`
+- `project/src/ReplicatedStorage/**`
+- `project/src/StarterGui/**`
+- `project/src/StarterPlayer/**`
+- `project/scripts/**` if a smoke/runtime harness needs Sprint 3 coverage
 
-## Implementation stance
-- Treat Sprint 1 round logic as locked.
-- Sprint 2 is a communication and presentation pass.
-- If a clarity improvement would require changing timers, quotas, payout math, event counts, or roster rules, do **not** change it here.
+Do not widen scope beyond the locked Sprint 3 contract in this file.
 
-## 1) Tutorial flow
+## Non-goals / do not add
+- no NPCs
+- no chase/combat
+- no second map
+- no revive system
+- no stamina or movement buffs
+- no payout multipliers from progression
+- no Robux rollout
+- no subscriptions / battle pass / daily quests
+- no broader inventory beyond the 2 slots below
 
-### Tutorial tracking rule
-- Track tutorial completion **per client session only**.
-- Because persistence is out of scope, the tutorial should show once after a player joins a server and becomes eligible to play a round.
-- Eligible means the local player is inside the round-start roster for the next playable shift.
-- Late joiners during `Playing` or `Ended` do **not** start the tutorial for that live round.
+---
 
-### Tutorial presentation rule
-- Tutorial is **non-modal**.
-- Use the existing HUD alert area or a visually adjacent coachmark style, but never block movement or interaction.
-- Only **one** tutorial step can be visible at a time.
-- Tutorial text must obey the same phone-safe copy limits as alerts.
+## 1) `Security Alarm` implementation contract
 
-### Tutorial steps
-| Step id | Trigger | Exact copy | Duration / clear rule | Notes |
-| --- | --- | --- | --- | --- |
-| `tutorial_goal` | First eligible intermission after join, after HUD is visible for ~1 second | `Finish the list before time runs out.` | Show for 4 seconds, or until intermission ends | This is the only pre-round goal statement. |
-| `tutorial_follow_task` | First `Playing` snapshot for an eligible player who saw step 1 | `Follow the glow. Hold on a task to work.` | Show for 5 seconds, or clear on first successful hold start | Teaches highlight + hold interaction together. |
-| `tutorial_banked_pay` | First real task completion, or 20 seconds into `Playing`, whichever happens first | `Task cash is banked. Register unlocks last.` | Show for 5 seconds | Do not split this into two extra tutorial messages. |
-| `tutorial_register_end` | First time `Close Register` unlocks for that player | `Close Register is ready. Finish the shift.` | Show for 4 seconds, then fall back to the normal unlock alert behavior | This can piggyback on the register unlock event. |
+### Core event rules
+| Item | Locked rule |
+|---|---|
+| Event id | `security_alarm` |
+| Max per round | 1 |
+| Trigger roll at round start | random threshold from **165 to 125 seconds remaining** |
+| Pending begins | once remaining time is at or below the rolled threshold |
+| Start gates | round state `Playing`; alarm not consumed; blackout not active; no active mimic node; `Close Register` not yet unlocked; at least 1 non-register task still remains |
+| Cancel without firing | if round ends, `Close Register` is completed, or remaining time drops below **45** before legal start |
+| Active countdown | **15.0s** |
+| Hold duration | **2.0s** |
+| Fail penalty | **-12s** shared round timer, once |
+| Cash penalty | none |
+| Damage / health | none |
 
-### Late join behavior
-- If the player joins during `Playing` or `Ended`, show only the wait-state HUD messaging:
-  - state: `Waiting for next shift`
-  - alert: `Shift in progress. Wait for the next one.`
-  - objectives: `Shift in progress. Wait for the next one.`
-- Do not advance tutorial state while excluded from the live round.
-- If the player stays for the next intermission and becomes eligible, begin at `tutorial_goal`.
+### Overlap / priority rules
+Implement these exactly:
+- `Security Alarm` cannot start during blackout.
+- `Security Alarm` cannot start while a mimic node is active.
+- While `Security Alarm` is active:
+  - blackout start is deferred
+  - mimic spawn is deferred
+  - `Close Register` unlock is deferred
+- If players complete the final non-register task during an active alarm, do **not** unlock register until the alarm resolves/fails.
+- If the alarm is pending but never finds a legal window before 45 seconds remaining, mark it consumed/canceled for the round and move on.
 
-## 2) HUD / alert hierarchy
+### Success / fail edge handling
+- Success only counts if the server receives the completed prompt trigger before the 15.0s deadline.
+- Starting the hold before timeout does **not** guarantee success if the hold completes after the deadline.
+- First successful resolver wins the event.
+- After success or fail, the node becomes non-interactable for the rest of the round.
+- Late joiners remain excluded from active-round participation and must not be able to resolve the alarm during `Playing`.
 
-### Phone-safe HUD layout contract
-Keep the Sprint 1 top-left HUD panel, but make the text hierarchy predictable and compact.
+### Node contract
+Create a dedicated event node:
+- folder: `Workspace.EventNodes`
+- part name: `security_panel_node`
 
-Required layout rules:
-- Width clamp: **260–360 px**
-- Auto-height: **required**
-- One vertical stack only; no side-by-side micro-panels on phone
-- Text blocks in this order:
-  1. title
-  2. state
-  3. timer
-  4. saved cash
-  5. earnings
-  6. objectives
-  7. alert / tutorial line
-- Do not rely on color alone for lock, danger, or payout meaning.
+Required attributes / identifiers:
+- `NodeId = "security_panel_node"`
+- `EventId = "security_alarm"`
+- `FeedbackState` string
+- `PromptEnabled` boolean
 
-### Copy-length rules
-- Alert / tutorial text: **42 characters max**
-- State line: **28 characters max**
-- Objectives block: **3 lines max**
-- Earnings block: **3 lines max**
-- Round-end summary line: target **24 characters max before numbers**, keep it readable at 260 px width
+Required `FeedbackState` enum values:
+- `security_idle`
+- `security_active`
+- `security_resolved`
+- `security_failed`
 
-### Earnings block format
-Use short labeled lines rather than the current dense sentence.
+### Node presentation / copy contract
+| Surface | Exact value |
+|---|---|
+| Object text | `Security Panel` |
+| Action text while active | `Reset Alarm` |
+| Start alert id | `security_alarm_active` |
+| Start alert text | `Security Alarm. Reset the front panel.` |
+| Start cue id | `security_alarm_start` |
+| Success alert id | `security_alarm_reset` |
+| Success alert text | `Alarm reset. Keep closing.` |
+| Success cue id | `security_alarm_reset` |
+| Fail alert id | `security_alarm_failed` |
+| Fail alert text | `Alarm missed. Lost 12 seconds.` |
+| Fail cue id | `security_alarm_fail` |
 
-Required format during active play:
-- Line 1: `Banked: $X`
-- Line 2: `Clear: $Y | Timeout: $Z`
-- Line 3: only when needed: `False task: -$N`
+### Recommended round-state fields
+Use or mirror a server-owned round slice with these exact meanings:
+- `securityAlarmTriggerRemaining`
+- `securityAlarmPending`
+- `securityAlarmActive`
+- `securityAlarmEndsAt`
+- `securityAlarmConsumed`
+- `securityAlarmState` (`idle|active|resolved|failed|canceled` internally is fine)
+- `securityAlarmResolvedByUserId` (nullable)
 
-Rules:
-- `Clear` means success payout after bonus and after the local player's personal mimic deduction.
-- `Timeout` means failure payout after the `60%` conversion and after the local player's personal mimic deduction.
-- If there is no personal deduction, omit line 3 entirely.
+Exact internal naming can differ, but the behavior above may not.
 
-### Objectives block format
-Required format during active play:
-- Line 1: `Tasks: completed/total`
-- Line 2: `Restock R | Spill S | Trash T`
-- Line 3: `Cart C | Freezer F | Reg STATE`
+---
 
-Rules:
-- `STATE` must be one of `locked`, `ready`, or `closed`.
-- Keep the register state visible even when the rest of the line compresses.
-- A late joiner wait state replaces this whole block with the wait-for-next-shift copy.
+## 2) Persistence / profile contract
 
-### Alert priority table
-| Priority | Alert ids / moments | Exact copy | Behavior |
-| --- | --- | --- | --- |
-| P0 pinned | `late_join_wait` | `Shift in progress. Wait for the next one.` | Replaces all lower alerts until the player becomes eligible next round. |
-| P0 pinned | `blackout_active` | `Blackout. Wait for backup power.` | Pins for the full blackout duration. |
-| P0 result | `round_success` | `Shift cleared. Cashing out.` | Holds through the round-end summary window. |
-| P0 result | `round_failure` | `Time's up. Partial pay.` | Holds through the round-end summary window. |
-| P0 urgent | `mimic_triggered` | `False task. Lost time and pay.` | Show for 4 seconds. Interrupts lower-priority text. |
-| P1 action | `register_unlocked` | `Close Register unlocked.` | Show for 4 seconds. |
-| P1 recovery | `blackout_end` | `Power restored. Get back to work.` | Show for 3 seconds after blackout ends. |
-| P2 start hint | `round_start_hint` | `Clock in. Follow the task glow.` | Show for 4 seconds if no higher alert is active. |
-| P2 tutorial | tutorial steps above | exact tutorial copy | Tutorial shares the same slot and obeys higher-priority replacement rules. |
-| P3 ambient fallback | no active alert | state-driven helper text | Only visible when nothing higher is active. |
+### Profile schema
+Sprint 3 persistent profile must include these fields:
 
-### Stack / replace rules
-- Use **one alert slot only**.
-- Higher priority replaces lower priority immediately.
-- Lower priority does **not** queue behind P0 pinned states.
-- Keep at most **one pending P1/P2** message after a transient P0 alert; if a newer message of the same or higher priority arrives, drop the older pending one.
-- Re-firing the same alert refreshes its timer instead of duplicating it.
-- Real task completion should normally update the node + objectives + earnings without stealing the main alert slot.
+```lua
+{
+  ProfileVersion = 1,
+  Cash = 0,
+  XP = 0,
+  Level = 1,
+  ShiftsPlayed = 0,
+  ShiftsCleared = 0,
+  OwnedCosmetics = {
+    nameplate_standard_issue = true,
+    lanyard_gray_clip = true,
+  },
+  EquippedCosmetics = {
+    NameplateStyle = "nameplate_standard_issue",
+    LanyardColor = "lanyard_gray_clip",
+  },
+}
+```
 
-## 3) Task feedback rules
+### Source-of-truth rules
+- `XP` is the source of truth for `Level`.
+- Recompute `Level` from `XP` whenever XP changes or a migrated profile loads.
+- If a loaded profile has a `Level` mismatch, trust `XP`, repair `Level`, and save on the next normal save opportunity.
+- `OwnedCosmetics` is a dictionary keyed by item id.
+- `EquippedCosmetics` is keyed by slot name and may only contain a valid owned item for that slot.
 
-### Active-task highlight behavior
-Use readable world feedback on live task nodes without adding new mechanics.
+### Level thresholds
+| Level | Total XP required |
+|---|---:|
+| 1 | 0 |
+| 2 | 20 |
+| 3 | 45 |
+| 4 | 75 |
+| 5 | 110 |
+| 6 | 150 |
 
-| Task-node state | World feedback | Prompt behavior | HUD behavior |
-| --- | --- | --- | --- |
-| Real task available | Soft pulse / highlight visible at a glance | Normal prompt text | Objectives and earnings remain live |
-| Real task being worked | Stronger local focus while held | Normal prompt text during hold | No new alert needed |
-| Real task completed and quota still remains later | Brief positive flash, then cooldown / neutral state | Prompt disabled during reuse cooldown | Objectives decrement immediately |
-| Task category fully done | Highlight removed or downgraded so it no longer reads as active | Prompt can disable or stay visually inactive | Remaining count shows `0` |
-| Register locked | Subdued but visible locked highlight | `Finish all other tasks first` | Objectives line shows `Reg locked` |
-| Register unlocked | Strongest highlight in the room | Normal register prompt text | Objectives line flips to `Reg ready`; alert + cue fire immediately |
-| Register completed | Completion flash, then inactive | No further reuse this round | Objectives line shows `Reg closed` |
-| Blackout active | Keep nodes visible but dim active highlights | Replace prompt text with `Blackout — wait for backup power`; block new starts | Pinned blackout alert stays visible |
-| Mimic node after trigger | Use a trapped / disabled visual distinct from a normal cooldown | `Node locked after false task` for the lockout | No progress added; urgent mimic alert remains |
+Sprint 3 behavior above Level 6:
+- keep saving total `XP`
+- clamp unlock/display checks to `Level 6`
+- no extra Sprint 3 unlocks beyond that
 
-### Task completion rules
-When a **real** task completes:
-- Update remaining quota and total completed count in the same frame or next replicated update tick.
-- Update the earnings block in that same update.
-- Give a brief positive confirmation on the node (`~0.6s` flash is enough).
-- Play the local `task_complete` cue if available.
-- Do **not** post a big banner alert unless the completion also unlocks the register.
+### XP award rules
+| Source | Award | Recipient |
+|---|---:|---|
+| real non-register task completion | +2 XP | acting player only |
+| `Close Register` completion | +4 XP | acting player only |
+| `Security Alarm` reset | +4 XP | resolver only |
+| shift clear bonus | +10 XP | each round-start player still present at round resolution |
+| shift fail consolation | +4 XP | each round-start player still present at round resolution |
 
-### `Close Register` lock / unlock communication
-`Close Register` must stay obvious without extra explanation.
+Explicit non-awards:
+- no XP loss from mimic
+- no XP loss from alarm fail
+- no direct XP for blackout alone
+- no active-round XP for late joiners excluded from the roster
 
-Locked rules:
-- Prompt text: `Finish all other tasks first`
-- Objectives line: `Reg locked`
-- Register remains visible in the world but not as the strongest active task
+### Shift counters
+- `ShiftsPlayed`: increment once for every player in the round-start roster
+- `ShiftsCleared`: increment on successful clear for round-start players still present at round resolution
 
-Unlocked rules, fired immediately when the last non-register quota reaches `0`:
-- Objectives line flips to `Reg ready`
-- Register highlight becomes the strongest active highlight
-- Alert fires: `Close Register unlocked.`
-- Audio fires: `register_unlocked`
-- If the tutorial is still active this round, count this moment as `tutorial_register_end`
+### Save timing contract
+To avoid noisy writes and unclear persistence behavior:
+- load profile on `PlayerAdded`
+- save after round-resolution reward commit (cash + XP + counters)
+- save immediately after successful purchase
+- save immediately after equip change
+- save on `PlayerRemoving`
+- do **not** write a datastore on every single task completion tick; accumulate round XP in memory and commit at round resolution unless a profile-leave path forces a save
 
-## 4) Audio cue matrix
+### Migration rule
+If a legacy or partial profile exists:
+- preserve any existing saved `Cash`
+- fill missing Sprint 3 fields with the defaults above
+- inject the default owned/equipped cosmetics if absent
+- normalize invalid equipped ids back to the default item for that slot
 
-### Cue priorities
-- **P0 critical:** interrupt any lower cue
-- **P1 important:** interrupt P2 only
-- **P2 informational:** never interrupt higher cues; may drop if something stronger is playing
+---
 
-### Required cue table
-| Cue id | Trigger | Audience | Priority | Fallback if asset is missing |
-| --- | --- | --- | --- | --- |
-| `task_complete` | A real task completes successfully | Local triggering player | P2 | Silent fallback; visual completion flash and HUD updates still carry the feedback |
-| `register_unlocked` | Last non-register quota reaches `0` | All active round players | P1 | Reuse `task_complete` once if available; otherwise silent fallback |
-| `blackout_start` | Blackout begins | All active round players | P0 | Silent fallback; pinned blackout alert + dimmed prompts must still communicate the state |
-| `blackout_end` | Blackout ends | All active round players | P1 | Reuse `register_unlocked` once if available; otherwise silent fallback |
-| `mimic_triggered` | A player completes the false task | All active round players | P0 | Silent fallback; urgent alert + trapped-node visual must still land |
-| `round_success` | `Close Register` completes before timer hits `0` | All active round players | P0 | Reuse `register_unlocked` once if available; otherwise silent fallback |
-| `round_failure` | Timer reaches `0` before register completion | All active round players | P0 | Silent fallback; result copy + summary still explain the outcome |
+## 3) Shop v1 implementation contract
 
-Rules:
-- No audio cue should be required for gameplay correctness.
-- Missing sounds must never block alerts, progress, or payout.
-- Do not add a global cue for mimic spawn in Sprint 2.
+### Shop access
+- The shop is usable only in non-playing states.
+- Do not allow purchase or equip actions during `Playing`.
+- The results flow may link into the same non-playing shop UI after payout.
 
-## 5) Round-end summary
+### Slots
+Exactly these two slots:
+- `NameplateStyle`
+- `LanyardColor`
 
-### Summary behavior
-- Show the summary immediately when the round enters `Ended`.
-- Use the player's own numbers.
-- Late joiners excluded from the active roster do **not** receive a payout summary for that round.
-- Keep the summary compact enough to read on phone without a separate full-screen results page.
+### Catalog
+Implement exactly these six paid items:
 
-### Success summary contract
-Required content order:
-1. Header: `SHIFT CLEARED`
-2. `Tasks: completed/total`
-3. `Banked: $X`
-4. `Bonus: +$35`
-5. Optional: `False task: -$N`
-6. `Cash added: +$Z`
+| itemId | Display name | Slot | Price | Required level | Flavor copy |
+|---|---|---|---:|---:|---|
+| `clean_shift` | Clean Shift | `NameplateStyle` | 40 | 1 | Fresh laminated badge for a dependable closer. |
+| `retro_plastic` | Retro Plastic | `NameplateStyle` | 80 | 3 | Old store plastic with worn late-night charm. |
+| `neon_night` | Neon Night | `NameplateStyle` | 120 | 5 | Electric edge trim that reads from across the lobby. |
+| `blue_id` | Blue ID | `LanyardColor` | 50 | 1 | Calm blue strap for routine night shifts. |
+| `red_id` | Red ID | `LanyardColor` | 75 | 2 | Loud red strap that stands out fast. |
+| `gold_id` | Gold ID | `LanyardColor` | 100 | 4 | Gold trim for proven overnight staff. |
 
-Formula:
-- `Z = bankedPay + 35 - personalPenalty`, clamped to `0`
+### Action priority
+When the player presses the primary action on an item, resolve in this exact order:
+1. if item is already equipped -> no-op
+2. else if item is already owned -> equip it
+3. else if player level is below requirement -> deny for level
+4. else if player cash is below price -> deny for funds
+5. else -> purchase succeeds
 
-### Failure summary contract
-Required content order:
-1. Header: `SHIFT FAILED`
-2. `Tasks: completed/total`
-3. `Banked: $X`
-4. `60% pay: $Y`
-5. Optional: `False task: -$N`
-6. `Cash added: +$Z`
+### Purchase / equip rules
+- purchase adds the item permanently to `OwnedCosmetics`
+- purchase does **not** auto-equip
+- equip swaps the current equipped item for that slot only
+- players may always re-equip their default item
+- no sell / refund / gift / duplicate purchase logic in Sprint 3
+- no empty-slot unequip state in Sprint 3
 
-Formula:
-- `Y = floor(bankedPay * 0.60)`
-- `Z = Y - personalPenalty`, clamped to `0`
+### Exact UI copy
+| State | Exact copy |
+|---|---|
+| Buy button | `Buy for $<price>` |
+| Level gate badge | `Requires Level <level>` |
+| Insufficient level denial | `Employee Rank too low. Reach Level <level>.` |
+| Insufficient funds denial | `Not enough Cash. Finish another shift.` |
+| Owned / equip action | `Owned — Equip` |
+| Equipped | `Equipped` |
 
-### Summary clarity rules
-- If `personalPenalty == 0`, omit the false-task line entirely.
-- Do not list teammate penalties here; keep it local and readable.
-- The summary must explain the deposited `Cash` amount, not just the result state.
+### QA-visible representation
+Keep this UI-first and light:
+- lobby shop preview must visibly show current `NameplateStyle` and `LanyardColor`
+- post-round results card for the local player must show the same equipped style/color
+- 2D representation is sufficient
+- 3D accessory meshes are not required for Sprint 3
 
-## 6) No-regression guardrails
-- Keep the round flow `Waiting -> Intermission -> Playing -> Ended`.
-- Keep **15 seconds** of intermission.
-- Keep **540 seconds** of active round time.
-- Keep the existing player-count quota bundles.
-- Keep task rewards, hold durations, and `Close Register` as the final gated task.
-- Keep blackout to **one max per round**, **10 seconds**, within the existing timing window.
-- Keep mimic to **one max per round**, within the existing timing window, with the existing `-8s` team hit, `-$12` personal penalty, and `8s` node lockout.
-- Keep late joiners excluded from participation and payout for the current round.
-- Do not add new task types, events, NPCs, revive, stamina, persistence, progression systems, or economy expansion.
+---
 
-## 7) Deferred items
-- Persistent tutorial seen-state and an optional replay button wait for future save-backed progression work.
-- Stronger pre-trigger mimic tells stay deferred unless post-Sprint 2 tests show the current deceptive spawn still reads as unfair.
-- If highlighted tasks are still not enough for new players, evaluate a directional locator in a later sprint instead of expanding Sprint 2 here.
+## 4) Cash / XP / level UX contract
+
+The player must be able to understand the difference without guessing.
+
+Exact plain-language rule to surface in UI/help text where appropriate:
+- `Cash buys cosmetics. XP raises Employee Rank. Rank unlocks cosmetics only.`
+
+Required display surfaces:
+- lobby / shop header: show `Cash`, `Level`, and current XP progress
+- results summary: show `Cash earned`, `XP earned`, `current Level`, and any unlock-relevant change
+- waiting / late-join state: still show persistent `Cash` and `Level`
+
+What progression must **not** change:
+- movement speed
+- stamina
+- health
+- damage
+- revive access
+- task hold times
+- timer length
+- blackout timing
+- mimic timing
+- payout multipliers
+
+---
+
+## 5) Analytics and structured log contract
+
+### Canonical event names
+Emit these exact snake_case events. Do not rename them across code paths.
+
+#### Profile / funnel
+- `profile_loaded`
+- `onboarding_shown`
+- `onboarding_completed`
+- `shift_started`
+- `first_task_completed`
+- `results_shown`
+- `shift_success`
+- `shift_failure`
+
+#### Existing event coverage
+- `blackout_seen`
+- `mimic_spawned`
+- `mimic_triggered`
+- `mimic_expired`
+
+#### New Sprint 3 event coverage
+- `security_alarm_seen`
+- `security_alarm_reset`
+- `security_alarm_failed`
+
+#### Shop / economy coverage
+- `shop_opened`
+- `shop_purchase_denied`
+- `shop_purchase_succeeded`
+- `cosmetic_equipped`
+
+### Common field contract
+Every emitted event should include at least:
+- `user_id`
+- `server_job_id`
+- `round_id` (use `null`/omit only for true lobby-only events if necessary)
+- `ts_unix`
+
+### Event-specific minimum fields
+| Event | Required extra fields |
+|---|---|
+| `profile_loaded` | `profile_version`, `cash`, `xp`, `level`, `owned_cosmetic_count` |
+| `shift_started` | `party_size`, `level`, `cash` |
+| `first_task_completed` | `task_id`, `seconds_elapsed` |
+| `shift_success` | `party_size`, `remaining_seconds`, `cash_awarded`, `xp_awarded` |
+| `shift_failure` | `party_size`, `remaining_seconds`, `cash_awarded`, `xp_awarded` |
+| `blackout_seen` | `remaining_seconds` |
+| `mimic_spawned` | `node_id`, `remaining_seconds` |
+| `mimic_triggered` | `node_id`, `trigger_user_id`, `timer_penalty_seconds`, `cash_penalty` |
+| `mimic_expired` | `node_id` |
+| `security_alarm_seen` | `node_id`, `remaining_seconds`, `response_window_seconds` |
+| `security_alarm_reset` | `node_id`, `resolver_user_id`, `seconds_left`, `response_time_seconds` |
+| `security_alarm_failed` | `node_id`, `timer_penalty_seconds` |
+| `results_shown` | `outcome`, `cash_total`, `xp_total`, `level` |
+| `shop_opened` | `entry_point` |
+| `shop_purchase_denied` | `item_id`, `slot_id`, `deny_reason`, `required_level`, `price_cash`, `player_level`, `player_cash` |
+| `shop_purchase_succeeded` | `item_id`, `slot_id`, `price_cash`, `required_level`, `cash_before`, `cash_after` |
+| `cosmetic_equipped` | `item_id`, `slot_id`, `previous_item_id` |
+
+Locked denial reasons:
+- `insufficient_level`
+- `insufficient_cash`
+
+### Structured log fallback
+If dashboard analytics lag, emit a structured log line for every required event path using this pattern:
+
+```text
+[analytics] <event_name> <json-payload>
+```
+
+Example:
+
+```text
+[analytics] security_alarm_reset {"user_id":123,"round_id":"r-17","node_id":"security_panel_node","seconds_left":6.4}
+```
+
+QA can accept this local/server log evidence if the exact event name and required fields are present.
+
+### Derived metric note
+`second_shift_started` is a KPI concept, not a required emitted event. Derive it from the player's second `shift_started` in the same play session.
+
+---
 
 ## Acceptance criteria
-- A first-time player can follow the tutorial flow without any modal interruption.
-- The HUD stays readable at phone-safe width while showing state, timer, cash, earnings, objectives, and alerts.
-- Active real tasks are visually distinguishable from inactive, cooling-down, locked, and blackout-disabled states.
-- `Close Register` is clearly locked, then clearly unlocked, without needing voice explanation.
-- Blackout and mimic trigger have distinct text/audio/visual presentation without altering their Sprint 1 gameplay consequences.
-- The round-end summary explains exactly how the player's `Cash` deposit was computed.
+Engineering implementation is complete for design handoff purposes when all of the below are true:
+- `Security Alarm` exists as a once-per-round event with the exact timing, hold, overlap, and fail rules above.
+- `Security Alarm` uses `security_panel_node` and the locked alert/cue naming.
+- `Security Alarm` cannot overlap blackout or active mimic, and register unlock is deferred while alarm is active.
+- Player profiles persist `Cash`, `XP`, `Level`, `ShiftsPlayed`, `ShiftsCleared`, `OwnedCosmetics`, `EquippedCosmetics`, and `ProfileVersion`.
+- The exact six paid cosmetic items exist, using the exact two slots and exact level/price rules above.
+- Purchase denial reasons are unambiguous and use the locked copy / reason names.
+- Purchase and equip state both persist across leave/rejoin.
+- Cosmetics are visibly testable in lobby/results UI without relying on imagination.
+- The exact analytics event names above are emitted, or at minimum mirrored in structured log output with the required fields.
+- Sprint 1 / Sprint 2 behavior remains intact for blackout, mimic, payout, onboarding, and late-join exclusion.

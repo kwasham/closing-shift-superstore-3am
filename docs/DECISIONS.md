@@ -6,30 +6,11 @@
 - Server owns round state, rewards, and dangerous events.
 - Cosmetics come before strong power monetization.
 - OpenClaw uses `main` as orchestrator plus worker agents for design, engineering, content, and QA.
-- Sprint 1 round length is locked to **9 minutes** with **15 seconds** of intermission.
-- Sprint 1 supports **1–6 players** and snapshots the active player roster at round start; mid-round joiners wait for the next shift.
-- Sprint 1 uses player-count-based task quotas instead of a flat six-task round.
-- **Close Register** is the final gated task and cannot be completed until every other quota is done.
-- Task cash is banked during the round and paid out only when the round ends.
-- Success payout is **100% of banked task value + $35 clear bonus** for each active player.
-- Failure payout is **60% of banked task value**, rounded down, with no clear bonus.
-- Blackout happens **once per round**, for **10 seconds**, at a random point between **300 and 240 seconds remaining**.
-- During blackout, players may finish an interaction already in progress, but no new task interaction can begin until blackout ends.
-- Mimic happens **at most once per round**, only between **180 and 135 seconds remaining**, never during blackout, and never on **Close Register**.
-- Mimic punishment for Sprint 1 is **no progress + 8-second team time loss + $12 personal payout penalty + 8-second lockout on the trapped node**.
-- Mimic expires harmlessly if ignored for **18 seconds**.
-- Sprint 1 punishments should create tension through time pressure and payout dents, not revive/death loops, stamina drains, or hard fail chains.
-- Solo fairness for Sprint 1 comes from lower task quotas, only one blackout, only one mimic, and guaranteed partial payout on failure.
-- Engineering will generate the Sprint 1 task arena and task nodes from Rojo-managed server code/registry data at boot so round-critical interactables are not dependent on hand-placed Studio instances.
-- Sprint 1 was marked **Ready** after command/build/smoke proof, headless Roblox-engine runtime validation for the core round logic, and the final late-join proof confirmed excluded mid-round joiners cannot participate and receive the correct wait-for-next-shift messaging.
-- Sprint 2 tutorial is locked to **4 non-modal steps**, shown **once per client session** for the first round a player is eligible to play after joining; without persistence, the tutorial does not try to survive across servers or sessions.
-- Late joiners during `Playing` or `Ended` do not receive tutorial steps for that live round; they stay in the wait-for-next-shift HUD state and begin the tutorial on the next intermission they are eligible for.
-- Sprint 2 alert hierarchy is locked to **one alert slot** with priority order: **wait/blackout active/round result > register unlocked/blackout restored > tutorial or round-start hint > ambient state text**.
-- Sprint 2 phone-safe copy stays short: alert banner text should stay under **42 characters**, objective readout under **3 lines**, and earnings should use short labeled lines instead of a dense sentence.
-- Sprint 2 active-task readability uses visible highlights on every real task node with remaining quota; cooling-down or finished nodes visibly downgrade instead of looking active.
-- **Close Register** stays visibly different in both states: locked uses subdued locked presentation and locked prompt text, while unlocked becomes the strongest task highlight and immediately fires the unlock alert/cue.
-- Sprint 2 keeps mimic deceptive on spawn: there is **no global mimic spawn alert**. Clarity comes from stronger trigger feedback, the trapped-node recovery state, and the round-end payout explanation.
-- Sprint 2 round-end summary must explain the player's actual payout formula with banked pay, success bonus or failure conversion, optional personal mimic deduction, and final `Cash` added.
-- Sprint 2 audio cue contract is limited to **task complete, register unlocked, blackout start, blackout end, mimic triggered, round success, and round failure**; missing assets must never block gameplay and always fall back to text/visual feedback.
-- Sprint 2 protects the Sprint 1 gameplay baseline: no new event types, no roster rule changes, no timer/quota rebalance, no payout formula changes, and no new progression or survival systems.
-- Sprint 2 presentation data now rides on the existing `AlertRaised` remote plus server-authored task-node feedback attributes, so HUD/tutorial/audio/effects can iterate client-side without moving round authority off the server.
+- 2026-04-03 — Sprint 3 is locked to a small alpha return loop only: `Security Alarm`, persistent `XP` / `Level`, a lobby/non-playing cosmetic shop v1, and KPI instrumentation. No NPCs, combat, second map, battle pass, subscription, or Robux rollout work is included.
+- 2026-04-03 — `Security Alarm` is a once-per-round server-owned event using `security_panel_node`, a 15.0 second response window, a 2.0 second hold, and a single shared fail penalty of `-12s`. It does not deal damage, does not remove cash, and does not overlap active blackout or active mimic.
+- 2026-04-03 — While `Security Alarm` is active, blackout start, mimic spawn, and `Close Register` unlock are all deferred until the alarm resolves or fails. If the alarm cannot legally start before 45 seconds remain, it is canceled for that round rather than forced into the endgame.
+- 2026-04-03 — Sprint 3 progression is persistent but non-power. `Cash` remains spendable soft currency. `XP` and `Level` exist only to show Employee Rank and gate cosmetics. They do not modify speed, stamina, health, payout multipliers, task timings, or event timings.
+- 2026-04-03 — Sprint 3 progression saves `ProfileVersion`, `Cash`, `XP`, `Level`, `ShiftsPlayed`, `ShiftsCleared`, `OwnedCosmetics`, and `EquippedCosmetics`. `XP` is the source of truth for `Level` if a mismatch is detected.
+- 2026-04-03 — Sprint 3 shop scope is exactly 2 slots (`NameplateStyle`, `LanyardColor`) and 6 paid starter items. Purchase and equip are separate actions. Default items are always owned, and players can swap back to those defaults at any time.
+- 2026-04-03 — Sprint 3 cosmetics are verified through simple 2D lobby/results presentation, not 3D accessory production. This keeps the cosmetic loop QA-visible without widening content scope.
+- 2026-04-03 — Sprint 3 analytics names are locked to exact snake_case events documented in `project/docs/KPI-CANDIDATES-S3.md` and `project/docs/HANDOFF-ENGINEERING.md`. Structured local/server log evidence using those exact names is acceptable if dashboard propagation lags.
