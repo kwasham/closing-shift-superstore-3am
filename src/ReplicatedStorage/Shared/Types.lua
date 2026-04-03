@@ -1,4 +1,5 @@
 export type RoundState = "Waiting" | "Intermission" | "Playing" | "Ended"
+export type RoundResult = "success" | "failure"
 
 export type TaskId =
 	"restock_shelf"
@@ -33,6 +34,16 @@ export type ProgressSnapshot = {
 	registerUnlocked: boolean,
 	registerCompleted: boolean,
 	personalPenalties: { [number]: number },
+	blackoutActive: boolean,
+}
+
+export type AlertPayload = {
+	id: string,
+	message: string,
+	priority: number,
+	duration: number?,
+	pinned: boolean?,
+	cueId: string?,
 }
 
 export type RoundSnapshot = {
@@ -40,6 +51,7 @@ export type RoundSnapshot = {
 	timerSeconds: number,
 	progress: ProgressSnapshot?,
 	activeUserIds: { number },
+	roundResult: RoundResult?,
 }
 
 return {}

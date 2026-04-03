@@ -51,12 +51,11 @@ To reduce merge conflicts:
 
 ## Current status
 ### Ready for delegation
-- Sprint 2 planning
-- Milestone 2 polish-pass scoping
+- Sprint 3 / next milestone planning
 - follow-up cleanup for non-blocking warnings like the Rojo `Remotes.model.json` warning
 
 ### In progress
-- no Sprint 1 blockers
+- no Sprint 2 blockers
 
 ### Done
 - OpenClaw multi-agent pipeline scaffolded
@@ -72,12 +71,15 @@ To reduce merge conflicts:
 - Sev 2 phone HUD clipping issue found during runtime validation, hotfixed in `project/src/StarterGui/HUD.client.lua`, and rerun evidence recorded
 - late-join HUD wait-state hotfix landed and narrow proof confirmed excluded mid-round joiners cannot participate, cannot add banked pay, and receive `Shift in progress. Wait for the next one.`
 - QA cleared the final blocker and Sprint 1 is now **Ready**
+- Sprint 2 design handoff completed for tutorial flow, HUD hierarchy, active-task/register feedback, blackout+mimic presentation, round-end payout explanation, and no-regression guardrails
+- Sprint 2 engineering pass completed for session-only tutorial, phone-safe HUD/alert hierarchy, task feedback states, blackout+mimic presentation hooks, round-end summary, client effects, audio fallback hooks, and smoke coverage
+- Sprint 2 content docs completed for signage/landmark rules, lit-vs-blackout readability, tutorial/alert/summary copy, revised store readability beats, and sound cue intent
+- Sprint 2 QA docs and smoke plan updated through the final gate: regression baseline is green, phone-sized HUD and co-op presentation have runtime-backed evidence, the human-observed no-coaching pass is accepted, and Sprint 2 is now **Ready**
 
 ## Risks
-- task node contracts can drift if task ids / prompts are not documented in one place
-- Studio-only map changes may diverge from Rojo-managed task markers
+- Sprint 2 must stay a clarity-and-feel pass and not drift into feature expansion
+- content/audio asset sourcing could lag the implementation contract even though engineering is unblocked
 - workers may collide if they all edit `SPRINT.md`; keep ownership with `main`
-- non-blocking cleanup remains for tooling / presentation follow-ups, but no Sprint 1 gate blocker remains
 
 ## Next producer action
-Record the final Sprint 1 proof summary in `project/docs/DECISIONS.md`, keep any minor follow-ups in backlog, and start Sprint 2 / Milestone 2 planning from a Ready baseline.
+Start the next sprint from a Ready Sprint 2 baseline.

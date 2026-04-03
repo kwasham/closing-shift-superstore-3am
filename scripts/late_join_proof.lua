@@ -57,8 +57,20 @@ local lateAlerts = targetAlerts[lateJoiner.UserId] or {}
 local lastAlert = lateAlerts[#lateAlerts]
 local canParticipate = afterProgress.completed ~= beforeProgress.completed
 
-print(string.format("LATE_JOIN_PROOF progress_before=%d progress_after=%d", beforeProgress.completed, afterProgress.completed))
-print(string.format("LATE_JOIN_PROOF banked_before=%d banked_after=%d", beforeProgress.bankedPay, afterProgress.bankedPay))
+print(
+	string.format(
+		"LATE_JOIN_PROOF progress_before=%d progress_after=%d",
+		beforeProgress.completed,
+		afterProgress.completed
+	)
+)
+print(
+	string.format(
+		"LATE_JOIN_PROOF banked_before=%d banked_after=%d",
+		beforeProgress.bankedPay,
+		afterProgress.bankedPay
+	)
+)
 print(string.format("LATE_JOIN_PROOF late_join_alert=%s", tostring(lastAlert)))
 print(string.format("LATE_JOIN_PROOF can_participate=%s", tostring(canParticipate)))
 

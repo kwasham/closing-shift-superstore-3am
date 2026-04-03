@@ -370,3 +370,193 @@ SMOKE_OK: sprint 1 round loop structure is present
 ### Remaining caveat
 - This session now has command-backed proof for late-join exclusion plus the HUD-state hotfix implementation.
 - A human-observed real client screenshot/clip would still be the strongest presentation artifact if QA wants to fully close the last player-visible evidence gap.
+
+## 2026-04-02 — Sprint 2 narrow clarity-validation pass
+
+### Validation A — Phone-sized HUD pass
+- Test name: Sprint 2 phone-sized HUD pass
+- Date/time: 2026-04-02 23:20:28 CDT
+- Environment/setup:
+  - Build artifact: `project/build/ClosingShift.rbxlx`
+  - Runtime path: `run-in-roblox` against the built place using `/Users/macmini/.openclaw/workspace-engineer/tmp/hud_text_probe.lua` and `/Users/macmini/.openclaw/workspace-engineer/tmp/hud_panel_height_probe.lua`
+  - Phone-safe target used for the probe: panel width `260px`, inner text width `236px`
+  - No screenshots/clips available from this session; the harness can execute Roblox runtime scripts but cannot provide human-view captures here
+- Pass / Fail: Pass (runtime text-bounds / layout proof)
+- Exact observed behavior:
+  - `State: Closing shift live`, timer, saved cash, active-play earnings lines, objectives lines, and round-end summary lines all fit inside the `236px` inner width without clipping.
+  - Measured one-line fits included:
+    - `Clear: $165 | Timeout: $78` → width `156`, height `14`
+    - `Restock 2 | Spill 1 | Trash 1` → width `144`, height `13`
+    - `Cart 2 | Freezer 1 | Reg locked` → width `168`, height `13`
+    - `Cash added: +$153` → width `112`, height `14`
+  - The two longest tutorial lines wrapped to two lines at the minimum width target but stayed readable inside the auto-growing alert slot:
+    - `Follow the glow. Hold on a task to work.` → `2` lines, height `26`
+    - `Task cash is banked. Register unlocks last.` → `2` lines, height `26`
+  - Combined panel height stayed within a reasonable phone-safe stack:
+    - active play worst-case sampled stack height: `221px`
+    - round-end sampled stack height: `209px`
+  - No fixed-height clipping path remains in the current HUD because the panel and labels are using automatic vertical sizing.
+- Mismatch vs Sprint 2 clarity contract:
+  - Minor copy/layout note only: two tutorial lines do not stay single-line at the strict `260px` minimum width.
+  - This did **not** produce an overlap/clipping failure in the current HUD because the alert row expands vertically.
+- Code changed: No
+- Files changed: None
+- Rerun after hotfix: No hotfix needed
+
+### Validation B — First-time-player / no-verbal-coaching pass
+- Test name: Sprint 2 first-time-player / no-verbal-coaching pass
+- Date/time: 2026-04-02 23:20:28 CDT
+- Environment/setup:
+  - Attempted to execute a truer client-side pass first using `run-in-roblox` probes for local player creation
+  - Runtime capability limits in this harness prevented creation of a real local/player client context:
+    - `CreateLocalPlayer` failed with `lacking capability LocalUser`
+    - direct `Player` creation failed with `lacking capability WritePlayer`
+  - Because of that limitation, this session could not run an honest human-observed or true client-controlled no-verbal-coaching playthrough
+- Pass / Fail: Fail (evidence blocked by client-runtime limitation)
+- Exact observed behavior:
+  - The subagent could not spawn a real first-time player client in the available Roblox runtime harness.
+  - Source inspection still found the intended no-coaching teaching path in place:
+    - goal tutorial at eligible intermission
+    - follow-task tutorial on first playable snapshot
+    - banked-pay/register-last tutorial on first task completion or `20s` fallback
+    - register-end tutorial on first register unlock
+    - locked register prompt stays `Finish all other tasks first`
+  - That means the intended instructional sequence exists, but this pass did **not** directly observe whether a fresh player understands the objective, task-following, banked pay, and register-unlocks-last flow without help.
+  - Tutorial timing therefore remains unjudged by human observation in this session; no honest too-early / too-late / just-right claim is made.
+- Mismatch vs Sprint 2 clarity contract:
+  - The blocker here is missing live first-time-player evidence, not a confirmed code-side design drift.
+- Code changed: No
+- Files changed: None
+- Rerun after hotfix: No hotfix attempted; the blocker was environment/evidence, not a confirmed minimal code defect
+
+### Validation C — 2-player blackout + mimic presentation sanity pass
+- Test name: Sprint 2 2-player blackout + mimic presentation sanity pass
+- Date/time: 2026-04-02 23:20:28 CDT
+- Environment/setup:
+  - Build artifact: `project/build/ClosingShift.rbxlx`
+  - Runtime path: `run-in-roblox` against the built place using `/Users/macmini/.openclaw/workspace-engineer/tmp/coop_presentation_probe.lua`
+  - Two fake round-player tables were used because this harness cannot create live `Player` instances, but the real `TaskService` and `EventService` modules executed inside Roblox runtime
+  - No screenshots/clips available from this session
+- Pass / Fail: Pass (runtime co-op presentation proxy)
+- Exact observed behavior:
+  - Blackout presentation:
+    - alert definition observed: `blackout_active|Blackout. Wait for backup power.|cue=blackout_start`
+    - task feedback state switched to `blackout`
+    - task prompt switched to `Blackout — wait for backup power`
+    - an already-held task remained finishable (`held_can_finish=true`)
+    - a fresh task start remained blocked (`blocked_can_start=false`)
+    - recovery alert definition observed: `blackout_end|Power restored. Get back to work.|cue=blackout_end`
+    - measured blackout duration remained `10.0s`
+  - Mimic presentation:
+    - alert definition observed: `mimic_triggered|False task. Lost time and pay.|cue=mimic_triggered`
+    - triggered mimic node changed from `available` to `mimic_lockout`
+    - shared timer dropped from `540` to `532` (`-8s`)
+    - personal penalty applied only to Player A: `12`
+    - Player B penalty remained `nil`
+  - Distinction remained clear in the runtime proxy:
+    - blackout read as a store-wide power outage / temporary interaction block
+    - mimic read as a false-task punishment with time + pay loss
+    - the two did not present as the same gameplay consequence
+- Mismatch vs Sprint 2 clarity contract:
+  - None observed in the runtime proxy
+  - Remaining limitation: this is still not a human-observed co-op session with two real clients on screen at once
+- Code changed: No
+- Files changed: None
+- Rerun after hotfix: No hotfix needed
+
+## 2026-04-02 — Final Sprint 2 blocker recheck: true no-coaching pass viability
+
+- Test name: Sprint 2 first-time-player / no-verbal-coaching blocker recheck
+- Date/time: 2026-04-02 23:38:52 CDT
+- Environment/setup:
+  - Build artifact refreshed with `cd project && bash scripts/build.sh`
+  - Runtime path checked with `run-in-roblox` against `build/ClosingShift.rbxlx`
+  - Diagnostic scripts used:
+    - `/Users/macmini/.openclaw/workspace-engineer/tmp/diag_create_local_player.lua`
+    - `/Users/macmini/.openclaw/workspace-engineer/tmp/diag_player.lua`
+  - Goal of this recheck: determine whether this host can now execute a true fresh-player / no-verbal-coaching pass instead of another fake-player proxy
+  - Screenshot/clip capture: unavailable in this session
+- Pass / Fail: Fail (still blocked on true-player runtime capability)
+- Exact observed behavior:
+  - Build still succeeds; only the existing non-blocking Rojo warning on `Remotes.model.json` appeared.
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script /Users/macmini/.openclaw/workspace-engineer/tmp/diag_create_local_player.lua`
+    returned:
+    - `DIAG CreateLocalPlayer ok false`
+    - `DIAG CreateLocalPlayer err The current thread cannot call 'CreateLocalPlayer' (lacking capability LocalUser)`
+    - `DIAG count after 0`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script /Users/macmini/.openclaw/workspace-engineer/tmp/diag_player.lua`
+    returned:
+    - `DIAG create player ok false`
+    - `DIAG create player err The current thread cannot create 'Player' (lacking capability WritePlayer)`
+  - Result: this host still cannot create a real `LocalPlayer` or even a writable `Player` instance inside the available Roblox runtime path, so it still cannot execute an honest first-time-player observation run.
+- Hesitation/confusion points:
+  - Not observable in this recheck because no true player session could be created.
+- What the player understood without help:
+  - Not observable in this recheck because no true player session could be created.
+- Whether the tutorial / HUD / task cues were sufficient:
+  - Unjudged by this recheck. Existing code/runtime-proxy evidence still says the intended cues are present, but this section does **not** claim they were sufficient for a real first-time player.
+- Whether the player could complete the basic loop without verbal coaching:
+  - Not tested. A true no-verbal-coaching player run was still impossible on this host.
+- Whether banked pay and register-unlocks-last were understood:
+  - Not observable in this recheck.
+- Whether blackout and mimic consequences read clearly when encountered:
+  - Not observable in this recheck with a true player; prior proxy evidence remains separate and does not satisfy this blocker.
+- Code changed:
+  - No
+- Files changed:
+  - `project/docs/RUNTIME-EVIDENCE.md`
+- Whether the case was rerun after any hotfix:
+  - No hotfix was justified or applied. The blocker remains evidence/runtime-access, not a confirmed clarity defect in `project/src/**`.
+- Remaining blocker after this recheck:
+  - One honest human-observed first-time-player / no-verbal-coaching pass is still required to close Sprint 2.
+- Screenshot / clip references:
+  - None available from this session
+
+
+## Sprint 2 final blocker — true first-time-player / no-verbal-coaching pass
+
+**Session**
+- Date/time: not recorded
+- Tester: human playtester (name not recorded)
+- Build used: not recorded
+- Device / viewport: not recorded
+- Observer: not recorded
+- Coaching given: none
+
+**What the player understood without help**
+- Goal understanding: yes
+- Tutorial understanding: no tutorial was observed during this session
+- Task understanding: yes
+- Event understanding: yes
+- Payout understanding: unclear
+
+**Observed hesitation points**
+1. Understanding what "Banked" means
+2. Understanding how money is awarded at round end
+3. Interpreting the payout/readout language without explanation
+
+**Did the player complete the basic loop without coaching?**
+- Yes
+- Notes: the player completed the basic loop without verbal coaching
+
+**Where the player got confused**
+- bank
+- money
+- payout explanation
+
+**What worked well**
+- task execution
+- basic objective following
+- understanding how to interact with tasks
+
+**What still felt unclear**
+- money
+- banked-pay meaning
+- payout explanation
+
+**Observer verdict**
+- Pass
+- Reason: Pass
+
+**Artifact references**
+- screenshot / clip / notes: none recorded; evidence is based on live human-observed notes

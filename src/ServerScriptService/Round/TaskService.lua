@@ -89,6 +89,12 @@ local function createNodePart(nodeDefinition, taskConfig)
 	return part, prompt
 end
 
+local function setNodeAttribute(node, attributeName, value)
+	if node.part:GetAttribute(attributeName) ~= value then
+		node.part:SetAttribute(attributeName, value)
+	end
+end
+
 function TaskService.new(options)
 	local self = setmetatable({}, TaskService)
 	self.sendAlert = options.sendAlert
@@ -214,7 +220,7 @@ function TaskService:_ensureNodes()
 			node.label = label
 		end
 
-		self:_applyNodeVisual(node, Constants.Prompts.Waiting, false)
+		self:_applyNodeVisual(node, Constants.Prompts.Waiting, false, "waiting")
 	end
 end
 
@@ -242,7 +248,7 @@ function TaskService:_connectPromptSignals(node)
 	end)
 end
 
-function TaskService:_applyNodeVisual(node, text, promptEnabled)
+function TaskService:_applyNodeVisual(node, text, promptEnabled, feedbackState)
 	local taskConfig = Constants.Tasks[node.taskId]
 	node.label.Text = text
 	node.prompt.Enabled = promptEnabled
@@ -250,11 +256,33 @@ function TaskService:_applyNodeVisual(node, text, promptEnabled)
 	node.prompt.ObjectText = taskConfig.name
 	node.prompt.HoldDuration = taskConfig.holdDuration
 
-	if promptEnabled then
-		node.part.Color = node.baseColor
-	else
-		node.part.Color = node.baseColor:Lerp(Color3.fromRGB(36, 38, 44), 0.35)
+	local partColor = node.baseColor
+	if feedbackState == "waiting" then
+		partColor = node.baseColor:Lerp(Color3.fromRGB(36, 38, 44), 0.4)
+	elseif
+		feedbackState == "cooldown"
+		or feedbackState == "completed"
+		or feedbackState == "register_closed"
+	then
+		partColor = node.baseColor:Lerp(Color3.fromRGB(42, 45, 54), 0.55)
+	elseif feedbackState == "register_locked" then
+		partColor = node.baseColor:Lerp(Color3.fromRGB(48, 46, 64), 0.4)
+	elseif feedbackState == "register_ready" then
+		partColor = node.baseColor:Lerp(Color3.fromRGB(255, 235, 134), 0.3)
+	elseif feedbackState == "blackout" then
+		partColor = node.baseColor:Lerp(Color3.fromRGB(24, 28, 36), 0.65)
+	elseif feedbackState == "mimic_lockout" then
+		partColor = node.baseColor:Lerp(Color3.fromRGB(176, 72, 72), 0.55)
 	end
+
+	node.part.Color = partColor
+	setNodeAttribute(node, "FeedbackState", feedbackState)
+	setNodeAttribute(node, "PromptEnabled", promptEnabled)
+	setNodeAttribute(
+		node,
+		"RemainingCount",
+		if self.round ~= nil then self.round.remainingByTask[node.taskId] or 0 else 0
+	)
 end
 
 function TaskService:_isRoundPlayer(player)
@@ -290,44 +318,46 @@ function TaskService:_setRegisterUnlocked(unlocked)
 	self.round.registerUnlocked = unlocked
 end
 
-function TaskService:_getTaskText(node, now)
+function TaskService:_getNodePresentation(node, now)
 	local taskConfig = Constants.Tasks[node.taskId]
 
 	if self.round == nil then
-		return Constants.Prompts.Waiting, false
+		return Constants.Prompts.Waiting, false, "waiting"
 	end
 
 	if self.round.blackoutActive then
 		local canCarry = node.allowedDuringBlackout ~= nil
 			and next(node.allowedDuringBlackout) ~= nil
-		return Constants.Prompts.Blackout, canCarry
+		return Constants.Prompts.Blackout, canCarry, "blackout"
 	end
 
 	if node.lockoutUntil > now then
-		return Constants.Prompts.NodeLocked, false
+		return Constants.Prompts.NodeLocked, false, "mimic_lockout"
 	end
 
 	if node.cooldownUntil > now then
-		return Constants.Prompts.Cooldown, false
+		return Constants.Prompts.Cooldown, false, "cooldown"
 	end
 
 	if node.taskId == Constants.TaskId.CloseRegister then
 		if self.round.registerCompleted then
-			return Constants.Prompts.Completed, false
+			return Constants.Prompts.Completed, false, "register_closed"
 		end
 
 		if not self.round.registerUnlocked then
-			return taskConfig.lockedPromptText or Constants.Prompts.RegisterLocked, false
+			return taskConfig.lockedPromptText or Constants.Prompts.RegisterLocked,
+				false,
+				"register_locked"
 		end
 
-		return taskConfig.promptText, true
+		return taskConfig.promptText, true, "register_ready"
 	end
 
 	if (self.round.remainingByTask[node.taskId] or 0) <= 0 then
-		return Constants.Prompts.Completed, false
+		return Constants.Prompts.Completed, false, "completed"
 	end
 
-	return taskConfig.promptText, true
+	return taskConfig.promptText, true, "available"
 end
 
 function TaskService:_broadcastProgress()
@@ -338,8 +368,8 @@ end
 
 function TaskService:_refreshAllNodes(now)
 	for _, node in ipairs(self.nodes) do
-		local text, promptEnabled = self:_getTaskText(node, now)
-		self:_applyNodeVisual(node, text, promptEnabled)
+		local text, promptEnabled, feedbackState = self:_getNodePresentation(node, now)
+		self:_applyNodeVisual(node, text, promptEnabled, feedbackState)
 	end
 end
 
@@ -361,7 +391,7 @@ function TaskService:_completeRealTask(node, player, now)
 		self:_setRegisterUnlocked(true)
 		if self.round.registerAnnounced ~= true then
 			self.round.registerAnnounced = true
-			self.sendAlert(Constants.Alerts.RegisterUnlocked)
+			self.sendAlert("register_unlocked")
 		end
 	end
 
@@ -392,7 +422,7 @@ function TaskService:_handlePromptTriggered(node, player)
 	end
 
 	if not self:_isRoundPlayer(player) then
-		self.sendAlert(Constants.Alerts.MidRoundJoin, player)
+		self.sendAlert("late_join_wait", player)
 		return
 	end
 
@@ -587,6 +617,7 @@ function TaskService:getProgressSnapshot()
 			registerUnlocked = false,
 			registerCompleted = false,
 			personalPenalties = {},
+			blackoutActive = false,
 		}
 	end
 
@@ -629,7 +660,7 @@ function TaskService:endRound()
 		clearDictionary(node.holders)
 		clearDictionary(node.allowedDuringBlackout)
 		clearDictionary(node.blockedDuringBlackout)
-		self:_applyNodeVisual(node, Constants.Prompts.Waiting, false)
+		self:_applyNodeVisual(node, Constants.Prompts.Waiting, false, "waiting")
 	end
 end
 

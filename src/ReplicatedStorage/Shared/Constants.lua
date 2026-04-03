@@ -49,14 +49,14 @@ Constants.Prompts = {
 
 Constants.Alerts = {
 	Intermission = "Get ready for the next closing shift.",
-	RoundStart = "Clock in. Task cash is banked until the shift ends.",
+	RoundStart = "Clock in. Follow the task glow.",
 	MidRoundJoin = "Shift in progress. Wait for the next one.",
 	BlackoutStart = "Blackout. Wait for backup power.",
-	BlackoutEnd = "Backup power restored.",
-	RegisterUnlocked = "Close Register unlocked. Finish the shift.",
-	MimicTriggered = "That wasn't on the list.",
-	Success = "Shift cleared. Cashing out now.",
-	Failure = "Time's up. Partial pay only.",
+	BlackoutEnd = "Power restored. Get back to work.",
+	RegisterUnlocked = "Close Register unlocked.",
+	MimicTriggered = "False task. Lost time and pay.",
+	Success = "Shift cleared. Cashing out.",
+	Failure = "Time's up. Partial pay.",
 }
 
 Constants.Tasks = {

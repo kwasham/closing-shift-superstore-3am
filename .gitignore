@@ -7,3 +7,4 @@ sourcemap.json
 .rokit/
 aftman-install.log
 .DS_Store
+*.swp

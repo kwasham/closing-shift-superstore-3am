@@ -1,5 +1,8 @@
 # Art Direction
 
+## Sprint 2 clarity-and-feel goal
+Keep the proven Sprint 1 store and make it easier for a first-time player to read, trust, and navigate. Sprint 2 should improve landmarks, signage, cue clarity, and phone readability before it adds any extra density or spectacle.
+
 ## Sprint 1 visual goal
 Build a compact late-night supermarket that feels immediately familiar, slightly wrong, and always readable on a phone screen. The first pass should sell fluorescent dread and clear task navigation before it tries to sell deep environmental detail.
 
@@ -134,3 +137,62 @@ Build a compact late-night supermarket that feels immediately familiar, slightly
 3. Clean task readability
 4. Signage and decals
 5. Ambient clutter and polish
+
+## Sprint 2 readability pass
+
+### Signage and landmark rules
+- Every major zone should answer a first-time player's "where do I go next?" question in under 2 seconds.
+- The strongest fixed landmarks remain:
+  - front doors / vestibule
+  - checkout / `LANE 1`
+  - aisle headers `Aisle A`, `Aisle B`, `Aisle C`
+  - `FROZEN`
+  - `EMPLOYEES ONLY`
+  - `CART RETURN`
+- `CHECKOUT` and `LANE 1` should be readable from the front half of the store at all times.
+- Aisle labels should hang high enough to read over shelf clutter and be visible from aisle mouths.
+- `Close Register` should always sit inside the clearest landmark cluster in the store.
+
+### Lit vs blackout readability rules
+- Lit state should feel sterile and overbright, with the checkout/front area remaining the most readable anchor.
+- Blackout must preserve orientation through silhouette and fallback glow, not through guesswork.
+- During blackout, preserve readable contrast for:
+  - aisle headers
+  - exit signage
+  - freezer door outlines
+  - checkout silhouette
+  - task nodes that are visible but temporarily disabled
+- Do not let blackout remove the player's sense of store layout; it should reduce confidence, not destroy wayfinding.
+
+### Prop-density guidance for Sprint 2
+- Add readability props before atmosphere props.
+- Checkout: medium density, but keep the register lane, queue edge, and final-task silhouette clean.
+- Aisles: keep endcaps clear, avoid side-stacked promo clutter that blocks shelf-gap readability.
+- Freezer wall: maintain a clean panel/alarm silhouette and avoid busy sticker clutter around the task anchor.
+- Back trash nook: keep the route obvious; utility props should frame the interaction, not bury it.
+- Exterior/cart return: low density, strong corral silhouette, minimal decorative noise.
+
+### HUD copy tone and readability constraints
+- Tone should sound practical, slightly tense, and never jokey.
+- Use short command-style wording over flavor prose.
+- Prefer one clean sentence over two clever fragments.
+- Avoid exclamation-point spam, long warnings, or decorative wording.
+- If a line cannot be read quickly at phone width, cut words before adding more UI space.
+
+### Audio tone guidance
+- Audio should support tension without becoming constant irritation.
+- Baseline store audio should be low-intensity fluorescent / freezer / HVAC hum.
+- State changes should be more noticeable than ambience:
+  - blackout start/end
+  - register unlock
+  - false-task trigger
+  - round result
+- Mimic trigger audio should feel wrong and interruptive, but not so loud that it masks the HUD explanation.
+- If final assets are missing, placeholder tones should still communicate priority cleanly.
+
+## Sprint 2 art priority
+1. Landmark/sign clarity
+2. Lock/unlock and active-task readability
+3. Blackout-safe navigation contrast
+4. Phone-safe HUD copy support
+5. Atmosphere polish that does not reduce comprehension

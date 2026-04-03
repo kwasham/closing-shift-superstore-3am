@@ -46,13 +46,13 @@ function EventService:update(now, remainingSeconds, realTasksRemaining)
 		self.round.blackoutActive = true
 		self.round.blackoutEndsAt = now + Constants.Events.Blackout.DurationSeconds
 		self.taskService:setBlackoutActive(true, now)
-		self.sendAlert(Constants.Alerts.BlackoutStart)
+		self.sendAlert("blackout_active")
 	end
 
 	if self.round.blackoutActive and now >= self.round.blackoutEndsAt then
 		self.round.blackoutActive = false
 		self.taskService:setBlackoutActive(false, now)
-		self.sendAlert(Constants.Alerts.BlackoutEnd)
+		self.sendAlert("blackout_end")
 	end
 
 	if not self.round.mimicConsumed then

@@ -1,6 +1,7 @@
 # Store Beats
 
 This file is the buildable room-by-room spec for the first playable store in **Closing Shift: Superstore 3AM**.
+It now carries the Sprint 2 readability pass on top of the proven Sprint 1 footprint.
 
 ## Sprint 1 store concept
 A compact neighborhood supermarket with one open sales floor, one checkout lane, a short freezer wall, a small employees-only trash route, and a shallow exterior apron for carts. The player should understand the full map in one lap.
@@ -275,3 +276,68 @@ Use these as the preferred emotional targets for content staging. Engineering ma
 - No multi-lane supermarket sprawl
 - No heavy environmental storytelling that hides task readability
 - No extra rooms that do not support the six MVP tasks
+
+## Sprint 2 readability upgrade
+
+### Spawn / lobby-to-store handoff
+- The first playable view should immediately answer three questions:
+  1. where is checkout?
+  2. where are the aisles?
+  3. where does the round work happen?
+- From spawn or front entry, players should see checkout plus at least one aisle header without turning.
+- The route from spawn into the store should not be visually noisy; keep the first 3 seconds of sightlines clean.
+- If onboarding text appears here, the environment should reinforce it with obvious task-facing landmarks rather than extra decoration.
+
+### Entrance and checkout landmarks
+- Checkout remains the main home-base landmark and should be the easiest zone to re-find after any event.
+- `CHECKOUT` and `LANE 1` should form one clean landmark cluster around the register.
+- Queue rails, impulse shelving, and counter props should frame the register without breaking its silhouette.
+- `Close Register` should read as the obvious final destination even before it unlocks.
+
+### Aisle labeling strategy
+- Keep only three short aisles and label them clearly as `Aisle A`, `Aisle B`, and `Aisle C`.
+- Aisle labels should be readable from the front half of the store or from aisle mouths.
+- Endcaps should stay cleaner than shelf interiors so players can orient while moving quickly.
+- If one aisle gets extra prop flavor, do not let it become the hardest one to read.
+
+### Freezer section readability
+- The freezer zone should feel colder and less comfortable, but still instantly recognizable.
+- The alarm/interaction point should remain the strongest single element in that zone.
+- Freezer props should support the panel silhouette, not compete with it.
+- During blackout, freezer outlines and door reflections should preserve orientation.
+
+### Trash / back-area readability
+- `EMPLOYEES ONLY` must be readable before the player reaches the back corner.
+- The trash route should feel slightly worse and dirtier than the sales floor, but never maze-like.
+- Bags, bins, and utility props should form a readable pickup route rather than a clutter pile.
+- A new player should understand in one glance that this is the "take it out back" path.
+
+### Cart return readability
+- Exterior cart return should be readable from the storefront and from just outside the doors.
+- Keep the corral silhouette simple and unmistakable.
+- Loose carts should support the task fantasy, not create parking-lot clutter.
+- The cart route should read as a short out-and-back, not as an outdoor exploration beat.
+
+### Best zones for blackout mood
+1. Freezer wall: strongest unease, good silhouette retention
+2. Back trash route: worst-feeling corner, but still readable
+3. Center aisles: good shelf-shadow tension without killing wayfinding
+
+### Best zones for mimic readability
+1. Freezer panel: best mix of tension and clarity
+2. Rear restock shelf: routine-looking but readable
+3. Back trash pickup: strong if the anchor stays very clean
+4. Exterior cart return: lower scare, high readability fallback
+
+### Sightlines: where should a new player look first?
+- First look: checkout / `LANE 1`
+- Second look: nearest highlighted task and aisle label
+- Third look: freezer glow / back-route signage as the store's uncomfortable edges
+- At no point should the player need to spin 360 degrees to find the next likely objective zone.
+
+### Sprint 2 layout priority for the next Studio pass
+1. strengthen checkout + register landmarking
+2. strengthen aisle headers and endcap clarity
+3. strengthen freezer alarm silhouette and cold-zone readability
+4. strengthen `EMPLOYEES ONLY` / trash-route readability
+5. strengthen cart-return silhouette from the front entry

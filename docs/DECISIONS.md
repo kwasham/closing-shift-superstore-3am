@@ -22,3 +22,14 @@
 - Solo fairness for Sprint 1 comes from lower task quotas, only one blackout, only one mimic, and guaranteed partial payout on failure.
 - Engineering will generate the Sprint 1 task arena and task nodes from Rojo-managed server code/registry data at boot so round-critical interactables are not dependent on hand-placed Studio instances.
 - Sprint 1 was marked **Ready** after command/build/smoke proof, headless Roblox-engine runtime validation for the core round logic, and the final late-join proof confirmed excluded mid-round joiners cannot participate and receive the correct wait-for-next-shift messaging.
+- Sprint 2 tutorial is locked to **4 non-modal steps**, shown **once per client session** for the first round a player is eligible to play after joining; without persistence, the tutorial does not try to survive across servers or sessions.
+- Late joiners during `Playing` or `Ended` do not receive tutorial steps for that live round; they stay in the wait-for-next-shift HUD state and begin the tutorial on the next intermission they are eligible for.
+- Sprint 2 alert hierarchy is locked to **one alert slot** with priority order: **wait/blackout active/round result > register unlocked/blackout restored > tutorial or round-start hint > ambient state text**.
+- Sprint 2 phone-safe copy stays short: alert banner text should stay under **42 characters**, objective readout under **3 lines**, and earnings should use short labeled lines instead of a dense sentence.
+- Sprint 2 active-task readability uses visible highlights on every real task node with remaining quota; cooling-down or finished nodes visibly downgrade instead of looking active.
+- **Close Register** stays visibly different in both states: locked uses subdued locked presentation and locked prompt text, while unlocked becomes the strongest task highlight and immediately fires the unlock alert/cue.
+- Sprint 2 keeps mimic deceptive on spawn: there is **no global mimic spawn alert**. Clarity comes from stronger trigger feedback, the trapped-node recovery state, and the round-end payout explanation.
+- Sprint 2 round-end summary must explain the player's actual payout formula with banked pay, success bonus or failure conversion, optional personal mimic deduction, and final `Cash` added.
+- Sprint 2 audio cue contract is limited to **task complete, register unlocked, blackout start, blackout end, mimic triggered, round success, and round failure**; missing assets must never block gameplay and always fall back to text/visual feedback.
+- Sprint 2 protects the Sprint 1 gameplay baseline: no new event types, no roster rule changes, no timer/quota rebalance, no payout formula changes, and no new progression or survival systems.
+- Sprint 2 presentation data now rides on the existing `AlertRaised` remote plus server-authored task-node feedback attributes, so HUD/tutorial/audio/effects can iterate client-side without moving round authority off the server.

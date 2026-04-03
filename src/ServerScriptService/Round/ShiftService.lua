@@ -12,6 +12,7 @@ local ProfileStore = require(DataFolder:WaitForChild("ProfileStore"))
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Constants = require(Shared:WaitForChild("Constants"))
+local UIStrings = require(Shared:WaitForChild("UIStrings"))
 
 local ShiftService = {}
 
@@ -19,6 +20,7 @@ local started = false
 local currentState = Constants.RoundState.Waiting
 local currentTimerSeconds = 0
 local currentProgress = nil
+local currentRoundResult = nil
 local activeUserIds = {}
 local activeRound = nil
 
@@ -44,6 +46,53 @@ local RoundStateChanged = getOrCreateRemoteEvent("RoundStateChanged")
 local TaskProgressChanged = getOrCreateRemoteEvent("TaskProgressChanged")
 local AlertRaised = getOrCreateRemoteEvent("AlertRaised")
 
+local function cloneAlertPayload(definition)
+	return {
+		id = definition.id,
+		message = definition.message,
+		priority = definition.priority,
+		duration = definition.duration,
+		pinned = definition.pinned,
+		cueId = definition.cueId,
+	}
+end
+
+local function buildAlertPayload(alertValue)
+	if type(alertValue) == "string" then
+		local definition = UIStrings.Alerts[alertValue]
+		if definition ~= nil then
+			return cloneAlertPayload(definition)
+		end
+
+		return {
+			id = alertValue,
+			message = alertValue,
+			priority = UIStrings.AlertPriority.Prompt,
+			duration = 3,
+			pinned = false,
+		}
+	end
+
+	if type(alertValue) == "table" then
+		return {
+			id = alertValue.id or alertValue.message or "custom_alert",
+			message = alertValue.message or tostring(alertValue.id or "Alert"),
+			priority = alertValue.priority or UIStrings.AlertPriority.Prompt,
+			duration = alertValue.duration,
+			pinned = alertValue.pinned,
+			cueId = alertValue.cueId,
+		}
+	end
+
+	return {
+		id = "unknown_alert",
+		message = tostring(alertValue),
+		priority = UIStrings.AlertPriority.Prompt,
+		duration = 3,
+		pinned = false,
+	}
+end
+
 local function buildActiveUserIds(players)
 	local userIds = {}
 	for _, player in ipairs(players) do
@@ -58,6 +107,7 @@ local function buildRoundSnapshot()
 		timerSeconds = currentTimerSeconds,
 		progress = currentProgress,
 		activeUserIds = activeUserIds,
+		roundResult = currentRoundResult,
 	}
 end
 
@@ -76,11 +126,12 @@ local function broadcastProgress()
 	end
 end
 
-local function alert(message, targetPlayer)
+local function alert(alertValue, targetPlayer)
+	local payload = buildAlertPayload(alertValue)
 	if targetPlayer ~= nil then
-		AlertRaised:FireClient(targetPlayer, message)
+		AlertRaised:FireClient(targetPlayer, payload)
 	else
-		AlertRaised:FireAllClients(message)
+		AlertRaised:FireAllClients(payload)
 	end
 end
 
@@ -100,7 +151,7 @@ local taskService = TaskService.new({
 	onMimicTriggered = function()
 		if activeRound ~= nil then
 			activeRound.endsAt -= Constants.Events.Mimic.TimePenaltySeconds
-			alert(Constants.Alerts.MimicTriggered)
+			alert("mimic_triggered")
 			broadcastState()
 		end
 	end,
@@ -112,7 +163,7 @@ local eventService = EventService.new(taskService, {
 		taskService:update(os.clock())
 		if activeRound ~= nil then
 			activeRound.endsAt -= Constants.Events.Mimic.TimePenaltySeconds
-			alert(Constants.Alerts.MimicTriggered)
+			alert("mimic_triggered")
 			broadcastState()
 		end
 	end,
@@ -122,6 +173,9 @@ local function setState(nextState, timerSeconds, players)
 	currentState = nextState
 	currentTimerSeconds = timerSeconds or 0
 	activeUserIds = if players ~= nil then buildActiveUserIds(players) else {}
+	if nextState ~= Constants.RoundState.Ended then
+		currentRoundResult = nil
+	end
 	broadcastState()
 end
 
@@ -140,6 +194,7 @@ end
 
 local function beginRound(roundPlayers)
 	local quotas = Config.getQuotaTemplate(#roundPlayers)
+	currentRoundResult = nil
 	activeRound = {
 		players = roundPlayers,
 		endsAt = os.clock() + Config.durationSeconds,
@@ -152,7 +207,7 @@ local function beginRound(roundPlayers)
 	currentProgress = taskService:getProgressSnapshot()
 	setState(Constants.RoundState.Playing, Config.durationSeconds, roundPlayers)
 	broadcastProgress()
-	alert(Constants.Alerts.RoundStart)
+	alert("round_start_hint")
 
 	while activeRound ~= nil and not activeRound.shouldEnd do
 		local now = os.clock()
@@ -171,9 +226,10 @@ local function beginRound(roundPlayers)
 	local basePay = taskService:getBasePay()
 	local penalties = taskService:getPersonalPenalties()
 
+	currentRoundResult = if success then "success" else "failure"
 	updateProgressSnapshot()
 	setState(Constants.RoundState.Ended, 0, roundPlayersSnapshot)
-	alert(if success then Constants.Alerts.Success else Constants.Alerts.Failure)
+	alert(if success then "round_success" else "round_failure")
 	task.wait(Config.endedSeconds)
 
 	PayoutService.awardPlayers(roundPlayersSnapshot, basePay, success, penalties, ProfileStore)
@@ -211,8 +267,11 @@ local function onPlayerAdded(player)
 		if currentProgress ~= nil then
 			TaskProgressChanged:FireClient(player, currentProgress)
 		end
-		if currentState == Constants.RoundState.Playing then
-			alert(Constants.Alerts.MidRoundJoin, player)
+		if
+			currentState == Constants.RoundState.Playing
+			or currentState == Constants.RoundState.Ended
+		then
+			alert("late_join_wait", player)
 		end
 	end)
 end

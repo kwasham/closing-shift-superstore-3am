@@ -87,6 +87,71 @@ A 1–6 player co-op Roblox horror job sim where players close a supermarket at 
 - Solo players get a smaller task quota than full groups.
 - Punishments add pressure through short time loss, temporary denial, and cash loss rather than chain-death systems.
 
+## Sprint 2 clarity-and-feel contract
+
+### Tutorial / onboarding
+- Sprint 2 uses a **4-step, non-modal tutorial** shown once per client session, only for players who are part of a round-start roster.
+- Tutorial teaching priorities are locked to:
+  1. finish the checklist before time runs out
+  2. follow highlighted work and hold to interact
+  3. understand that task cash is banked until the shift ends
+  4. understand that **Close Register** unlocks last and ends the shift
+- Late joiners during `Playing` or `Ended` do **not** receive tutorial steps for that live round. They stay in a wait-for-next-shift HUD state and begin the tutorial on the next intermission they are eligible to play.
+- Blackout and mimic are taught reactively with short alert copy when they matter instead of front-loading extra tutorial text.
+
+### HUD readability and message hierarchy
+- The HUD remains a single compact top-left panel built for a **260–360 px** phone-safe width.
+- Required blocks, in order, are: state, timer, saved cash, earnings, objectives, alert.
+- **Earnings** should use short labeled lines rather than a long sentence:
+  - `Banked: $X`
+  - `Clear: $Y | Timeout: $Z`
+  - add `False task: -$N` only when the local player has a penalty
+- **Objectives** should fit inside **3 short lines** and always show register state as `locked`, `ready`, or `closed`.
+- The HUD uses **one alert slot only**. Alerts do not stack into a scrolling feed.
+- Alert priority is locked to:
+  1. wait-for-next-shift / blackout active / round result
+  2. register unlocked / blackout restored
+  3. tutorial step / round-start hint
+  4. ambient state text when no higher-priority alert is active
+
+### Task readability and feedback
+- Any real task node with remaining quota greater than 0 must read as active at a glance through a visible highlight or beacon.
+- A completed or cooling-down node must visibly downgrade so players do not path toward dead work.
+- **Close Register** stays visually distinct from normal tasks in both states:
+  - locked: subdued highlight + locked prompt text
+  - unlocked: strongest highlight in the room + unlock alert + unlock cue
+- Completing a real task must update objective counts and projected payout immediately, paired with a short positive visual confirmation and local completion cue.
+- During blackout, task prompts stay visible but disabled, and active highlights dim rather than disappear so players keep orientation.
+
+### Blackout / mimic presentation
+- **Blackout** is a clearly announced global state with a start cue, pinned alert while active, and a restore cue when power returns.
+- **Mimic** is **not** globally announced when it spawns; Sprint 2 keeps the deception. Clarity comes from stronger feedback on trigger:
+  - urgent alert that explains time and pay were lost
+  - distinct trap audio sting
+  - visible locked-node recovery state on the trapped task
+- Mimic expiry without trigger stays silent in Sprint 2 to avoid noise and accidental false teaching.
+
+### Round-end explanation
+- The round-end HUD must explain payout using the player's actual numbers, not flavor text alone.
+- Success summary shows:
+  - shift cleared
+  - tasks completed
+  - banked pay
+  - `+$35` clear bonus
+  - optional personal false-task deduction
+  - final cash added
+- Failure summary shows:
+  - shift failed
+  - tasks completed
+  - banked pay
+  - `60%` payout conversion
+  - optional personal false-task deduction
+  - final cash added
+- Late joiners who were excluded from the round do not receive a payout summary for that round.
+
+### No-regression guardrail
+- Sprint 2 improves communication, readability, and presentation without changing the locked Sprint 1 rules for round length, intermission, quota bundles, payout math, blackout timing/duration, or mimic timing/consequences.
+
 ## Failure / tension model
 - Tension comes from the timer, a mid-round blackout, and a single deceptive mimic prompt.
 - The player should feel pressure without losing an entire run to one mistake.
@@ -114,6 +179,6 @@ Avoid at MVP:
 - social progression / badges
 
 ## Open questions
-- exact cosmetic price curve once Sprint 1 payout data exists
-- whether future horror events should use health damage, sanity, or pure objective pressure
-- how much visual tell the mimic prompt should have after first internal playtests
+- exact asset list and sourcing path for the Sprint 2 UI / event cues
+- whether post-Sprint 2 playtests still need a stronger pre-trigger mimic tell
+- when tutorial completion should become persistent once save-backed progression exists

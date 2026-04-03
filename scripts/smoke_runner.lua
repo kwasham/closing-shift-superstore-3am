@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local StarterGui = game:GetService("StarterGui")
 local StarterPlayer = game:GetService("StarterPlayer")
 local Workspace = game:GetService("Workspace")
 
@@ -12,6 +13,7 @@ end
 local shared = assertChild(ReplicatedStorage, "Shared")
 local constantsModule = assertChild(shared, "Constants")
 assertChild(shared, "Types")
+assertChild(shared, "UIStrings")
 
 local constants = require(constantsModule)
 assert(constants.Round.DurationSeconds == 540, "Round duration must be 540 seconds")
@@ -52,8 +54,12 @@ local dataFolder = assertChild(ServerScriptService, "Data")
 assertChild(dataFolder, "ProfileStore")
 assertChild(ServerScriptService, "Bootstrap")
 
+local starterGui = assertChild(StarterGui, "HUD")
+assert(starterGui:IsA("LocalScript"), "HUD must stay a LocalScript")
+
 local starterScripts = assertChild(StarterPlayer, "StarterPlayerScripts")
-assertChild(starterScripts, "HUD")
+assertChild(starterScripts, "Audio")
+assertChild(starterScripts, "ClientEffects")
 
 local taskNodes = Workspace:WaitForChild("TaskNodes", 5)
 assert(taskNodes ~= nil, "TaskNodes folder was not created by the round bootstrap")
