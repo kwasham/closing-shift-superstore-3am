@@ -3,185 +3,220 @@
 Use this file when design has a concrete implementation brief for engineering.
 
 ## Objective
-Implement the Sprint 4 launch-candidate hardening pass on the existing build only.
+Implement the Sprint 5 **soft launch retention and distribution** pass on top of the ready Sprint 1–4 baseline.
 
-Focus on:
-- launch-facing wording cleanup
-- phone-width readability on the current HUD / results / late-join surfaces
-- results-screen clarity around payout landing in persistent currency
-- optional low-risk cleanup of the non-blocking `Remotes.model.json` warning
+Focus only on:
+- `Daily First Shift Bonus`
+- three launch badges
+- round-end `Invite Friends` CTA with graceful fallback
+- Sprint 5 analytics events using the existing analytics/debug path
+- config-first tuning hooks
+- the exact locked results / store / update / badge / share copy
 
-Do **not** expand scope into new gameplay, new UI systems, new monetization, or economy rebalance.
+Do **not** expand into new gameplay systems, referral rewards, matchmaking, party systems, monetization expansion, new maps, new events, or broad UI rewrites.
 
 ## Read first
 - `project/docs/GDD.md`
 - `project/docs/DECISIONS.md`
-- `project/docs/SPRINT4-PLAN.md`
-- `project/docs/LAUNCH-WATCHLIST-S4.md`
-- `project/docs/RELEASE-CHECKLIST-S4.md`
+- `project/docs/SPRINT.md`
+- `project/docs/QA.md`
 - `project/docs/RUNTIME-EVIDENCE.md`
 
-## Files to edit
-### Required target files
+## Preferred implementation surface
+Use the existing modules and surfaces before creating anything new.
+
+Likely target files:
+- `project/src/ServerScriptService/Round/Config.lua`
+- `project/src/ServerScriptService/Round/ShiftService.lua`
+- `project/src/ServerScriptService/Round/PayoutService.lua`
+- `project/src/ServerScriptService/Data/ProfileStore.lua`
+- `project/src/ServerScriptService/Analytics/AnalyticsService.lua`
+- `project/src/ReplicatedStorage/Shared/Constants.lua`
 - `project/src/ReplicatedStorage/Shared/UIStrings.lua`
 - `project/src/StarterGui/HUD.client.lua`
 - `project/src/StarterGui/Sprint3UI.client.lua`
+- `project/src/ReplicatedStorage/Remotes.model.json` only if the current result/profile replication path truly needs an extra low-risk payload route
 
-### Optional low-risk target file
-- `project/src/ReplicatedStorage/Remotes.model.json`
-
-### Only if needed for proof capture
-- `project/scripts/**`
-- `project/docs/RUNTIME-EVIDENCE.md`
+Prefer extending the existing results/profile flow over inventing a new screen or a separate social/badge UI module.
 
 ## Hard no-change rules
 Do not change:
-- payout formulas
 - success bonus amount
 - timeout-pay multiplier
+- task reward numbers
 - task quotas
-- XP rules
-- shop prices / unlock requirements
-- event roster
-- map scope
+- round duration / intermission duration
+- blackout / mimic / security-alarm tuning
+- shop prices / level requirements
+- XP thresholds
 - late-join participation rules
+- active-roster payout rules
+- map scope
 
-Sprint 4 is a wording / readability / release-hardening pass, not a systems pass.
+Sprint 5 is a retention/distribution pass, not a systems rebalance.
 
-## Locked copy contract
+## Locked implementation contract
 
-### 1) Persistent vs current-shift money
-Use these terms exactly on player-facing launch surfaces:
-- **`Saved Cash`** = persistent profile balance
-- **`Shift Cash`** = current-round earnings before payout
+### 1) Daily First Shift Bonus
+- Feature name: **`Daily First Shift Bonus`**
+- Amount: **`+$25 Saved Cash`**
+- Award timing: evaluate at the normal round-end payout moment after the base round payout is calculated
+- Eligibility:
+  - player was in the round-start roster
+  - player is still present at payout time
+  - player has not already claimed the bonus for the current UTC reset day
+- Reset rule:
+  - use UTC only
+  - reset key format: **`YYYY-MM-DD`**
+  - reset time: **00:00 UTC**
+- Outcome rule:
+  - can award on success or failure
+  - not part of `Shift Cash`
+  - grants no XP
+  - does not modify payout formulas
+- Results copy when awarded:
+  - **`Daily First Shift Bonus: +$25 Saved Cash`**
+- If not awarded because it was already claimed today:
+  - show no placeholder line
 
-Rules:
-- Remove standalone **`Banked`** from launch-facing HUD, tutorial, late-join, and results surfaces.
-- Use plain `Cash` only on surfaces that are clearly persistent-only already, such as shop prices or shop totals.
-- Any surface that compares current-round earnings against the persistent balance must spell out **`Saved Cash`**.
+### 2) Launch badges
+- Use Roblox badges.
+- No badge grants currency, XP, or power.
+- Locked badge list:
+  - `first_shift` / `First Shift` = finish 1 shift and reach round-end payout
+  - `shift_cleared` / `Store Closed` = clear 1 shift before timeout
+  - `three_am_regular` / `3AM Regular` = claim the daily bonus on 3 different UTC days
+- Award once only per account.
+- Evaluate badge grants after the daily-bonus persistence write for that round.
+- Results/badge copy format:
+  - **`Badge unlocked: <BadgeName>`**
+- If multiple badges unlock in one round, display them in this order:
+  1. `First Shift`
+  2. `Store Closed`
+  3. `3AM Regular`
 
-### 2) HUD wording requirements
-#### Persistent balance line
-- Use: `Saved Cash: $%d`
-- Do not use: `Saved cash`, `Cash` alone, or `Banked`
+### 3) Results payload contract
+Engineering may choose the internal profile field names, but the data sent to the existing results/profile UI should make these values directly available:
+- `outcome`
+- `shiftCash`
+- `baseSavedCashAdded`
+- `dailyFirstShiftBonusCash`
+- `totalSavedCashAdded`
+- `xpEarned`
+- `levelAfter`
+- `cashTotal`
+- `xpTotal`
+- `unlockedBadges` as an ordered array of `{ badgeId, badgeName }`
 
-#### Active-shift earnings block
-Use this order and meaning:
-1. `Shift Cash: $%d`
-2. `If you clear: +$%d | If time runs out: +$%d`
-3. optional `False task penalty: -$%d`
+Keep this on the existing profile/results replication path if possible. Do not build a second results system.
 
-Do not show bare `Clear: $%d | Timeout: $%d`.
+### 4) Round-end Invite Friends CTA
+- Surface: existing results screen only
+- Show for round-start roster players still present at results
+- Show on both success and failure
+- Copy:
+  - success helper line: **`Good shift. Bring a crew back in.`**
+  - failure helper line: **`Bring backup for the next shift.`**
+  - button: **`Invite Friends`**
+  - fallback helper line: **`Invites aren’t available here. Use the Roblox game page or platform share menu.`**
+- Graceful fallback:
+  - if the native invite/share prompt is unavailable, blocked, or errors, keep the results UI usable and switch to the fallback helper copy
+  - do not throw a blocking error state
+- No referral rewards, no badge tie-in, no extra economy reward
 
-#### Round-end HUD summary
-Use this order and meaning:
-1. `Shift Cash: $%d`
-2. success branch: `Clear bonus: +$35`
-3. failure branch: `Timeout pay (60%): $%d`
-4. optional `False task penalty: -$%d`
-5. `Saved Cash added: +$%d`
+### 5) Analytics + local debug logging
+Use the existing analytics path. The current local debug print contract already exists:
+- **`[analytics] <event_name> <json>`**
 
-The math must stay identical to the current Sprint 1–3 behavior.
+Do not create a separate Sprint 5 logging system. Route new events through `AnalyticsService.emit(...)` so proof can continue to use the recent-events buffer and standard console output.
 
-### 3) Tutorial / alert wording requirements
-- Round-start hint: `Clock in. Follow the glow to your first task.`
-- Goal tutorial: `Finish the task list before the timer hits zero.`
-- Earnings tutorial: `Tasks add Shift Cash. Register unlocks last.`
-- Late-join pinned alert remains: `Shift in progress. Wait for the next one.`
-- `Close Register` unlock copy may stay close to the existing wording, but it must still read clearly after the `Shift Cash` rename.
+Locked Sprint 5 events and minimum payload fields:
 
-### 4) Late-join support copy requirements
-The late-join state must make two facts obvious without outside explanation:
-- this shift started without the player
-- the player joins the next round instead of earning from the active one
+1. `daily_first_shift_bonus_awarded`
+   - `user_id`, `round_id`, `round_outcome`, `shift_cash`, `base_saved_cash_added`, `bonus_cash`, `total_saved_cash_added`, `reset_key_utc`
+2. `daily_first_shift_bonus_skipped`
+   - `user_id`, `round_id`, `round_outcome`, `shift_cash`, `base_saved_cash_added`, `reset_key_utc`, `skip_reason`
+   - allowed `skip_reason`: `already_claimed_today`, `feature_disabled`
+3. `launch_badge_awarded`
+   - `user_id`, `round_id`, `round_outcome`, `badge_id`, `badge_name`, `award_source`
+   - locked `award_source`: `round_end_results`
+4. `launch_badge_award_failed`
+   - `user_id`, `round_id`, `round_outcome`, `badge_id`, `failure_reason`
+   - allowed `failure_reason`: `service_error`, `feature_disabled`
+5. `round_end_share_cta_shown`
+   - `user_id`, `round_id`, `round_outcome`, `cta_variant`, `invite_supported`
+6. `round_end_share_cta_pressed`
+   - `user_id`, `round_id`, `round_outcome`, `cta_variant`, `invite_supported`
+7. `round_end_share_cta_fallback_shown`
+   - `user_id`, `round_id`, `round_outcome`, `fallback_reason`
+   - allowed `fallback_reason`: `platform_unsupported`, `policy_blocked`, `prompt_error`
 
-Acceptable implementation on the current HUD:
-- state: `Waiting for next shift`
-- pinned alert: `Shift in progress. Wait for the next one.`
-- supporting objective / earnings text that plainly says the current shift started without the player and the next shift is where they can earn payout
+Keep older Sprint 1–4 event names unchanged.
 
-Do not let the late joiner look like an active participant.
+### 6) Config-first tuning hooks
+Put Sprint 5 values behind one local config surface. Do not scatter them across unrelated modules.
 
-### 5) Results-screen wording requirements
-Keep the existing results card flow, but make the money landing explicit.
+Locked tunables:
+- `soft_launch_enabled = true`
+- `daily_first_shift_bonus_enabled = true`
+- `daily_first_shift_bonus_cash = 25`
+- `daily_first_shift_bonus_reset_hour_utc = 0`
+- `launch_badges_enabled = true`
+- `three_am_regular_days_required = 3`
+- `share_cta_enabled = true`
+- `share_cta_show_on_success = true`
+- `share_cta_show_on_failure = true`
+- `analytics_debug_logging_enabled = true` in Studio/local proof and optional `false` in live if the normal analytics emit path still remains intact
 
-Use this body line order:
-1. `Saved Cash added: +$%d`
-2. `XP earned: +%d`
-3. `Current Level: %d`
-4. `Totals — Saved Cash $%d • XP %d`
+Out of scope:
+- remote config
+- live tuning dashboard
+- A/B splits
+- extra badge definitions beyond the three locked ones
 
-Results titles may remain:
-- `Results — Shift Cleared`
-- `Results — Shift Failed`
-
-Do not add a new results system or extra modal explanation layer.
-
-## Layout / hierarchy rules
-Allowed Sprint 4 layout work:
-- auto-size/wrap existing labels
-- increase existing results-card height
-- allow vertical scrolling if that is the lowest-risk fix for narrow phones
-- reorder existing payout lines to improve readability
+### 7) UI scope rules
+Allowed Sprint 5 UI work:
+- extend the existing results surface with optional daily-bonus / badge lines and the share CTA
+- extend existing text/copy tables
+- add the minimum low-risk button/state handling required for native invite prompt + fallback
 
 Not allowed:
-- new tabs
-- new popups
-- new tutorial panels
-- new HUD modules
-- decorative layout churn that risks the proven Sprint 1–3 baseline
+- new tabbed social UI
+- new modal badge showcase system
+- pre-round invite flow
+- in-round CTA spam
+- separate progression/badge screen
 
-Priority on narrow phones:
-1. state
-2. timer
-3. `Saved Cash`
-4. current alert
-5. objectives
-6. payout/readout block
+## Copy contract
 
-Clipped launch-facing text is a blocker.
+### Store / update copy
+- Summary line:
+  - **`Soft launch: claim a Daily First Shift Bonus, unlock launch badges, and invite friends from the results screen.`**
+- Release-note bullets:
+  - **`Daily First Shift Bonus: your first completed shift each UTC day adds +$25 Saved Cash.`**
+  - **`Launch badges: First Shift, Store Closed, and 3AM Regular.`**
+  - **`Round-end Invite Friends button with fallback messaging on unsupported platforms.`**
 
-## Live proof expectations for engineering
-Before calling implementation done, capture both command-backed regression proof and actual client-visible readability proof.
+### Results / badge / share copy
+- **`Daily First Shift Bonus: +$25 Saved Cash`**
+- **`Badge unlocked: <BadgeName>`**
+- success helper: **`Good shift. Bring a crew back in.`**
+- failure helper: **`Bring backup for the next shift.`**
+- fallback helper: **`Invites aren’t available here. Use the Roblox game page or platform share menu.`**
+- button: **`Invite Friends`**
 
-### Regression proof
-Need command/results evidence for:
+## Proof expectations for engineering
+Before calling Sprint 5 implementation done, capture honest proof for:
 - `bash scripts/check.sh`
 - `bash scripts/build.sh`
-- structural smoke
-- payout still landing in persistent `Cash`
-- late-join exclusion still working
-- blackout / false task / security alarm sanity after the wording pass
-- shop still spending persistent `Cash`
+- daily bonus awarded once, then skipped on same UTC day
+- daily bonus reset-key behavior across a forced/reset simulated next UTC day or equivalent deterministic proof
+- `First Shift`, `Store Closed`, and `3AM Regular` badge award criteria
+- badge double-award prevention
+- results surface showing daily bonus + badge copy without breaking Sprint 4 wording
+- share CTA shown on results
+- share CTA fallback path when native invite/share is unavailable or forced to fail
+- analytics console output / recent-event proof for the seven Sprint 5 events above
+- no regression to late-join exclusion, payout landing, and shop persistent-cash behavior
 
-### Client-visible readability proof
-Need at least one actual client-visible artifact for each of these surfaces:
-- first playable HUD with the new `Shift Cash` / `Saved Cash` wording
-- late-join wait state
-- results screen after a shift
-
-Headless or layout-probe evidence can support the case, but it does **not** replace actual client-visible proof for Sprint 4 signoff.
-If a proof item cannot be captured in-session, leave it explicitly unverified instead of implying it passed.
-
-## Low-risk Rojo warning cleanup
-If safe, clean up the non-blocking warning in:
-- `project/src/ReplicatedStorage/Remotes.model.json`
-
-Allowed cleanup:
-- remove the ignored top-level `Name` field only
-
-Not allowed in Sprint 4:
-- child remote renames
-- folder lookup changes
-- broader Rojo structure refactors
-
-If any risk appears, defer the cleanup and document why.
-
-## Acceptance criteria
-- No player-facing `Banked` remains on the Sprint 4 launch surfaces.
-- A fresh player can tell the difference between current-round earnings and persistent balance without explanation.
-- Results wording makes it obvious what amount was added to `Saved Cash`.
-- Late join clearly reads as wait-for-next-shift, not active participation.
-- HUD / results text stays readable on phone-width layouts.
-- No Sprint 1–3 gameplay, progression, or payout rule regresses.
-- Any remaining unverified item is called out honestly in runtime evidence / QA notes.
+If a proof item cannot be captured, leave it explicitly unverified instead of implying it passed.

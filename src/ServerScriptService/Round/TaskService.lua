@@ -512,6 +512,12 @@ function TaskService:_completeRealTask(node, player, now)
 		math.max(0, (self.round.remainingByTask[node.taskId] or 0) - 1)
 	self.round.totalCompleted += 1
 	self.round.basePay += taskConfig.reward
+	local playerTaskCounts = self.round.playerTaskCountsByUserId[player.UserId]
+	if playerTaskCounts == nil then
+		playerTaskCounts = {}
+		self.round.playerTaskCountsByUserId[player.UserId] = playerTaskCounts
+	end
+	playerTaskCounts[node.taskId] = (playerTaskCounts[node.taskId] or 0) + 1
 
 	if self.onTaskCompleted ~= nil then
 		self.onTaskCompleted(player, node.taskId, now)
@@ -638,6 +644,11 @@ function TaskService:startRound(activePlayers, quotas)
 		activePlayerLookup[player.UserId] = true
 	end
 
+	local playerTaskCountsByUserId = {}
+	for _, player in ipairs(activePlayers) do
+		playerTaskCountsByUserId[player.UserId] = {}
+	end
+
 	self.round = {
 		activePlayers = activePlayers,
 		activePlayerLookup = activePlayerLookup,
@@ -646,6 +657,7 @@ function TaskService:startRound(activePlayers, quotas)
 		totalCompleted = 0,
 		basePay = 0,
 		personalPenalties = {},
+		playerTaskCountsByUserId = playerTaskCountsByUserId,
 		registerUnlocked = false,
 		registerCompleted = false,
 		registerAnnounced = false,
@@ -841,6 +853,18 @@ function TaskService:getPersonalPenalties()
 		return {}
 	end
 	return shallowCopy(self.round.personalPenalties)
+end
+
+function TaskService:getPlayerTaskCountsByUserId()
+	if self.round == nil then
+		return {}
+	end
+
+	local snapshot = {}
+	for userId, taskCounts in pairs(self.round.playerTaskCountsByUserId) do
+		snapshot[userId] = shallowCopy(taskCounts)
+	end
+	return snapshot
 end
 
 function TaskService:getBasePay()

@@ -17,10 +17,13 @@ assertChild(shared, "Types")
 local remotes = assertChild(ReplicatedStorage, "Remotes")
 assertChild(remotes, "RoundStateChanged")
 assertChild(remotes, "AlertRaised")
+assertChild(remotes, "RoundEndShareAction")
 
 local roundFolder = assertChild(ServerScriptService, "Round")
 assertChild(roundFolder, "Config")
 assertChild(roundFolder, "ShiftService")
+assertChild(roundFolder, "RoundResultsService")
+assertChild(roundFolder, "SoftLaunchService")
 
 local dataFolder = assertChild(ServerScriptService, "Data")
 assertChild(dataFolder, "ProfileStore")

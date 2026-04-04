@@ -20,6 +20,10 @@
     {
       "ClassName": "RemoteFunction",
       "Name": "ShopAction"
+    },
+    {
+      "ClassName": "RemoteEvent",
+      "Name": "RoundEndShareAction"
     }
   ]
 }

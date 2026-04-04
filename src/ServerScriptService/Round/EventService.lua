@@ -60,6 +60,13 @@ function EventService:isSecurityAlarmActive()
 	return self.round ~= nil and self.round.securityAlarmActive == true
 end
 
+function EventService:getSecurityAlarmResolvedByUserId()
+	if self.round == nil then
+		return nil
+	end
+	return self.round.securityAlarmResolvedByUserId
+end
+
 function EventService:handleSecurityAlarmTriggered(player, now)
 	if self.round == nil or not self.round.securityAlarmActive then
 		return false

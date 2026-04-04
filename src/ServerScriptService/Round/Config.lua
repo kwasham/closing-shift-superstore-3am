@@ -39,6 +39,18 @@ local Config = {
 		Constants.TaskId.CheckFreezer,
 		Constants.TaskId.CloseRegister,
 	},
+	softLaunch = {
+		soft_launch_enabled = true,
+		daily_first_shift_bonus_enabled = true,
+		daily_first_shift_bonus_cash = 25,
+		daily_first_shift_bonus_reset_hour_utc = 0,
+		launch_badges_enabled = true,
+		three_am_regular_days_required = 3,
+		share_cta_enabled = true,
+		share_cta_show_on_success = true,
+		share_cta_show_on_failure = true,
+		analytics_debug_logging_enabled = true,
+	},
 }
 
 function Config.getQuotaTemplate(playerCount)

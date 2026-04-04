@@ -1149,3 +1149,182 @@ Environment/setup:
   - `Saved_Cash.png`
   - `Late_Join.png`
   - `Phone.png`
+
+## 2026-04-04 00:29 CDT — Sprint 5 focused unblock pass
+
+### Scope
+- Re-ran the locked repo checks/build for the Sprint 5 proof pass.
+- Tightened `project/scripts/sprint5_proof.lua` so the focused harness now also emits the missing `round_end_share_cta_pressed` analytics event when the Roblox runtime path is available.
+- Re-ran the focused Sprint 5 Roblox proof command after clearing a stale Studio process and build lock.
+- Outcome: the remaining blocker is host-level Roblox Studio authentication/startup, not a reproduced Sprint 5 code assertion failure.
+
+### Files changed
+- `project/scripts/sprint5_proof.lua`
+  - Added the `cta_pressed` share telemetry step and corresponding proof output so the harness can cover the full Sprint 5 analytics event set when it runs.
+
+### Commands run
+#### `bash scripts/check.sh`
+- Result: Pass
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+#### `bash scripts/build.sh`
+- Result: Pass
+- Output:
+```text
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+```
+
+#### `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint5_proof.lua`
+- Result: Fail (runtime path blocked before the script could execute)
+- Output:
+```text
+thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: Timeout reached while waiting for Roblox Studio to come online', src/main.rs:75:9
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[ERROR run_in_roblox] receiving on a closed channel
+```
+
+#### Recovery commands used
+- `killall RobloxStudio`
+  - Result: attempted stale-process cleanup
+- `kill -9 8973 && sleep 2 && ps -p 8973 -o pid=,stat=,comm=`
+  - Result: stale Studio PID cleared; follow-up `ps` exited non-zero because the process no longer existed
+- `rm -f build/ClosingShift.rbxlx.lock && ls -la build`
+  - Result: stale build lock removed
+- `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua`
+  - Result: same host-level fail
+  - Output:
+```text
+thread '<unnamed>' panicked at 'called `Result::unwrap()` on an `Err` value: Timeout reached while waiting for Roblox Studio to come online', src/main.rs:75:9
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[ERROR run_in_roblox] receiving on a closed channel
+```
+- `latest=$(ls -t ~/Library/Logs/Roblox/*_Studio_*_last.log | head -n 1); echo "$latest"; grep -nE "Is Studio Configured User Id Present|NoCookieFound|showLoginPageWidgets|LoginDialog|Embedded Web Browser Navigation Url" "$latest"`
+  - Result: pinpointed the exact blocker in the latest Roblox Studio log
+  - Output:
+```text
+/Users/macmini/Library/Logs/Roblox/0.715.1.7151119_20260404T052943Z_Studio_b073f_last.log
+22:2026-04-04T05:29:43.349Z,0.349204,17d6c40,6,Warning [FLog::Output] Is Studio Configured User Id Present: false
+1021:2026-04-04T05:29:43.780Z,0.780357,17d6c40,6,Info [FLog::LoginTelemetry2] Exit stage 'AuthenticateOnStartup' with status 'false' and message 'NoCookieFound'
+1023:2026-04-04T05:29:43.813Z,0.813361,17d6c40,6,Info [FLog::PageWidgetsManager] showLoginPageWidgets
+1032:2026-04-04T05:29:43.988Z,0.988483,17d6c40,6 [FLog::StudioEmbeddedWebBrowser] Embedded Web Browser Navigation Url: apis.roblox.com/oauth/v1/authorize
+1033:2026-04-04T05:29:44.080Z,1.080511,17d6c40,6 [FLog::StudioEmbeddedWebBrowser] Embedded Web Browser Navigation Url: www.roblox.com/login
+1084:2026-04-04T05:29:44.228Z,1.228976,17d6c40,6 [FLog::StudioEmbeddedWebBrowser] Embedded Web Browser Navigation Url: www.roblox.com/login
+1136:2026-04-04T05:29:44.672Z,1.672215,17d6c40,6,Warning [FLog::DialogTelemetry] Dialog shown without objectName, falling back to className: RBX::Studio::LoginDialog
+```
+
+### Proof status from this pass
+- Daily First Shift Bonus awarded path: blocked by Studio auth/login gate before the focused proof harness could start
+- Daily First Shift Bonus skipped path on the same UTC day: blocked by Studio auth/login gate before the focused proof harness could start
+- Launch badge award path(s): blocked by Studio auth/login gate before the focused proof harness could start
+- Share CTA shown path: blocked by Studio auth/login gate before the focused proof harness could start
+- Share CTA fallback path: blocked by Studio auth/login gate before the focused proof harness could start
+- Persistence proof for daily bonus/badge state: blocked by Studio auth/login gate before the focused proof harness could start
+- Live `[analytics]` log output for the Sprint 5 event set: blocked by Studio auth/login gate before the focused proof harness could start
+
+### Exact remaining blocker
+- On this host, Roblox Studio is not authenticated for the automation path.
+- The latest Studio log shows:
+  - `Is Studio Configured User Id Present: false`
+  - `AuthenticateOnStartup ... NoCookieFound`
+  - `showLoginPageWidgets`
+  - `RBX::Studio::LoginDialog`
+- Because Studio stops at the login flow, `run-in-roblox` never reaches the state where it can inject and execute `scripts/sprint5_proof.lua`.
+
+### QA status from this pass
+- QA is **not yet unblocked on this host**.
+- The focused Sprint 5 proof harness is slightly stronger now (`cta_pressed` included), but actual proof capture still requires a Roblox Studio session that is already signed in or otherwise operator-unblocked for `run-in-roblox`.
+
+## 2026-04-04 01:41 CDT — Sprint 5 proof-path isolation hotfix + rerun
+
+### Scope
+- Reproduced the remaining Sprint 5 non-zero proof failure.
+- Isolated it to a proof-harness snapshot bug, not a Sprint 5 gameplay/service bug.
+- Patched only `project/scripts/sprint5_proof.lua`.
+- Re-ran the locked check/build/proof command once.
+
+### Diagnosis
+- The failing assertion was `day 1 reset key mismatch` inside `scripts/sprint5_proof.lua`.
+- Root cause: the harness returned `ProfileStore.getProfile(player)`, which is the live mutable session table.
+- After day 1 finalized, later day 2/day 3 proof steps mutated the same profile table, so the stored `profileDay1` reference no longer represented the day 1 snapshot by the time the assertion ran.
+- This was a proof-path issue only; the emitted analytics already showed the correct day 1 reset key `2026-04-04` before the assertion failed.
+
+### Files changed
+- `project/scripts/sprint5_proof.lua`
+
+### Commands run
+#### `bash scripts/check.sh && bash scripts/build.sh && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint5_proof.lua`
+- First result: Fail (proof assertion)
+- First output excerpt:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+[analytics] daily_first_shift_bonus_awarded ... "reset_key_utc":"2026-04-04" ...
+...
+user_run_in_roblox-50312.rbxmx.run-in-roblox-plugin.Main:193: day 1 reset key mismatch
+(Command exited with code 1)
+```
+- Isolated failure point:
+  - harness assertion compared a stale label (`profileDay1`) against a table that had been mutated by later proof rounds
+
+#### `bash scripts/check.sh && bash scripts/build.sh && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint5_proof.lua`
+- Second result: Pass
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+[analytics] profile_loaded {"profile_version":1,"ts_unix":1775284906,"server_job_id":"studio","cash":0,"owned_cosmetic_count":2,"level":1,"xp":0,"user_id":9501}
+[analytics] daily_first_shift_bonus_awarded {"round_outcome":"success","base_saved_cash_added":165,"server_job_id":"studio","user_id":9501,"bonus_cash":25,"total_saved_cash_added":190,"shift_cash":130,"ts_unix":1775284906,"reset_key_utc":"2026-04-04","round_id":"s5-day1-success"}
+[analytics] launch_badge_awarded {"ts_unix":1775284906,"round_id":"s5-day1-success","badge_id":"first_shift","round_outcome":"success","badge_name":"First Shift","award_source":"round_end_results","server_job_id":"studio","user_id":9501}
+[analytics] launch_badge_awarded {"ts_unix":1775284906,"round_id":"s5-day1-success","badge_id":"shift_cleared","round_outcome":"success","badge_name":"Store Closed","award_source":"round_end_results","server_job_id":"studio","user_id":9501}
+[analytics] daily_first_shift_bonus_skipped {"round_outcome":"success","skip_reason":"already_claimed_today","base_saved_cash_added":165,"server_job_id":"studio","user_id":9501,"round_id":"s5-day1-repeat","shift_cash":130,"reset_key_utc":"2026-04-04","ts_unix":1775284906}
+[analytics] daily_first_shift_bonus_awarded {"round_outcome":"failure","base_saved_cash_added":8,"server_job_id":"studio","user_id":9501,"bonus_cash":25,"total_saved_cash_added":33,"shift_cash":14,"ts_unix":1775284906,"reset_key_utc":"2026-04-05","round_id":"s5-day2-failure"}
+[analytics] daily_first_shift_bonus_awarded {"round_outcome":"failure","base_saved_cash_added":8,"server_job_id":"studio","user_id":9501,"bonus_cash":25,"total_saved_cash_added":33,"shift_cash":14,"ts_unix":1775284906,"reset_key_utc":"2026-04-06","round_id":"s5-day3-failure"}
+[analytics] launch_badge_awarded {"ts_unix":1775284906,"round_id":"s5-day3-failure","badge_id":"three_am_regular","round_outcome":"failure","badge_name":"3AM Regular","award_source":"round_end_results","server_job_id":"studio","user_id":9501}
+[analytics] round_end_share_cta_shown {"cta_variant":"success","round_id":"s5-day1-success","ts_unix":1775284906,"round_outcome":"success","invite_supported":true,"server_job_id":"studio","user_id":9501}
+[analytics] round_end_share_cta_pressed {"cta_variant":"success","round_id":"s5-day1-success","ts_unix":1775284906,"round_outcome":"success","invite_supported":true,"server_job_id":"studio","user_id":9501}
+[analytics] round_end_share_cta_shown {"cta_variant":"failure","round_id":"s5-day2-failure","ts_unix":1775284906,"round_outcome":"failure","invite_supported":false,"server_job_id":"studio","user_id":9501}
+[analytics] round_end_share_cta_fallback_shown {"round_id":"s5-day2-failure","fallback_reason":"platform_unsupported","ts_unix":1775284906,"round_outcome":"failure","server_job_id":"studio","user_id":9501}
+S5_PROOF daily_bonus_award base=165 bonus=25 total=190 reset=2026-04-04
+S5_PROOF daily_bonus_skip_same_day base=165 bonus=0 total=165 skip_reason=already_claimed_today
+S5_PROOF launch_badges first_shift=true shift_cleared=true three_am_regular=true awards=9501:first_shift,9501:shift_cleared,9501:three_am_regular
+S5_PROOF share_cta shown=true pressed=true variant=failure invite_supported=true
+S5_PROOF share_cta_fallback shown=true reason=platform_unsupported
+S5_PROOF persistence daily_reset=2026-04-06 badge_count=3 shifts_played=4 shifts_cleared=2 cash=421 xp=100
+S5_PROOF store_sync ok=true cash=421 level=4
+S5_PROOF analytics daily_awarded=true daily_skipped=true badge_awarded=true share_shown=true share_pressed=true share_fallback=true names=profile_loaded,daily_first_shift_bonus_awarded,launch_badge_awarded,launch_badge_awarded,daily_first_shift_bonus_skipped,daily_first_shift_bonus_awarded,daily_first_shift_bonus_awarded,launch_badge_awarded,round_end_share_cta_shown,round_end_share_cta_pressed,round_end_share_cta_shown,round_end_share_cta_fallback_shown
+S5_PROOF_OK
+```
+
+### What was fixed
+- The proof harness now snapshots round-end validation state from `ProfileStore.getPublicProfile(player)` instead of holding a mutable live profile table across multiple simulated UTC days.
+- Assertions and proof printouts for reset-key, badge, and persistence checks now read from copied public snapshots.
+
+### Sprint 5 proof results now captured
+- Daily First Shift Bonus awarded on day 1: pass
+- Daily First Shift Bonus skipped on same UTC day: pass
+- UTC reset behavior across simulated next days: pass (`2026-04-04` → `2026-04-05` → `2026-04-06`)
+- Launch badges `First Shift`, `Store Closed`, `3AM Regular`: pass
+- Badge double-award prevention within the proof sequence: pass
+- Share CTA shown analytics: pass
+- Share CTA pressed analytics: pass
+- Share CTA fallback analytics: pass
+- Store/profile sync after awards: pass
+- Overall proof harness exit: pass (`S5_PROOF_OK`)
+
+### QA status from this rerun
+- QA is **unblocked** for the Sprint 5 proof gate from this harness path.

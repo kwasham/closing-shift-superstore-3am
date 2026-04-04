@@ -51,12 +51,13 @@ To reduce merge conflicts:
 
 ## Current status
 ### Ready for delegation
-- Sprint 5 / post-launch planning
+- engineer implementation pass using `project/prompts/ENGINEER_SPRINT5_SOFT_LAUNCH_IMPLEMENTATION.md` after design lands
+- content pass using `project/prompts/CONTENT_SPRINT5_COPY_BADGES_AND_SHARE.md` after design lands
 - follow-up cleanup for remaining non-blocking release-surface/doc contradictions
-- broader release operations follow-up outside the Sprint 4 gate
 
 ### In progress
-- no Sprint 4 blockers
+- Sprint 5 is active as **Soft Launch Retention and Distribution**
+- awaiting Sprint 5 design handoff from `project/prompts/DESIGN_SPRINT5_SOFT_LAUNCH_SPEC.md`
 
 ### Done
 - OpenClaw multi-agent pipeline scaffolded
@@ -65,16 +66,12 @@ To reduce merge conflicts:
 - Sprint 1 is **Ready**
 - Sprint 2 is **Ready**
 - Sprint 3 is **Ready**
-- Sprint 4 design handoff completed for launch-facing wording cleanup, first-10-minute friction rules, truthful publish-surface contract, launch watchlist hardening, and low-risk `Remotes.model.json` cleanup boundaries
-- Sprint 4 engineering pass completed for `Shift Cash` / `Saved Cash` wording rollout, late-join support copy clarification, phone-width HUD/results hardening, safe `Remotes.model.json` warning cleanup, and smoke coverage update for launch-facing UI surfaces
-- Sprint 4 content pass completed for release-facing art/content guidance, launch-surface wording alignment, store-page brief, and release notes for the current build
-- Sprint 4 runtime/client evidence pass appended to `project/docs/RUNTIME-EVIDENCE.md` and fixed the missing `ProfileChanged` / `ShopAction` remotes for `Sprint3UI`
-- Sprint 4 final client-visible screenshot evidence was accepted by QA and Sprint 4 is now **Ready**
+- Sprint 4 is **Ready**
 
 ## Risks
+- Sprint 5 must stay scoped to soft launch retention/distribution and not expand into large new systems
 - workers may collide if they all edit `SPRINT.md`; keep ownership with `main`
-- a release-surface contradiction remains in `project/docs/GDD.md` (`upgrades and cosmetics`) versus the locked cosmetics/progression-only release framing
-- non-blocking release polish and operations follow-up remain, but no Sprint 4 gate blocker remains
+- the release-surface wording contradiction in `project/docs/GDD.md` remains a non-blocking follow-up unless the Sprint 5 design chooses to resolve it directly
 
 ## Next producer action
-Start Sprint 5 / post-launch planning from a Ready Sprint 4 baseline and keep the remaining wording/doc contradiction as non-blocking follow-up work.
+Complete Sprint 5 design step 1, then dispatch engineering and content from the locked Sprint 5 design contract.

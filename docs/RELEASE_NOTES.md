@@ -1,34 +1,30 @@
 # Release notes
 
-## Milestone 4 — Launch Candidate Hardening
+## Sprint 5 — Soft Launch Retention + Distribution
 
-This build packages **Closing Shift: Superstore 3AM** as a clearer, more truthful launch-candidate slice of the current game.
+This build keeps the current one-store experience intact and adds a small soft-launch layer focused on retention and distribution surfaces players can actually see at round end.
 
 ### What this build includes
 - 1–6 player co-op closing shifts in one supermarket
 - core store tasks like restocking, spill cleanup, trash runs, carts, freezer checks, and closing the register
 - disruption events: blackout, false tasks, and security alarms
-- post-shift payout into **Saved Cash** plus XP progression
-- cosmetic unlocks and purchases for nameplates and lanyards
-
-### What changed in this update
-- clearer **Shift Cash** vs **Saved Cash** wording
-- clearer late-join and results language
-- launch-facing UI hardened for phone-sized readability
-- store-page, thumbnail, and release-surface messaging aligned to the real build
-- low-risk launch-candidate cleanup instead of new feature expansion
-
-### What players should expect
-- short 8–10 minute rounds
-- co-op task pressure with mild horror tension
-- darkness, sudden alarms, and paranormal fake-out moments
-- cosmetics and progression for replay value
-- no combat focus, no gore focus, and no extra-map promise in this build
+- post-shift payout into `Saved Cash` plus XP progression
+- Sprint 5 soft-launch surfaces: `Daily First Shift Bonus`, three launch badges, and a round-end `Invite Friends` button with fallback messaging
 
 ### Player-facing update summary
-**Close the store. Survive the shift.**
+**Soft launch: claim a Daily First Shift Bonus, unlock launch badges, and invite friends from the results screen.**
 
-Sprint 4 is a clarity and hardening update for the current one-store build. The goal is to make the shift easier to read, make payout/results language easier to understand, and make the launch-facing package match the real game without overpromising.
+### What changed in this update
+- `Daily First Shift Bonus: your first completed shift each UTC day adds +$25 Saved Cash.`
+- `Launch badges: First Shift, Store Closed, and 3AM Regular.`
+- `Round-end Invite Friends button with fallback messaging on unsupported platforms.`
+
+### What players should expect
+- the same short 8–10 minute supermarket closing shifts
+- a once-per-UTC-day bonus added at round-end payout when eligible
+- badge unlock lines shown on the existing results surface
+- a simple round-end invite action on success or failure, with fallback text where invites are unavailable
+- no extra-map promise, no combat expansion, no referral rewards, and no new social hub in this build
 
 ### Recommended release blurb
-Closing Shift: Superstore 3AM now has a cleaner launch-candidate presentation for the current build: clearer `Shift Cash` and `Saved Cash` wording, clearer late-join/results readability, and truthful store-page messaging for the one-store blackout/false-task/security-alarm experience.
+Closing Shift: Superstore 3AM soft launch adds a `Daily First Shift Bonus`, three launch badges, and a round-end `Invite Friends` button with fallback messaging, while keeping the same one-store co-op horror job sim build players can already open today.

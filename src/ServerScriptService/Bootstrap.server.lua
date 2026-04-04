@@ -1,9 +1,21 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Workspace = game:GetService("Workspace")
 
 local roundFolder = ServerScriptService:WaitForChild("Round")
+local dataFolder = ServerScriptService:WaitForChild("Data")
+
+local ProfileStore = require(dataFolder:WaitForChild("ProfileStore"))
+local ShopService = require(roundFolder:WaitForChild("ShopService"))
 local shiftService = require(roundFolder:WaitForChild("ShiftService"))
+
+local remotes = ReplicatedStorage:WaitForChild("Remotes")
+local shopAction = remotes:WaitForChild("ShopAction")
+local roundEndShareAction = remotes:WaitForChild("RoundEndShareAction")
+
+local shopService = ShopService.new(ProfileStore)
+local shiftController = shiftService.start()
 
 local function snapCharacterToFallbackSpawn(character: Model)
 	task.defer(function()
@@ -37,7 +49,13 @@ local function hookPlayer(player: Player)
 	end
 end
 
-shiftService.start()
+shopAction.OnServerInvoke = function(player, request)
+	return shopService:handleRequest(player, request, shiftController:getCurrentState())
+end
+
+roundEndShareAction.OnServerEvent:Connect(function(player, request)
+	shiftController:handleShareAction(player, request)
+end)
 
 for _, player in ipairs(Players:GetPlayers()) do
 	hookPlayer(player)

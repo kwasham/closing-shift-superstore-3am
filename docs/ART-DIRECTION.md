@@ -31,6 +31,38 @@ Do not imply:
 - deep inventory systems or gameplay upgrades
 - live-event spectacle the build does not contain
 
+## Sprint 5 soft-launch surface lock
+Sprint 5 art and capture guidance must sell the same one-store build plus the new soft-launch retention/distribution layer only:
+- `Daily First Shift Bonus`
+- three launch badges: `First Shift`, `Store Closed`, `3AM Regular`
+- round-end `Invite Friends` CTA on the existing results screen
+
+Do show:
+- existing supermarket work fantasy first
+- results-screen readability for the bonus line, badge unlock line, and `Invite Friends` button
+- the same fluorescent late-night retail mood already established in Sprint 4
+- fallback-safe share messaging as part of the same results surface, not a new social screen
+
+Do not imply:
+- referral rewards, invite rewards, or share-to-earn systems
+- party lobbies, guilds, friend lists, or a persistent social hub
+- a deep badge collection screen or separate progression track
+- broader feature expansion beyond the current soft-launch build
+
+## Soft-launch capture priorities
+1. **Results screen proof first**
+   - Preferred capture shows the real results card with readable lines such as `Daily First Shift Bonus: +$25 Saved Cash`, one or more `Badge unlocked:` lines, and the `Invite Friends` button.
+   - Keep text large enough to read on mobile without zooming.
+2. **Truthful update/store support art second**
+   - If an update image or store-support image references Sprint 5, pair it with the existing supermarket setting and real UI language.
+   - Overlay text, if used at all, should stay under 4 words and match the real feature set: `Daily Bonus`, `Launch Badges`, or `Invite Friends`.
+3. **Badge readability over badge spectacle**
+   - Use the badge names cleanly and directly.
+   - Do not frame the badges as rare loot, paid rewards, or a major meta-progression system.
+4. **Share CTA readability over social hype**
+   - The button should read like a simple round-end action.
+   - Avoid art direction that makes the share flow look like chat, party matchmaking, or a platform-exclusive feature.
+
 ## Store-page visual priorities
 1. **Readable supermarket fantasy in 3 seconds**
    - aisles, checkout, carts, freezer, spill cleanup, stock boxes

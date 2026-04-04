@@ -1,6 +1,17 @@
 local HttpService = game:GetService("HttpService")
+local ServerScriptService = game:GetService("ServerScriptService")
 
 local AnalyticsService = {}
+
+local function isDebugLoggingEnabled()
+	local ok, config = pcall(function()
+		return require(ServerScriptService:WaitForChild("Round"):WaitForChild("Config"))
+	end)
+	if not ok or type(config) ~= "table" or type(config.softLaunch) ~= "table" then
+		return true
+	end
+	return config.softLaunch.analytics_debug_logging_enabled ~= false
+end
 
 local recentEvents = {}
 local maxRecentEvents = 256
@@ -26,7 +37,9 @@ local function withCommonFields(eventName, payload)
 	end
 
 	pushRecent(eventName, merged)
-	print(string.format("[analytics] %s %s", eventName, HttpService:JSONEncode(merged)))
+	if isDebugLoggingEnabled() then
+		print(string.format("[analytics] %s %s", eventName, HttpService:JSONEncode(merged)))
+	end
 	return merged
 end
 

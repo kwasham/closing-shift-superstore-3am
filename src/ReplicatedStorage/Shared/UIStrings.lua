@@ -129,4 +129,19 @@ UIStrings.AmbientAlerts = {
 	Ended = "Shift payout in progress.",
 }
 
+UIStrings.SoftLaunch = {
+	Summary = "Soft launch: claim a Daily First Shift Bonus, unlock launch badges, and invite friends from the results screen.",
+	ReleaseNotes = {
+		"Daily First Shift Bonus: your first completed shift each UTC day adds +$25 Saved Cash.",
+		"Launch badges: First Shift, Store Closed, and 3AM Regular.",
+		"Round-end Invite Friends button with fallback messaging on unsupported platforms.",
+	},
+	DailyFirstShiftBonusLine = "Daily First Shift Bonus: +$25 Saved Cash",
+	BadgeUnlockedPrefix = "Badge unlocked: ",
+	ShareSuccessHelper = "Good shift. Bring a crew back in.",
+	ShareFailureHelper = "Bring backup for the next shift.",
+	ShareFallbackHelper = "Invites aren’t available here. Use the Roblox game page or platform share menu.",
+	ShareButton = "Invite Friends",
+}
+
 return UIStrings

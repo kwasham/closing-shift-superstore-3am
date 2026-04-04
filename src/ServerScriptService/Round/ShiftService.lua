@@ -1,11 +1,12 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local HttpService = game:GetService("HttpService")
 
 local RoundFolder = script.Parent
 local Config = require(RoundFolder:WaitForChild("Config"))
 local EventService = require(RoundFolder:WaitForChild("EventService"))
-local PayoutService = require(RoundFolder:WaitForChild("PayoutService"))
+local RoundResultsService = require(RoundFolder:WaitForChild("RoundResultsService"))
 local TaskService = require(RoundFolder:WaitForChild("TaskService"))
 
 local ProfileStore = require(ServerScriptService:WaitForChild("Data"):WaitForChild("ProfileStore"))
@@ -111,9 +112,15 @@ function ShiftService.new(options)
 	self.currentRoundResult = nil
 	self.activePlayers = {}
 	self.activeUserIds = {}
+	self.lastRoundResultsByUserId = {}
+	self.shareTelemetryStateByUserId = {}
 	self.round = nil
 	self.taskService = options.taskService
 	self.eventService = options.eventService
+	self.roundResultsService = options.roundResultsService
+		or RoundResultsService.new({
+			profileStore = self.profileStore,
+		})
 	self:_ensureServices()
 	return self
 end
@@ -358,15 +365,27 @@ function ShiftService:_runIntermission()
 end
 
 function ShiftService:_finishRound(success)
-	local basePay = self.taskService:getBasePay()
-	local personalPenalties = self.taskService:getPersonalPenalties()
-	PayoutService.awardPlayers(
-		self.activePlayers,
-		basePay,
-		success,
-		personalPenalties,
-		self.profileStore
-	)
+	local roundId = self.round.roundId
+	local resultsByUserId = self.roundResultsService:finalizeRound(self.activePlayers, {
+		roundId = roundId,
+		success = success,
+		shiftCash = self.taskService:getBasePay(),
+		personalPenalties = self.taskService:getPersonalPenalties(),
+		playerTaskCountsByUserId = self.taskService:getPlayerTaskCountsByUserId(),
+		securityAlarmResolvedByUserId = self.eventService:getSecurityAlarmResolvedByUserId(),
+	})
+	self.lastRoundResultsByUserId = resultsByUserId
+	self.shareTelemetryStateByUserId = {}
+	for userId, resultPayload in pairs(resultsByUserId) do
+		if resultPayload.shareCta ~= nil then
+			self.shareTelemetryStateByUserId[userId] = {
+				roundId = roundId,
+				shown = false,
+				pressed = false,
+				fallbackReasons = {},
+			}
+		end
+	end
 
 	self:_setEndedState(if success then "success" else "failure")
 	self:sendAlert(if success then "round_success" else "round_failure")
@@ -396,6 +415,7 @@ function ShiftService:_runRound()
 
 	self:_setPlayingState(activePlayers)
 	self.round = {
+		roundId = HttpService:GenerateGUID(false),
 		endsAt = os.clock() + self.durationSeconds,
 		success = false,
 		successPlayer = nil,
@@ -466,6 +486,69 @@ function ShiftService:run()
 	return self
 end
 
+function ShiftService:getCurrentState()
+	return self.currentState
+end
+
+function ShiftService:handleShareAction(player, request)
+	if type(request) ~= "table" then
+		return false
+	end
+
+	local resultPayload = self.lastRoundResultsByUserId[player.UserId]
+	local telemetryState = self.shareTelemetryStateByUserId[player.UserId]
+	if resultPayload == nil or telemetryState == nil or resultPayload.shareCta == nil then
+		return false
+	end
+	if request.roundId ~= telemetryState.roundId then
+		return false
+	end
+
+	local softLaunchService = self.roundResultsService.softLaunchService
+	if request.action == "cta_shown" then
+		if telemetryState.shown then
+			return false
+		end
+		telemetryState.shown = true
+		softLaunchService:recordShareCtaShown(
+			player,
+			resultPayload,
+			request.inviteSupported == true
+		)
+		return true
+	end
+	if request.action == "cta_pressed" then
+		if telemetryState.pressed then
+			return false
+		end
+		telemetryState.pressed = true
+		softLaunchService:recordShareCtaPressed(
+			player,
+			resultPayload,
+			request.inviteSupported == true
+		)
+		return true
+	end
+	if request.action == "fallback_shown" then
+		local fallbackReason = request.fallbackReason
+		if
+			fallbackReason ~= "platform_unsupported"
+			and fallbackReason ~= "policy_blocked"
+			and fallbackReason ~= "prompt_error"
+		then
+			return false
+		end
+		if telemetryState.fallbackReasons[fallbackReason] == true then
+			return false
+		end
+		telemetryState.fallbackReasons[fallbackReason] = true
+		softLaunchService:recordShareCtaFallbackShown(player, resultPayload, fallbackReason)
+		return true
+	end
+
+	return false
+end
+
 function ShiftService:shutdown()
 	self.running = false
 	self.started = false
@@ -474,6 +557,8 @@ function ShiftService:shutdown()
 		self.taskService:endRound()
 		self.round = nil
 	end
+	self.lastRoundResultsByUserId = {}
+	self.shareTelemetryStateByUserId = {}
 	self:_setWaitingState()
 end
 

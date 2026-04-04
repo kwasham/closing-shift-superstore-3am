@@ -1,16 +1,19 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SocialService = game:GetService("SocialService")
 
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Constants = require(Shared:WaitForChild("Constants"))
+local UIStrings = require(Shared:WaitForChild("UIStrings"))
 
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local roundStateChanged = remotes:WaitForChild("RoundStateChanged")
 local profileChanged = remotes:WaitForChild("ProfileChanged")
 local shopAction = remotes:WaitForChild("ShopAction")
+local roundEndShareAction = remotes:WaitForChild("RoundEndShareAction")
 
 local existingGui = playerGui:FindFirstChild("Sprint3Meta")
 if existingGui ~= nil then
@@ -197,6 +200,29 @@ local resultsBody = makeLabel(resultsCard, "ResultsBody", 12, false)
 resultsBody.Position = UDim2.fromOffset(12, 34)
 resultsBody.Size = UDim2.new(1, -24, 0, 0)
 
+local shareFrame = makeFrame(root, "ShareFrame", 92)
+shareFrame.Size = UDim2.fromScale(1, 0)
+shareFrame.AutomaticSize = Enum.AutomaticSize.Y
+local shareTitle = makeLabel(shareFrame, "ShareTitle", 14, true)
+shareTitle.Position = UDim2.fromOffset(12, 10)
+shareTitle.Size = UDim2.new(1, -24, 0, 0)
+local shareHelper = makeLabel(shareFrame, "ShareHelper", 12, false)
+shareHelper.Position = UDim2.fromOffset(12, 34)
+shareHelper.Size = UDim2.new(1, -24, 0, 0)
+local shareButton = Instance.new("TextButton")
+shareButton.Name = "ShareButton"
+shareButton.Size = UDim2.fromOffset(132, 36)
+shareButton.Position = UDim2.fromOffset(12, 66)
+shareButton.BorderSizePixel = 0
+shareButton.TextSize = 13
+shareButton.Font = Enum.Font.GothamBold
+shareButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+shareButton.BackgroundColor3 = Color3.fromRGB(70, 98, 166)
+shareButton.Parent = shareFrame
+local shareButtonCorner = Instance.new("UICorner")
+shareButtonCorner.CornerRadius = UDim.new(0, 12)
+shareButtonCorner.Parent = shareButton
+
 local shopFrame = makeFrame(root, "ShopFrame", 174)
 local shopHeader = makeLabel(shopFrame, "ShopHeader", 14, true)
 shopHeader.Position = UDim2.fromOffset(12, 10)
@@ -227,6 +253,48 @@ local currentProfile = nil
 local lastRoundResult = nil
 local shopVisible = false
 local itemCards = {}
+local currentShareRoundId = nil
+local shareInviteSupported = false
+local shareFallbackReason = nil
+local shareShownTelemetryRoundId = nil
+local shareFallbackTelemetryKeys = {}
+
+local function emitShareAction(payload)
+	roundEndShareAction:FireServer(payload)
+end
+
+local function resetShareState(roundId)
+	currentShareRoundId = roundId
+	shareInviteSupported = false
+	shareFallbackReason = nil
+end
+
+local function resolveInviteSupport()
+	local ok, inviteSupported = pcall(function()
+		return SocialService:CanSendGameInviteAsync(localPlayer)
+	end)
+	if ok and inviteSupported == true then
+		return true, nil
+	end
+	if ok then
+		return false, "platform_unsupported"
+	end
+	return false, "policy_blocked"
+end
+
+local function showShareFallback(fallbackReason)
+	shareFallbackReason = fallbackReason
+	local telemetryKey =
+		string.format("%s:%s", tostring(currentShareRoundId), tostring(fallbackReason))
+	if shareFallbackTelemetryKeys[telemetryKey] ~= true and lastRoundResult ~= nil then
+		shareFallbackTelemetryKeys[telemetryKey] = true
+		emitShareAction({
+			action = "fallback_shown",
+			roundId = lastRoundResult.roundId,
+			fallbackReason = fallbackReason,
+		})
+	end
+end
 
 local function isShopAvailable()
 	return currentRoundState ~= Constants.RoundState.Playing
@@ -346,29 +414,80 @@ end
 
 local function updateResults()
 	resultsCard.Visible = lastRoundResult ~= nil
+	shareFrame.Visible = lastRoundResult ~= nil and lastRoundResult.shareCta ~= nil
 	if lastRoundResult == nil then
 		return
+	end
+
+	if currentShareRoundId ~= lastRoundResult.roundId then
+		resetShareState(lastRoundResult.roundId)
+		shareInviteSupported, shareFallbackReason = resolveInviteSupport()
+		if shareInviteSupported ~= true and shareFallbackReason ~= nil then
+			showShareFallback(shareFallbackReason)
+		end
+		if
+			shareShownTelemetryRoundId ~= lastRoundResult.roundId
+			and lastRoundResult.shareCta ~= nil
+		then
+			shareShownTelemetryRoundId = lastRoundResult.roundId
+			emitShareAction({
+				action = "cta_shown",
+				roundId = lastRoundResult.roundId,
+				inviteSupported = shareInviteSupported == true,
+			})
+		end
 	end
 
 	resultsTitle.Text = if lastRoundResult.outcome == "success"
 		then "Results — Shift Cleared"
 		else "Results — Shift Failed"
-	resultsBody.Text = table.concat({
-		string.format("Saved Cash added: +$%d", lastRoundResult.cashEarned or 0),
-		string.format("XP earned: +%d", lastRoundResult.xpEarned or 0),
-		string.format("Current Level: %d", lastRoundResult.levelAfter or getCurrentLevel()),
+
+	local lines = {
+		string.format("Shift Cash: $%d", lastRoundResult.shiftCash or 0),
+		string.format(
+			"Saved Cash added: +$%d",
+			lastRoundResult.totalSavedCashAdded or lastRoundResult.cashEarned or 0
+		),
+	}
+	if (lastRoundResult.dailyFirstShiftBonusCash or 0) > 0 then
+		table.insert(lines, UIStrings.SoftLaunch.DailyFirstShiftBonusLine)
+	end
+	for _, badge in ipairs(lastRoundResult.unlockedBadges or {}) do
+		table.insert(lines, UIStrings.SoftLaunch.BadgeUnlockedPrefix .. badge.badgeName)
+	end
+	table.insert(lines, string.format("XP earned: +%d", lastRoundResult.xpEarned or 0))
+	table.insert(
+		lines,
+		string.format("Current Level: %d", lastRoundResult.levelAfter or getCurrentLevel())
+	)
+	table.insert(
+		lines,
 		string.format(
 			"Totals — Saved Cash $%d • XP %d",
 			lastRoundResult.cashTotal or getCurrentCash(),
 			lastRoundResult.xpTotal or 0
-		),
-	}, "\n")
+		)
+	)
+	resultsBody.Text = table.concat(lines, "\n")
+
+	if lastRoundResult.shareCta ~= nil then
+		shareTitle.Text = UIStrings.SoftLaunch.ShareButton
+		shareHelper.Text = if shareFallbackReason ~= nil
+			then lastRoundResult.shareCta.fallbackHelperText or UIStrings.SoftLaunch.ShareFallbackHelper
+			else lastRoundResult.shareCta.helperText
+		shareButton.Text = lastRoundResult.shareCta.buttonText or UIStrings.SoftLaunch.ShareButton
+		shareButton.Active = shareFallbackReason == nil and shareInviteSupported == true
+		shareButton.AutoButtonColor = shareButton.Active
+		shareButton.BackgroundColor3 = if shareButton.Active
+			then Color3.fromRGB(70, 98, 166)
+			else Color3.fromRGB(72, 72, 80)
+	end
 end
 
 local function updateHeader()
 	title.Text = "Employee Rank"
-	subtitle.Text =
-		"Saved Cash buys cosmetics. XP raises Employee Rank. Rank unlocks cosmetics only."
+	subtitle.Text = UIStrings.SoftLaunch.Summary
+		.. " Saved Cash buys cosmetics. XP raises Employee Rank. Rank unlocks cosmetics only."
 	profileSummary.Text = string.format(
 		"Saved Cash $%d • Level %d • %s",
 		getCurrentCash(),
@@ -480,6 +599,32 @@ for _, itemId in ipairs(Constants.Cosmetics.CatalogOrder) do
 	createItemCard(itemId)
 end
 
+shareButton.MouseButton1Click:Connect(function()
+	if lastRoundResult == nil or lastRoundResult.shareCta == nil then
+		return
+	end
+
+	emitShareAction({
+		action = "cta_pressed",
+		roundId = lastRoundResult.roundId,
+		inviteSupported = shareInviteSupported == true,
+	})
+
+	if shareInviteSupported ~= true then
+		showShareFallback(shareFallbackReason or "platform_unsupported")
+		updateHeader()
+		return
+	end
+
+	local promptOk = pcall(function()
+		SocialService:PromptGameInvite(localPlayer)
+	end)
+	if not promptOk then
+		showShareFallback("prompt_error")
+		updateHeader()
+	end
+end)
+
 shopToggle.MouseButton1Click:Connect(function()
 	if not isShopAvailable() then
 		statusLabel.Text = "Shop unavailable during Playing."
@@ -502,6 +647,7 @@ end)
 
 dismissResults.MouseButton1Click:Connect(function()
 	lastRoundResult = nil
+	resetShareState(nil)
 	updateHeader()
 end)
 
@@ -510,9 +656,7 @@ profileChanged.OnClientEvent:Connect(function(payload)
 		return
 	end
 	currentProfile = payload
-	if payload.lastRoundResult ~= nil then
-		lastRoundResult = payload.lastRoundResult
-	end
+	lastRoundResult = payload.lastRoundResult
 	updateHeader()
 end)
 

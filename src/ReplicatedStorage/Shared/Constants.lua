@@ -122,6 +122,43 @@ Constants.Progression = {
 		[5] = 110,
 		[6] = 150,
 	},
+	Rewards = {
+		TaskXP = 2,
+		CloseRegisterXP = 4,
+		ShiftSuccessBonusXP = 10,
+		ShiftFailureXP = 4,
+		SecurityAlarmResetXP = 4,
+	},
+}
+
+Constants.SoftLaunch = {
+	BadgeId = {
+		FirstShift = "first_shift",
+		ShiftCleared = "shift_cleared",
+		ThreeAmRegular = "three_am_regular",
+	},
+	BadgeOrder = {
+		"first_shift",
+		"shift_cleared",
+		"three_am_regular",
+	},
+	BadgeDefinitions = {
+		first_shift = {
+			badgeId = "first_shift",
+			badgeName = "First Shift",
+			assetId = 2926838285493434,
+		},
+		shift_cleared = {
+			badgeId = "shift_cleared",
+			badgeName = "Store Closed",
+			assetId = 1012078972936691,
+		},
+		three_am_regular = {
+			badgeId = "three_am_regular",
+			badgeName = "3AM Regular",
+			assetId = 3195093201982269,
+		},
+	},
 }
 
 Constants.CosmeticSlots = {
