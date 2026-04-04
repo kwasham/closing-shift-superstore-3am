@@ -81,7 +81,7 @@ UIStrings.Alerts = {
 	},
 	round_start_hint = {
 		id = "round_start_hint",
-		message = "Clock in. Follow the task glow.",
+		message = "Clock in. Follow the glow to your first task.",
 		priority = UIStrings.AlertPriority.Tutorial,
 		duration = 4,
 	},
@@ -90,19 +90,19 @@ UIStrings.Alerts = {
 UIStrings.Tutorial = {
 	goal = {
 		id = "tutorial_goal",
-		message = "Finish the list before time runs out.",
+		message = "Finish the task list before the timer hits zero.",
 		priority = UIStrings.AlertPriority.Tutorial,
 		duration = 4,
 	},
 	follow_task = {
 		id = "tutorial_follow_task",
-		message = "Follow the glow. Hold on a task to work.",
+		message = "Clock in. Follow the glow to your first task.",
 		priority = UIStrings.AlertPriority.Tutorial,
 		duration = 5,
 	},
 	banked_pay = {
 		id = "tutorial_banked_pay",
-		message = "Task cash is banked. Register unlocks last.",
+		message = "Tasks add Shift Cash. Register unlocks last.",
 		priority = UIStrings.AlertPriority.Tutorial,
 		duration = 5,
 	},
@@ -125,7 +125,7 @@ UIStrings.State = {
 UIStrings.AmbientAlerts = {
 	Waiting = "Waiting for enough staff.",
 	Intermission = "Shift starts soon.",
-	Playing = "Bank tasks. Close register last.",
+	Playing = "Tasks add Shift Cash. Register unlocks last.",
 	Ended = "Shift payout in progress.",
 }
 

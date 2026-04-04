@@ -37,7 +37,7 @@ frame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 frame.Parent = gui
 
 local sizeConstraint = Instance.new("UISizeConstraint")
-sizeConstraint.MinSize = Vector2.new(260, 0)
+sizeConstraint.MinSize = Vector2.new(284, 0)
 sizeConstraint.MaxSize = Vector2.new(360, 720)
 sizeConstraint.Parent = frame
 
@@ -402,7 +402,10 @@ end
 
 local function buildObjectivesText()
 	if isWaitingForNextShift() then
-		return UIStrings.Alerts.late_join_wait.message
+		return table.concat({
+			"This shift started without you.",
+			"Clock in next round to take tasks and earn payout.",
+		}, "\n")
 	end
 
 	if
@@ -461,9 +464,9 @@ end
 local function buildEarningsText()
 	if isWaitingForNextShift() then
 		return table.concat({
-			"Banked: $0",
-			"Clear: $0 | Timeout: $0",
-			"Wait for next shift.",
+			"Shift Cash: $0",
+			"This shift started without you.",
+			"Next shift payout is what can add to Saved Cash.",
 		}, "\n")
 	end
 
@@ -476,29 +479,29 @@ local function buildEarningsText()
 		local bankedPay = latestProgress.bankedPay or 0
 		local success = latestRoundResult == "success"
 		local lines = {
-			string.format("Banked: $%d", bankedPay),
+			string.format("Shift Cash: $%d", bankedPay),
 		}
 
 		if success then
-			table.insert(lines, string.format("Bonus: +$%d", Constants.Payout.SuccessBonus))
+			table.insert(lines, string.format("Clear bonus: +$%d", Constants.Payout.SuccessBonus))
 		else
 			table.insert(
 				lines,
 				string.format(
-					"60%% pay: $%d",
+					"Timeout pay (60%%): $%d",
 					math.floor(bankedPay * Constants.Payout.FailureMultiplier)
 				)
 			)
 		end
 
 		if penalty > 0 then
-			table.insert(lines, string.format("False task: -$%d", penalty))
+			table.insert(lines, string.format("False task penalty: -$%d", penalty))
 		end
 
 		table.insert(
 			lines,
 			string.format(
-				"Cash added: +$%d",
+				"Saved Cash added: +$%d",
 				if success
 					then calculateSuccessPay(latestProgress)
 					else calculateTimeoutPay(latestProgress)
@@ -512,15 +515,15 @@ local function buildEarningsText()
 	local timeoutPay = calculateTimeoutPay(latestProgress)
 	local lines = {
 		string.format(
-			"Banked: $%d",
+			"Shift Cash: $%d",
 			if latestProgress ~= nil then latestProgress.bankedPay or 0 else 0
 		),
-		string.format("Clear: $%d | Timeout: $%d", successPay, timeoutPay),
+		string.format("If you clear: +$%d | If time runs out: +$%d", successPay, timeoutPay),
 	}
 
 	local penalty = getLocalPenalty(latestProgress)
 	if penalty > 0 then
-		table.insert(lines, string.format("False task: -$%d", penalty))
+		table.insert(lines, string.format("False task penalty: -$%d", penalty))
 	end
 
 	return table.concat(lines, "\n")
@@ -538,7 +541,7 @@ local function updateHud()
 	title.Text = "CLOSING SHIFT"
 	stateLabel.Text = "State: " .. getStateText()
 	timerLabel.Text = "Timer: " .. formatTime(latestTimer)
-	cashLabel.Text = string.format("Saved cash: $%d", cashValue and cashValue.Value or 0)
+	cashLabel.Text = string.format("Saved Cash: $%d", cashValue and cashValue.Value or 0)
 	earningsLabel.Text = buildEarningsText()
 	objectivesLabel.Text = buildObjectivesText()
 	alertLabel.Text = getVisibleAlertText()

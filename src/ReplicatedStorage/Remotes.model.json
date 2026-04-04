@@ -1,6 +1,5 @@
 {
   "ClassName": "Folder",
-  "Name": "Remotes",
   "Children": [
     {
       "ClassName": "RemoteEvent",

@@ -1,92 +1,73 @@
 local Constants = {}
 
 Constants.RoundState = {
-	Waiting = "Waiting",
-	Intermission = "Intermission",
-	Playing = "Playing",
-	Ended = "Ended",
+	Waiting = "waiting",
+	Intermission = "intermission",
+	Playing = "playing",
+	Ended = "ended",
 }
 
 Constants.Round = {
+	MinPlayers = 1,
 	IntermissionSeconds = 15,
 	DurationSeconds = 540,
-	ResultsSeconds = 6,
-	TickSeconds = 0.25,
-	MaxPlayers = 6,
-	MinPlayers = 1,
 }
 
 Constants.TaskId = {
-	RestockShelf = "RestockShelf",
-	CleanSpill = "CleanSpill",
-	TakeOutTrash = "TakeOutTrash",
-	ReturnCart = "ReturnCart",
-	CheckFreezer = "CheckFreezer",
-	CloseRegister = "CloseRegister",
-}
-
-Constants.TaskOrder = {
-	Constants.TaskId.RestockShelf,
-	Constants.TaskId.CleanSpill,
-	Constants.TaskId.TakeOutTrash,
-	Constants.TaskId.ReturnCart,
-	Constants.TaskId.CheckFreezer,
-	Constants.TaskId.CloseRegister,
+	RestockShelf = "restock_shelf",
+	CleanSpill = "clean_spill",
+	TakeOutTrash = "take_out_trash",
+	ReturnCart = "return_cart",
+	CheckFreezer = "check_freezer",
+	CloseRegister = "close_register",
 }
 
 Constants.Tasks = {
 	[Constants.TaskId.RestockShelf] = {
 		name = "Restock Shelf",
-		promptText = "Restock Shelf",
+		promptText = "Hold to restock shelf",
 		reward = 14,
-		holdDuration = 1.2,
-		reuseCooldown = 4,
+		holdDuration = 1.5,
 	},
 	[Constants.TaskId.CleanSpill] = {
 		name = "Clean Spill",
-		promptText = "Clean Spill",
+		promptText = "Hold to mop spill",
 		reward = 18,
-		holdDuration = 1.4,
-		reuseCooldown = 4.5,
+		holdDuration = 1.8,
 	},
 	[Constants.TaskId.TakeOutTrash] = {
 		name = "Take Out Trash",
-		promptText = "Take Out Trash",
-		reward = 20,
-		holdDuration = 1.1,
-		reuseCooldown = 4,
+		promptText = "Hold to haul trash bag out back",
+		reward = 16,
+		holdDuration = 1.4,
 	},
 	[Constants.TaskId.ReturnCart] = {
 		name = "Return Cart",
-		promptText = "Return Cart",
-		reward = 16,
-		holdDuration = 0.9,
-		reuseCooldown = 3.5,
+		promptText = "Hold to return cart to corral",
+		reward = 12,
+		holdDuration = 1.0,
 	},
 	[Constants.TaskId.CheckFreezer] = {
 		name = "Check Freezer",
-		promptText = "Check Freezer",
-		reward = 22,
-		holdDuration = 1.2,
-		reuseCooldown = 4,
+		promptText = "Hold to inspect freezer alarm",
+		reward = 20,
+		holdDuration = 1.6,
 	},
 	[Constants.TaskId.CloseRegister] = {
 		name = "Close Register",
-		promptText = "Close Register",
-		lockedPromptText = "Finish all other tasks first",
-		reward = 40,
-		holdDuration = 1.8,
-		reuseCooldown = 0,
+		promptText = "Hold to count drawer and lock register",
+		reward = 24,
+		holdDuration = 2.2,
 	},
 }
 
 Constants.Prompts = {
 	Waiting = "Waiting for next shift",
-	Cooldown = "Task cooling down",
-	Completed = "Completed",
+	Blackout = "Blackout. Wait for backup power.",
+	Completed = "Done",
+	Cooldown = "Cooling down",
+	NodeLocked = "Unavailable",
 	RegisterLocked = "Finish all other tasks first",
-	NodeLocked = "False task locked",
-	Blackout = "Blackout — wait for backup power",
 }
 
 Constants.Alerts = {
@@ -95,27 +76,52 @@ Constants.Alerts = {
 
 Constants.Payout = {
 	SuccessBonus = 35,
-	FailureMultiplier = 0.60,
+	FailureMultiplier = 0.6,
+}
+
+Constants.Events = {
+	Blackout = {
+		MinRemainingSeconds = 240,
+		MaxRemainingSeconds = 300,
+		DurationSeconds = 10,
+	},
+	Mimic = {
+		MinRemainingSeconds = 135,
+		MaxRemainingSeconds = 180,
+		MinRealTasksRemaining = 3,
+		LifetimeSeconds = 18,
+		TimerPenaltySeconds = 8,
+		CashPenalty = 12,
+		NodeLockSeconds = 8,
+	},
+	SecurityAlarm = {
+		EventId = "security_alarm",
+		NodeId = "security_panel_node",
+		MinRemainingSeconds = 125,
+		MaxRemainingSeconds = 165,
+		CancelAtRemainingSeconds = 45,
+		ResponseWindowSeconds = 15,
+		HoldDuration = 2.0,
+		TimerPenaltySeconds = 12,
+		FeedbackState = {
+			Idle = "security_idle",
+			Active = "security_active",
+			Resolved = "security_resolved",
+			Failed = "security_failed",
+		},
+	},
 }
 
 Constants.Progression = {
-	ProfileVersion = 1,
-	XPBySource = {
-		Task = 2,
-		CloseRegister = 4,
-		SecurityAlarmReset = 4,
-		ShiftSuccess = 10,
-		ShiftFailure = 4,
-	},
-	LevelThresholds = {
-		0,
-		20,
-		45,
-		75,
-		110,
-		150,
-	},
 	DisplayLevelCap = 6,
+	LevelThresholds = {
+		[1] = 0,
+		[2] = 20,
+		[3] = 45,
+		[4] = 75,
+		[5] = 110,
+		[6] = 150,
+	},
 }
 
 Constants.CosmeticSlots = {
@@ -124,20 +130,14 @@ Constants.CosmeticSlots = {
 }
 
 Constants.Cosmetics = {
-	DefaultOwned = {
-		nameplate_standard_issue = true,
-		lanyard_gray_clip = true,
-	},
 	DefaultEquipped = {
 		NameplateStyle = "nameplate_standard_issue",
 		LanyardColor = "lanyard_gray_clip",
 	},
 	CatalogOrder = {
-		"nameplate_standard_issue",
 		"clean_shift",
 		"retro_plastic",
 		"neon_night",
-		"lanyard_gray_clip",
 		"blue_id",
 		"red_id",
 		"gold_id",
@@ -145,142 +145,109 @@ Constants.Cosmetics = {
 	Catalog = {
 		nameplate_standard_issue = {
 			itemId = "nameplate_standard_issue",
+			slot = Constants.CosmeticSlots.NameplateStyle,
 			displayName = "Standard Issue",
-			slot = "NameplateStyle",
+			flavorCopy = "The plain badge every new closer starts with.",
 			priceCash = 0,
 			requiredLevel = 1,
-			flavorCopy = "Default issued store badge.",
 			defaultOwned = true,
 			preview = {
-				nameplateFill = Color3.fromRGB(205, 211, 223),
-				nameplateBorder = Color3.fromRGB(102, 112, 132),
-				lanyardColor = Color3.fromRGB(140, 146, 152),
-			},
-		},
-		clean_shift = {
-			itemId = "clean_shift",
-			displayName = "Clean Shift",
-			slot = "NameplateStyle",
-			priceCash = 40,
-			requiredLevel = 1,
-			flavorCopy = "Fresh laminated badge for a dependable closer.",
-			preview = {
-				nameplateFill = Color3.fromRGB(238, 243, 249),
-				nameplateBorder = Color3.fromRGB(118, 135, 163),
-				lanyardColor = Color3.fromRGB(140, 146, 152),
-			},
-		},
-		retro_plastic = {
-			itemId = "retro_plastic",
-			displayName = "Retro Plastic",
-			slot = "NameplateStyle",
-			priceCash = 80,
-			requiredLevel = 3,
-			flavorCopy = "Old store plastic with worn late-night charm.",
-			preview = {
-				nameplateFill = Color3.fromRGB(237, 223, 197),
-				nameplateBorder = Color3.fromRGB(157, 116, 84),
-				lanyardColor = Color3.fromRGB(140, 146, 152),
-			},
-		},
-		neon_night = {
-			itemId = "neon_night",
-			displayName = "Neon Night",
-			slot = "NameplateStyle",
-			priceCash = 120,
-			requiredLevel = 5,
-			flavorCopy = "Electric edge trim that reads from across the lobby.",
-			preview = {
-				nameplateFill = Color3.fromRGB(32, 35, 52),
-				nameplateBorder = Color3.fromRGB(79, 255, 232),
-				lanyardColor = Color3.fromRGB(140, 146, 152),
+				nameplateFill = Color3.fromRGB(229, 231, 236),
+				nameplateBorder = Color3.fromRGB(103, 112, 132),
+				lanyardColor = Color3.fromRGB(130, 130, 136),
 			},
 		},
 		lanyard_gray_clip = {
 			itemId = "lanyard_gray_clip",
+			slot = Constants.CosmeticSlots.LanyardColor,
 			displayName = "Gray Clip",
-			slot = "LanyardColor",
+			flavorCopy = "A neutral lanyard for the overnight shift.",
 			priceCash = 0,
 			requiredLevel = 1,
-			flavorCopy = "Default gray store lanyard.",
 			defaultOwned = true,
 			preview = {
-				nameplateFill = Color3.fromRGB(205, 211, 223),
-				nameplateBorder = Color3.fromRGB(102, 112, 132),
-				lanyardColor = Color3.fromRGB(140, 146, 152),
+				nameplateFill = Color3.fromRGB(229, 231, 236),
+				nameplateBorder = Color3.fromRGB(103, 112, 132),
+				lanyardColor = Color3.fromRGB(130, 130, 136),
+			},
+		},
+		clean_shift = {
+			itemId = "clean_shift",
+			slot = Constants.CosmeticSlots.NameplateStyle,
+			displayName = "Clean Shift",
+			flavorCopy = "A crisp badge that looks like you still trust the schedule.",
+			priceCash = 40,
+			requiredLevel = 1,
+			preview = {
+				nameplateFill = Color3.fromRGB(214, 229, 255),
+				nameplateBorder = Color3.fromRGB(78, 118, 182),
+				lanyardColor = Color3.fromRGB(92, 118, 168),
+			},
+		},
+		retro_plastic = {
+			itemId = "retro_plastic",
+			slot = Constants.CosmeticSlots.NameplateStyle,
+			displayName = "Retro Plastic",
+			flavorCopy = "A faded checkout-era badge with old-store energy.",
+			priceCash = 80,
+			requiredLevel = 3,
+			preview = {
+				nameplateFill = Color3.fromRGB(247, 217, 176),
+				nameplateBorder = Color3.fromRGB(168, 99, 52),
+				lanyardColor = Color3.fromRGB(166, 111, 69),
+			},
+		},
+		neon_night = {
+			itemId = "neon_night",
+			slot = Constants.CosmeticSlots.NameplateStyle,
+			displayName = "Neon Night",
+			flavorCopy = "Bright enough to look wrong under supermarket lights.",
+			priceCash = 120,
+			requiredLevel = 5,
+			preview = {
+				nameplateFill = Color3.fromRGB(157, 253, 233),
+				nameplateBorder = Color3.fromRGB(26, 148, 149),
+				lanyardColor = Color3.fromRGB(34, 142, 150),
 			},
 		},
 		blue_id = {
 			itemId = "blue_id",
+			slot = Constants.CosmeticSlots.LanyardColor,
 			displayName = "Blue ID",
-			slot = "LanyardColor",
+			flavorCopy = "A calm blue strap that feels almost official.",
 			priceCash = 50,
 			requiredLevel = 1,
-			flavorCopy = "Calm blue strap for routine night shifts.",
 			preview = {
-				nameplateFill = Color3.fromRGB(205, 211, 223),
-				nameplateBorder = Color3.fromRGB(102, 112, 132),
-				lanyardColor = Color3.fromRGB(76, 141, 255),
+				nameplateFill = Color3.fromRGB(229, 231, 236),
+				nameplateBorder = Color3.fromRGB(103, 112, 132),
+				lanyardColor = Color3.fromRGB(71, 120, 201),
 			},
 		},
 		red_id = {
 			itemId = "red_id",
+			slot = Constants.CosmeticSlots.LanyardColor,
 			displayName = "Red ID",
-			slot = "LanyardColor",
+			flavorCopy = "A red strap that makes routine tasks feel riskier.",
 			priceCash = 75,
 			requiredLevel = 2,
-			flavorCopy = "Loud red strap that stands out fast.",
 			preview = {
-				nameplateFill = Color3.fromRGB(205, 211, 223),
-				nameplateBorder = Color3.fromRGB(102, 112, 132),
-				lanyardColor = Color3.fromRGB(235, 71, 71),
+				nameplateFill = Color3.fromRGB(229, 231, 236),
+				nameplateBorder = Color3.fromRGB(103, 112, 132),
+				lanyardColor = Color3.fromRGB(184, 70, 82),
 			},
 		},
 		gold_id = {
 			itemId = "gold_id",
+			slot = Constants.CosmeticSlots.LanyardColor,
 			displayName = "Gold ID",
-			slot = "LanyardColor",
+			flavorCopy = "A bright strap for closers who keep surviving the night.",
 			priceCash = 100,
 			requiredLevel = 4,
-			flavorCopy = "Gold trim for proven overnight staff.",
 			preview = {
-				nameplateFill = Color3.fromRGB(205, 211, 223),
-				nameplateBorder = Color3.fromRGB(102, 112, 132),
-				lanyardColor = Color3.fromRGB(241, 197, 74),
+				nameplateFill = Color3.fromRGB(229, 231, 236),
+				nameplateBorder = Color3.fromRGB(103, 112, 132),
+				lanyardColor = Color3.fromRGB(214, 171, 74),
 			},
-		},
-	},
-}
-
-Constants.Events = {
-	Blackout = {
-		MinRemainingSeconds = 240,
-		MaxRemainingSeconds = 190,
-		DurationSeconds = 10,
-	},
-	Mimic = {
-		MinRemainingSeconds = 165,
-		MaxRemainingSeconds = 95,
-		LifetimeSeconds = 18,
-		NodeLockSeconds = 8,
-		TimerPenaltySeconds = 8,
-		CashPenalty = 12,
-		MinRealTasksRemaining = 2,
-	},
-	SecurityAlarm = {
-		EventId = "security_alarm",
-		NodeId = "security_panel_node",
-		MinRemainingSeconds = 125,
-		MaxRemainingSeconds = 165,
-		ResponseWindowSeconds = 15,
-		HoldDuration = 2,
-		CancelAtRemainingSeconds = 45,
-		TimerPenaltySeconds = 12,
-		FeedbackState = {
-			Idle = "security_idle",
-			Active = "security_active",
-			Resolved = "security_resolved",
-			Failed = "security_failed",
 		},
 	},
 }

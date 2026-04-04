@@ -521,7 +521,7 @@ function TaskService:_completeRealTask(node, player, now)
 		node.taskId ~= Constants.TaskId.CloseRegister
 		and self.round.remainingByTask[node.taskId] > 0
 	then
-		node.cooldownUntil = now + taskConfig.reuseCooldown
+		node.cooldownUntil = now + (taskConfig.reuseCooldown or 0)
 	end
 
 	if self:_nonRegisterTasksComplete() then

@@ -51,12 +51,12 @@ To reduce merge conflicts:
 
 ## Current status
 ### Ready for delegation
-- Sprint 4 / Milestone 4 planning
-- follow-up cleanup for non-blocking warnings like the Rojo `Remotes.model.json` warning
-- broader analytics/dashboard follow-up beyond the accepted local structured-log proof
+- Sprint 5 / post-launch planning
+- follow-up cleanup for remaining non-blocking release-surface/doc contradictions
+- broader release operations follow-up outside the Sprint 4 gate
 
 ### In progress
-- no Sprint 3 blockers
+- no Sprint 4 blockers
 
 ### Done
 - OpenClaw multi-agent pipeline scaffolded
@@ -64,15 +64,17 @@ To reduce merge conflicts:
 - starter round loop and HUD placeholders committed
 - Sprint 1 is **Ready**
 - Sprint 2 is **Ready**
-- Sprint 3 design handoff completed for `Security Alarm`, persistent XP/Level profile schema, a 2-slot / 6-item cosmetic shop with persistent purchase+equip state, and the exact Sprint 3 analytics event contract
-- Sprint 3 engineering pass completed for Security Alarm, persistent profile expansion, shop purchase/equip flow, minimal Sprint 3 lobby/results UI, analytics/log plumbing, and Sprint 3 smoke/runtime harness updates
-- Sprint 3 content pass completed for Security Alarm presentation, progression/shop copy, and the locked 6-item catalog with QA-visible 2D presentation notes
-- Sprint 3 QA gate is **Ready** after structural/build proof, Security Alarm runtime proof, persistence/shop proof, and Sprint 3 analytics/log proof closed the remaining evidence gaps
+- Sprint 3 is **Ready**
+- Sprint 4 design handoff completed for launch-facing wording cleanup, first-10-minute friction rules, truthful publish-surface contract, launch watchlist hardening, and low-risk `Remotes.model.json` cleanup boundaries
+- Sprint 4 engineering pass completed for `Shift Cash` / `Saved Cash` wording rollout, late-join support copy clarification, phone-width HUD/results hardening, safe `Remotes.model.json` warning cleanup, and smoke coverage update for launch-facing UI surfaces
+- Sprint 4 content pass completed for release-facing art/content guidance, launch-surface wording alignment, store-page brief, and release notes for the current build
+- Sprint 4 runtime/client evidence pass appended to `project/docs/RUNTIME-EVIDENCE.md` and fixed the missing `ProfileChanged` / `ShopAction` remotes for `Sprint3UI`
+- Sprint 4 final client-visible screenshot evidence was accepted by QA and Sprint 4 is now **Ready**
 
 ## Risks
 - workers may collide if they all edit `SPRINT.md`; keep ownership with `main`
-- non-blocking build warning remains on `Remotes.model.json`
-- structured local analytics proof is accepted for Sprint 3, but broader dashboard/production telemetry validation is still a future follow-up
+- a release-surface contradiction remains in `project/docs/GDD.md` (`upgrades and cosmetics`) versus the locked cosmetics/progression-only release framing
+- non-blocking release polish and operations follow-up remain, but no Sprint 4 gate blocker remains
 
 ## Next producer action
-Start Sprint 4 / Milestone 4 planning from a Ready Sprint 3 baseline.
+Start Sprint 5 / post-launch planning from a Ready Sprint 4 baseline and keep the remaining wording/doc contradiction as non-blocking follow-up work.

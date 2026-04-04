@@ -6,11 +6,11 @@
 - Server owns round state, rewards, and dangerous events.
 - Cosmetics come before strong power monetization.
 - OpenClaw uses `main` as orchestrator plus worker agents for design, engineering, content, and QA.
-- 2026-04-03 — Sprint 3 is locked to a small alpha return loop only: `Security Alarm`, persistent `XP` / `Level`, a lobby/non-playing cosmetic shop v1, and KPI instrumentation. No NPCs, combat, second map, battle pass, subscription, or Robux rollout work is included.
-- 2026-04-03 — `Security Alarm` is a once-per-round server-owned event using `security_panel_node`, a 15.0 second response window, a 2.0 second hold, and a single shared fail penalty of `-12s`. It does not deal damage, does not remove cash, and does not overlap active blackout or active mimic.
-- 2026-04-03 — While `Security Alarm` is active, blackout start, mimic spawn, and `Close Register` unlock are all deferred until the alarm resolves or fails. If the alarm cannot legally start before 45 seconds remain, it is canceled for that round rather than forced into the endgame.
-- 2026-04-03 — Sprint 3 progression is persistent but non-power. `Cash` remains spendable soft currency. `XP` and `Level` exist only to show Employee Rank and gate cosmetics. They do not modify speed, stamina, health, payout multipliers, task timings, or event timings.
-- 2026-04-03 — Sprint 3 progression saves `ProfileVersion`, `Cash`, `XP`, `Level`, `ShiftsPlayed`, `ShiftsCleared`, `OwnedCosmetics`, and `EquippedCosmetics`. `XP` is the source of truth for `Level` if a mismatch is detected.
-- 2026-04-03 — Sprint 3 shop scope is exactly 2 slots (`NameplateStyle`, `LanyardColor`) and 6 paid starter items. Purchase and equip are separate actions. Default items are always owned, and players can swap back to those defaults at any time.
-- 2026-04-03 — Sprint 3 cosmetics are verified through simple 2D lobby/results presentation, not 3D accessory production. This keeps the cosmetic loop QA-visible without widening content scope.
-- 2026-04-03 — Sprint 3 analytics names are locked to exact snake_case events documented in `project/docs/KPI-CANDIDATES-S3.md` and `project/docs/HANDOFF-ENGINEERING.md`. Structured local/server log evidence using those exact names is acceptable if dashboard propagation lags.
+
+## 2026-04-03 — Sprint 4 launch-candidate locks
+- Player-facing economy terms are locked to `Shift Cash` for current-round earnings and `Saved Cash` for the persistent balance. Standalone `Banked` wording is removed from launch-facing HUD, tutorial, late-join, and results surfaces.
+- `Clear` and `Timeout` cannot appear as unexplained standalone payout labels. Sprint 4 copy must use outcome-first phrasing such as `If you clear`, `If time runs out`, `Clear bonus`, and `Timeout pay (60%)`.
+- Sprint 4 clarity work is limited to copy, ordering, wrap/auto-size, and other low-risk hierarchy changes on the existing HUD / results / late-join surfaces. No new UI system, no new gameplay tutorial system, and no economy-rule changes are allowed in this sprint.
+- Publish-surface copy is locked to the current build: one supermarket, short co-op horror closing shifts, blackout + false task + security alarm disruptions, and cosmetic `Cash` spending. Do not promise roaming enemies, combat, extra maps, live events, badges, or monetization expansion.
+- Milestone 4 readiness requires actual client-visible proof for tutorial/start readability, active HUD readability, late-join readability, and results readability. Headless or harness proof still counts for regression coverage, but it is not enough by itself for launch-facing clarity signoff.
+- The `Remotes.model.json` Rojo warning may be cleaned up only by removing the ignored top-level `Name` field if the build stays stable. Any broader remote-folder or Rojo-structure refactor is deferred.

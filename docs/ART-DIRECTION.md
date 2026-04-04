@@ -16,106 +16,91 @@
 - mobile readable
 - practical with a slightly eerie edge
 
-## Sprint 3 — alpha return loop presentation rules
+## Sprint 4 release-surface lock
+Release art must sell the **same build players can actually open today**:
+- one supermarket only
+- 1–6 player co-op closing shift
+- task work first, horror pressure second
+- real disruption set only: blackout, false tasks, security alarms
+- cosmetics/progression as payoff, not gameplay power
 
-### Security Alarm readability rules
-- `Security Alarm` is a **front-of-store panic beat**, not a full-screen chaos layer.
-- The alarm should pull attention to one readable destination: `security_panel_node` / `Security Panel`.
-- Treat alarm presentation as the only Sprint 3 state that owns **red urgency**:
-  - red pulse / red highlight is allowed here
-  - brief siren-like audio sting is allowed here
-  - do not reuse the same red flash language for blackout or mimic
-- Keep the event distinct from other hazards:
-  - **blackout** = loss of light / dimness / visibility pressure
-  - **mimic** = local wrongness / suspicious interactable / uncanny beat
-  - **security alarm** = loud, clear, front-of-store emergency reset
-- The alarm should feel urgent but fair:
-  - one alert line
-  - one world target
-  - one clear action
-  - one clear outcome
-- Do not stack extra warning banners, lore text, or tutorial paragraphs on top of the alarm.
-- If a world indicator is used, it should reinforce the front-panel location rather than add another destination.
+Do not imply:
+- extra stores or backroom expansions
+- roaming enemies or chase combat
+- weapons, boss fights, or gore
+- deep inventory systems or gameplay upgrades
+- live-event spectacle the build does not contain
 
-### Shop and results readability rules
-Mandatory information should always beat flavor.
+## Store-page visual priorities
+1. **Readable supermarket fantasy in 3 seconds**
+   - aisles, checkout, carts, freezer, spill cleanup, stock boxes
+2. **Fluorescent late-night dread**
+   - empty floor space, cold light, too-quiet retail mood
+3. **Co-op pressure**
+   - more than one player can be present, but the shot must stay legible on mobile
+4. **Truthful disruption cues**
+   - darkness, wrong objective glow, alarm/red emergency accents
 
-#### Shop card hierarchy
-Each shop item should clearly show, in this order:
-1. display name
-2. price or level gate state
-3. slot identity (`NameplateStyle` or `LanyardColor`) only if needed for clarity
-4. readable preview
-5. short flavor line
+## Icon brief
+- Show a fluorescent superstore-at-3AM read first: checkout lane or aisle silhouette should be obvious at thumbnail size.
+- Favor one strong focal point: checkout counter, aisle vanishing point, or cart corral under harsh light.
+- Keep the horror signal environmental: darkness beyond the lights, empty aisle depth, uneasy color cast.
+- If a character appears, use a worker silhouette or shopper-scale figure only.
+- No monster close-up, combat pose, screaming face, or implied second location.
 
-#### Results hierarchy
-Results should prioritize:
-1. round outcome
-2. `Cash earned`
-3. `XP earned`
-4. `Employee Rank`
-5. local equipped cosmetic preview
-6. optional CTA into shop
+## Thumbnail set
 
-#### Decorative versus mandatory
-Mandatory:
-- `Cash`
-- `Level` / `Employee Rank`
-- XP progress or XP total relevant to next level
-- item state (`Buy`, `Requires Level`, `Owned — Equip`, `Equipped`)
-- local cosmetic preview that QA can verify
+### Thumbnail 1 — Co-op work under pressure
+Goal: communicate the fantasy instantly.
+- Show players doing obvious supermarket tasks.
+- Preferred props: stock box, spill marker/mop, trash bag, carts, freezer door, register lane.
+- Timer/task-pressure readability matters more than cinematic posing.
+- Mood: tense but functional, not chaotic nonsense.
 
-Decorative only:
-- flavor lines
-- subtle striping / trim
-- tiny icons
-- soft background texture
+### Thumbnail 2 — Disruption inside the same store
+Goal: show the horror hook without lying about the game.
+- Center on blackout or false-task tension in the supermarket.
+- Keep the store layout recognizable even in darkness.
+- Use wrong objective glow, flashlight falloff, or a partially dark aisle to show confusion.
+- Avoid chase framing, monster attack framing, or anything that reads like combat horror.
 
-If space is tight, decorative elements should disappear before mandatory information does.
+### Thumbnail 3 — Payoff and replay loop
+Goal: show what players earn and why they replay.
+- Show readable results/cosmetic payoff in a way that still feels like the same game.
+- Focus on results clarity, saved-currency payoff, or visible nameplate/lanyard customization.
+- Keep the presentation compact and believable.
+- Do not imply a huge inventory, loadout grid, or deep avatar system.
 
-### Reward-surface discipline
-- Sprint 3 reward surfaces must explain the return loop in one glance: earn `Cash`, earn `XP`, unlock cosmetics, buy/equip cosmetics.
-- Do not present Sprint 3 like a full battle pass, inventory wall, or seasonal reward track.
-- Show only the currencies and progression that already exist in the locked contract:
-  - `Cash`
-  - `XP`
-  - `Level` / `Employee Rank`
-- Use one primary action at a time on reward surfaces.
-  - Example: after results, the primary next step may be `Open Shop`.
-  - Do not compete with multiple equal-weight buttons.
-- Cosmetics should be shown through simple 2D UI treatment:
-  - `NameplateStyle` = frame/border/plate treatment
-  - `LanyardColor` = strap/swatch treatment
-- Results should show the **local player's** equipped cosmetics clearly enough that QA can confirm persistence without needing 3D accessories.
-- Do not overload results with extra reward callouts, fake rarity bursts, or unrelated unlock messaging.
-- If no unlock threshold changed, do not invent a larger celebration state.
+## Color and lighting notes
+- Base palette: cold fluorescent whites, gray retail flooring, muted shelf colors.
+- Blackout moments can push blue-black shadows, but keep enough geometry readable to still feel like a supermarket.
+- Security-alarm moments can use restrained red accents as a spike, not a full red wash.
+- Avoid over-saturated neon horror that makes the game read like an arcade shooter.
 
-### Phone readability constraints
-Sprint 3 shop/results/readout surfaces must remain readable on phone-sized screens.
+## Composition notes for mobile surfaces
+- One focal beat per image.
+- Big shapes before small details.
+- Keep text overlays minimal; if text is needed, keep it under 4 words.
+- Avoid crowded multi-character staging that turns into noise on phone screens.
 
-#### Layout target
-- Use the proven phone-safe baseline from runtime evidence as the minimum readability target:
-  - panel width target: `260px`
-  - inner text width target: `236px`
-- Critical copy must survive that width without clipping.
-- Auto-growing vertical layouts are preferred over fixed-height text containers.
+## Tone words to lean on
+- fluorescent
+- overnight
+- empty
+- uneasy
+- late-night retail
+- short-shift panic
+- false lead
+- alarm spike
 
-#### Copy budget
-- Alert lines: target one line; allow wrap only if the layout grows cleanly.
-- Button/state labels: keep to one short line.
-- Flavor lines: maximum two lines.
-- Helper/explainer text: maximum two short lines on a given surface.
-- Do not place multiple helper paragraphs on the same shop or results screen.
-
-#### Composition rules
-- Keep one dominant header per surface.
-- Avoid stacking more than two banners/notices at once.
-- Do not place shop clutter on top of results clutter; if both exist in sequence, results should resolve first, then hand off to shop.
-- Preserve strong contrast between text and background; fluorescent-store atmosphere should never reduce UI legibility.
-- Any preview treatment must read with flat color, simple borders, and text labels alone; finished custom art is a bonus, not a requirement.
-
-### Sprint 3 item visual guidance
-- `NameplateStyle` variants should differ through border shape, trim, laminate wear, and color blocking that reads in a small card.
-- `LanyardColor` variants should differ through strong strap color and clip/swatch treatment that remains visible in a compact preview.
-- Every cosmetic should be identifiable in the lobby preview and the post-round local results card at a glance.
-- If an item cannot be distinguished in a simple 2D mockup, it is too subtle for Sprint 3.
+## Tone words to avoid on publish surfaces
+- killer
+- combat
+- boss
+- escape room
+- story campaign
+- open world
+- multi-store
+- upgrade tree
+- graphic
+- gore-heavy

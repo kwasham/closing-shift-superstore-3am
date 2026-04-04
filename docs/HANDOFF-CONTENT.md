@@ -1,104 +1,99 @@
-# Content handoff — Sprint 3 alpha return loop
+# Content handoff
 
-Use this file when engineering or production needs the exact player-facing copy and presentation notes for Sprint 3's event/shop/reward layer.
+Use this file when engineering, production, or QA needs the locked Sprint 4 release-facing content package.
 
 ## Objective
-Deliver the content package for Sprint 3's locked alpha return loop only:
-- `Security Alarm` presentation
-- progression / rewards copy
-- shop state copy
-- phone-safe presentation discipline for shop/results surfaces
+Deliver a truthful launch-candidate content layer for the current build only.
+
+Focus on:
+- store-page copy that matches the real one-store experience
+- in-game wording alignment for public-facing terms
+- release notes for the current build
+- icon / thumbnail / positioning guidance QA can validate against
+
+Do **not** expand the promise beyond the existing build.
 
 ## Read first
 - `project/docs/GDD.md`
 - `project/docs/DECISIONS.md`
-- `project/docs/HANDOFF-ENGINEERING.md`
-- `project/docs/SPRINT3-PLAN.md`
+- `project/docs/SPRINT4-PLAN.md`
+- `project/docs/LAUNCH-WATCHLIST-S4.md`
 - `project/docs/ART-DIRECTION.md`
-- `project/docs/SHOP-CATALOG-S3.md`
+- `project/docs/STORE-PAGE-BRIEF-S4.md`
+- `project/docs/RELEASE_NOTES.md`
 
-## Files changed
+## Files edited for Sprint 4
 - `project/docs/ART-DIRECTION.md`
 - `project/docs/HANDOFF-CONTENT.md`
-- `project/docs/SHOP-CATALOG-S3.md`
+- `project/docs/STORE-PAGE-BRIEF-S4.md`
+- `project/docs/RELEASE_NOTES.md`
 
-## Security Alarm — exact copy package
+## Locked player-facing wording alignment
 
-### Exact ids and strings
-| Surface | Exact copy / id |
-|---|---|
-| Start alert id | `security_alarm_active` |
-| Start alert text | `Security Alarm. Reset the front panel.` |
-| Start cue id | `security_alarm_start` |
-| Panel object text | `Security Panel` |
-| Panel action text while active | `Reset Alarm` |
-| Success alert id | `security_alarm_reset` |
-| Success alert text | `Alarm reset. Keep closing.` |
-| Success cue id | `security_alarm_reset` |
-| Fail alert id | `security_alarm_failed` |
-| Fail alert text | `Alarm missed. Lost 12 seconds.` |
-| Fail cue id | `security_alarm_fail` |
+### Core positioning
+Use:
+- `co-op horror job sim`
+- `late-night supermarket`
+- `short 8–10 minute shifts`
+- `blackout, false tasks, and security alarms`
 
-### Presentation notes
-- Alarm presentation should read as a **single urgent job** at the front of the store.
-- Favor a red urgency treatment, short siren sting, and a clear panel highlight.
-- Keep the distinction readable:
-  - blackout = darkness pressure
-  - mimic = suspicious/localized wrongness
-  - security alarm = loud front-panel emergency
-- No extra tutorial paragraph should ride on top of the active alarm alert.
+Avoid:
+- `combat horror`
+- `monster chase`
+- `escape story`
+- `multiple maps`
+- `upgrade-heavy progression`
 
-## Progression and rewards — exact copy
+### Money and progression language
+Use:
+- `Shift Cash` for in-round earnings
+- `Saved Cash` for the persistent balance
+- `Cash` alone only when the surface is clearly persistent-only
+- `Cash buys cosmetics`
+- `XP and level unlock cosmetics only`
 
-### Plain-language rule
-Use this exact sentence anywhere the system needs a one-line explanation:
-- `Cash buys cosmetics. XP raises Employee Rank. Rank unlocks cosmetics only.`
+Avoid:
+- `Banked`
+- `upgrades` on store/release surfaces
+- any wording that implies gameplay power purchases
 
-### Results / header labels
-| Surface | Exact copy |
-|---|---|
-| Header rank label | `Employee Rank` |
-| Results cash label | `Cash earned` |
-| Results XP label | `XP earned` |
-| Results level label | `Employee Rank` |
-| XP progress label | `XP to next level` |
-| Shop CTA | `Open Shop` |
+### Event naming
+External/player-facing preference:
+- `false task`
+- `security alarm`
+- `blackout`
 
-### One-line return-loop copy
-Use this when a short motivation line is needed on lobby/results/shop surfaces:
-- `Finish shifts. Raise Employee Rank. Buy a better night-shift look.`
+Internal shorthand like `mimic` may exist in docs/code, but player-facing store copy should prefer `false task` because it reads faster.
 
-## Shop states and denials — exact copy
+### Co-op and tension framing
+Preferred framing:
+- close the store with 1–6 players
+- complete supermarket tasks before time runs out
+- survive disruptions that waste time, split attention, and create panic
 
-### Primary action / state copy
-| State | Exact copy |
-|---|---|
-| Buy button | `Buy for $<price>` |
-| Locked by level | `Requires Level <level>` |
-| Owned passive label | `Owned` |
-| Owned primary action | `Owned — Equip` |
-| Equipped | `Equipped` |
+Do not frame the build as:
+- a combat survival game
+- a killer-vs-players game
+- a lore-driven narrative campaign
 
-### Purchase denial copy
-| Denial case | Exact copy |
-|---|---|
-| Insufficient level | `Employee Rank too low. Reach Level <level>.` |
-| Insufficient funds | `Not enough Cash. Finish another shift.` |
+## Release-surface acceptance criteria
+- Title/tagline/description stay truthful to the one-store build.
+- No release surface promises extra maps, enemies, combat, badges, live events, or monetization expansion.
+- Publish copy makes the payoff loop clear: finish shifts, earn `Saved Cash` and XP, buy cosmetics.
+- Mobile-readable wording stays short enough for store and update surfaces.
+- QA can compare the store-page package against the live build without guessing intent.
 
-### Label usage notes
-- If a passive badge is needed on owned items, use `Owned`.
-- If the owned item is actionable, the primary action remains `Owned — Equip`.
-- For locked items, use `Requires Level <level>` as the visible gate label rather than longer explanatory copy on the card.
-- `Equipped` should read as a final state, not a clickable purchase action.
+## QA spot-check list for content
+- Title matches `Closing Shift: Superstore 3AM`.
+- Tagline matches `Close the store. Survive the shift.`
+- Short description only mentions real tasks/disruptions/payoff.
+- Long description does not imply extra locations or combat.
+- Release notes call this a clarity/hardening build, not a major feature expansion.
+- Thumbnail/icon art direction still reads as supermarket work + dread, not monster action.
 
-## Presentation discipline notes for engineering / UI
-- Prioritize the locked copy above over alternate phrasings so QA can verify exact text.
-- On shop cards, state/action text must stay visible even if the flavor line wraps.
-- Results should show `Cash earned`, `XP earned`, and `Employee Rank` before any cosmetic flavor or CTA.
-- Cosmetic verification should remain 2D-first and readable without custom accessory art.
+## Known wording watch item
+There is one doc-level mismatch still worth resolving outside this handoff:
+- `project/docs/GDD.md` one-line pitch still says players spend their paycheck on `upgrades and cosmetics`.
+- Sprint 4 launch-facing guidance is locked to cosmetics/progression only, with no gameplay-upgrade promise.
 
-## Acceptance criteria
-- `Security Alarm` uses the exact ids/text above.
-- Shop state labels and denial copy match the locked strings above.
-- The cash/XP explanation stays consistent with the design contract.
-- Results/shop surfaces remain phone-readable and do not bury mandatory state text under flavor or decoration.
+Flag this as a doc contradiction for follow-up rather than mirroring `upgrades` on release surfaces.

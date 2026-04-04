@@ -2,6 +2,14 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local RoundFolder = script.Parent
+local Config = require(RoundFolder:WaitForChild("Config"))
+local EventService = require(RoundFolder:WaitForChild("EventService"))
+local PayoutService = require(RoundFolder:WaitForChild("PayoutService"))
+local TaskService = require(RoundFolder:WaitForChild("TaskService"))
+
+local ProfileStore = require(ServerScriptService:WaitForChild("Data"):WaitForChild("ProfileStore"))
+
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Constants = require(Shared:WaitForChild("Constants"))
 local UIStrings = require(Shared:WaitForChild("UIStrings"))
@@ -10,546 +18,476 @@ local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local RoundStateChanged = Remotes:WaitForChild("RoundStateChanged")
 local TaskProgressChanged = Remotes:WaitForChild("TaskProgressChanged")
 local AlertRaised = Remotes:WaitForChild("AlertRaised")
-local ProfileChanged = Remotes:WaitForChild("ProfileChanged")
-local ShopAction = Remotes:WaitForChild("ShopAction")
-
-local DataFolder = ServerScriptService:WaitForChild("Data")
-local ProfileStore = require(DataFolder:WaitForChild("ProfileStore"))
-local AnalyticsService =
-	require(ServerScriptService:WaitForChild("Analytics"):WaitForChild("AnalyticsService"))
-
-local RoundFolder = script.Parent
-local Config = require(RoundFolder:WaitForChild("Config"))
-local EventService = require(RoundFolder:WaitForChild("EventService"))
-local PayoutService = require(RoundFolder:WaitForChild("PayoutService"))
-local ShopService = require(RoundFolder:WaitForChild("ShopService"))
-local TaskService = require(RoundFolder:WaitForChild("TaskService"))
 
 local ShiftService = {}
+ShiftService.__index = ShiftService
 
-local currentState = Constants.RoundState.Waiting
-local currentTimerSeconds = 0
-local currentRoundResult = nil
-local currentProgress = nil
-local roundSession = nil
-local shopService = ShopService.new(ProfileStore)
-local onboardingStateByUserId = {}
+local singleton = nil
 
-local function getOnboardingState(userId)
-	local state = onboardingStateByUserId[userId]
-	if state == nil then
-		state = {
-			shown = false,
-			completed = false,
+local function cloneArray(source)
+	local copy = table.create(#source)
+	for index, value in ipairs(source) do
+		copy[index] = value
+	end
+	return copy
+end
+
+local function buildActiveUserIds(players)
+	local activeUserIds = table.create(#players)
+	for _, player in ipairs(players) do
+		table.insert(activeUserIds, player.UserId)
+	end
+	return activeUserIds
+end
+
+local function cloneAlertPayload(alertIdOrPayload)
+	if typeof(alertIdOrPayload) == "table" then
+		return table.clone(alertIdOrPayload)
+	end
+
+	if typeof(alertIdOrPayload) == "string" then
+		if UIStrings.Alerts[alertIdOrPayload] ~= nil then
+			return table.clone(UIStrings.Alerts[alertIdOrPayload])
+		end
+		if alertIdOrPayload == Constants.Alerts.MidRoundJoin then
+			return table.clone(UIStrings.Alerts.late_join_wait)
+		end
+		return {
+			id = alertIdOrPayload,
+			message = alertIdOrPayload,
+			priority = UIStrings.AlertPriority.Prompt,
+			duration = 3,
+			pinned = false,
 		}
-		onboardingStateByUserId[userId] = state
 	end
-	return state
+
+	return {
+		id = "unknown_alert",
+		message = tostring(alertIdOrPayload),
+		priority = UIStrings.AlertPriority.Prompt,
+		duration = 3,
+		pinned = false,
+	}
 end
 
-function ShiftService._emitOnboardingShownForPlayers(players)
-	for _, player in ipairs(players) do
-		if player.Parent ~= nil then
-			local onboardingState = getOnboardingState(player.UserId)
-			if not onboardingState.shown then
-				onboardingState.shown = true
-				AnalyticsService.emit("onboarding_shown", {
-					user_id = player.UserId,
-					round_id = nil,
-				})
-			end
-		end
+local function isNetworkPlayer(player)
+	return typeof(player) == "Instance" and player:IsA("Player") and player.Parent ~= nil
+end
+
+function ShiftService.new(options)
+	options = options or {}
+
+	local self = setmetatable({}, ShiftService)
+	self.playersService = options.playersService or Players
+	self.getPlayers = options.getPlayers
+	self.profileStore = options.profileStore or ProfileStore
+	self.roundStateChanged = options.roundStateChanged
+	if self.roundStateChanged == nil and options.networkEnabled ~= false then
+		self.roundStateChanged = RoundStateChanged
+	end
+	self.taskProgressChanged = options.taskProgressChanged
+	if self.taskProgressChanged == nil and options.networkEnabled ~= false then
+		self.taskProgressChanged = TaskProgressChanged
+	end
+	self.alertRaised = options.alertRaised
+	if self.alertRaised == nil and options.networkEnabled ~= false then
+		self.alertRaised = AlertRaised
+	end
+	self.networkEnabled = options.networkEnabled ~= false
+	self.onStateChanged = options.onStateChanged
+	self.onProgressChanged = options.onProgressChanged
+	self.onAlertRaised = options.onAlertRaised
+	self.intermissionSeconds = options.intermissionSeconds or Config.intermissionSeconds
+	self.durationSeconds = options.durationSeconds or Config.durationSeconds
+	self.minPlayers = options.minPlayers or Config.minPlayers
+	self.endDelaySeconds = options.endDelaySeconds or Config.endDelaySeconds
+	self.heartbeatSeconds = options.heartbeatSeconds or Config.heartbeatSeconds
+	self.stopAfterRound = options.stopAfterRound == true
+	self.started = false
+	self.running = false
+	self.currentState = Constants.RoundState.Waiting
+	self.currentTimerSeconds = 0
+	self.currentProgress = nil
+	self.currentRoundResult = nil
+	self.activePlayers = {}
+	self.activeUserIds = {}
+	self.round = nil
+	self.taskService = options.taskService
+	self.eventService = options.eventService
+	self:_ensureServices()
+	return self
+end
+
+function ShiftService:_ensureServices()
+	if self.taskService ~= nil and self.eventService ~= nil then
+		return
+	end
+
+	if self.taskService == nil then
+		self.taskService = TaskService.new({
+			sendAlert = function(alertIdOrPayload, targetPlayer)
+				self:sendAlert(alertIdOrPayload, targetPlayer)
+			end,
+			onRoundSuccess = function(player)
+				self:_markRoundSuccess(player)
+			end,
+			onProgressChanged = function(progress)
+				self:_handleProgressChanged(progress)
+			end,
+			onTaskCompleted = function()
+				self:_broadcastState()
+			end,
+			onMimicTriggered = function(player, nodeId)
+				if self.eventService ~= nil then
+					self.eventService:handleMimicTriggered(player, nodeId)
+				end
+			end,
+			onMimicExpired = function(nodeId)
+				if self.eventService ~= nil then
+					self.eventService:handleMimicExpired(nodeId)
+				end
+			end,
+			onSecurityAlarmTriggered = function(player, now)
+				if self.eventService == nil then
+					return false
+				end
+				return self.eventService:handleSecurityAlarmTriggered(player, now)
+			end,
+		})
+	end
+
+	if self.eventService == nil then
+		self.eventService = EventService.new(self.taskService, {
+			sendAlert = function(alertIdOrPayload)
+				self:sendAlert(alertIdOrPayload)
+			end,
+			onBlackoutSeen = function() end,
+			onMimicSpawned = function() end,
+			onMimicTriggered = function() end,
+			onMimicExpired = function() end,
+			onSecurityAlarmSeen = function() end,
+			onSecurityAlarmReset = function() end,
+			onSecurityAlarmFailed = function() end,
+			onTimerPenalty = function(seconds)
+				self:_applyTimerPenalty(seconds)
+			end,
+		})
 	end
 end
 
-function ShiftService._emitOnboardingCompletedForPlayers(players, roundId)
-	for _, player in ipairs(players) do
-		if player.Parent ~= nil then
-			local onboardingState = getOnboardingState(player.UserId)
-			if onboardingState.shown and not onboardingState.completed then
-				onboardingState.completed = true
-				AnalyticsService.emit("onboarding_completed", {
-					user_id = player.UserId,
-					round_id = roundId,
-				})
-			end
-		end
+function ShiftService:_getPlayers()
+	if self.getPlayers ~= nil then
+		return self.getPlayers()
 	end
-end
 
-local function getActiveUserIds()
-	if roundSession == nil then
+	if self.playersService == nil then
 		return {}
 	end
 
-	local userIds = {}
-	for _, player in ipairs(roundSession.activePlayers) do
-		table.insert(userIds, player.UserId)
-	end
-	return userIds
+	return self.playersService:GetPlayers()
 end
 
-local function buildProfilePayload(player, extraPayload)
-	local publicProfile = ProfileStore.getPublicProfile(player)
-	if publicProfile == nil then
-		return nil
+function ShiftService:_getEligiblePlayers()
+	local eligiblePlayers = {}
+	for _, player in ipairs(self:_getPlayers()) do
+		if player ~= nil and player.Parent ~= nil then
+			table.insert(eligiblePlayers, player)
+		end
 	end
-
-	local payload = table.clone(publicProfile)
-	if type(extraPayload) == "table" and extraPayload.lastRoundResult ~= nil then
-		payload.lastRoundResult = extraPayload.lastRoundResult
-	end
-	return payload
+	return eligiblePlayers
 end
 
-local function pushProfileUpdate(player, extraPayload)
-	if typeof(player) ~= "Instance" or player.Parent == nil then
+function ShiftService:_emitState(payload)
+	if self.onStateChanged ~= nil then
+		self.onStateChanged(payload)
+	end
+	if self.networkEnabled and self.roundStateChanged ~= nil then
+		self.roundStateChanged:FireAllClients(payload)
+	end
+end
+
+function ShiftService:_emitProgress(progress)
+	if self.onProgressChanged ~= nil then
+		self.onProgressChanged(progress)
+	end
+	if self.networkEnabled and self.taskProgressChanged ~= nil then
+		self.taskProgressChanged:FireAllClients(progress)
+	end
+end
+
+function ShiftService:_emitAlert(payload, targetPlayer)
+	if self.onAlertRaised ~= nil then
+		self.onAlertRaised(payload, targetPlayer)
+	end
+
+	if not self.networkEnabled or self.alertRaised == nil then
 		return
 	end
 
-	local payload = buildProfilePayload(player, extraPayload)
-	if payload ~= nil then
-		ProfileChanged:FireClient(player, payload)
-	end
-end
-
-ProfileStore.setOnProfileChanged(function(player, _, extraPayload)
-	pushProfileUpdate(player, extraPayload)
-end)
-
-local function getRemainingSecondsPrecise()
-	if roundSession == nil then
-		return currentTimerSeconds
-	end
-	return math.max(0, roundSession.roundEndsAt - os.clock())
-end
-
-local function broadcastState()
-	RoundStateChanged:FireAllClients({
-		state = currentState,
-		timerSeconds = currentTimerSeconds,
-		roundResult = currentRoundResult,
-		activeUserIds = getActiveUserIds(),
-		progress = currentProgress,
-	})
-end
-
-local function broadcastProgress(progress)
-	currentProgress = progress
-	TaskProgressChanged:FireAllClients(progress)
-	broadcastState()
-end
-
-local function resolveAlertPayload(message)
-	if type(message) == "string" and UIStrings.Alerts[message] ~= nil then
-		return table.clone(UIStrings.Alerts[message])
-	end
-	if type(message) == "table" then
-		return table.clone(message)
-	end
-	return message
-end
-
-local function sendAlert(message, targetPlayer)
-	local payload = resolveAlertPayload(message)
-	if
-		targetPlayer ~= nil
-		and typeof(targetPlayer) == "Instance"
-		and targetPlayer.Parent ~= nil
-	then
-		AlertRaised:FireClient(targetPlayer, payload)
-		return
-	end
-	AlertRaised:FireAllClients(payload)
-end
-
-local function emitForPlayers(eventName, players, payloadBuilder)
-	for _, player in ipairs(players) do
-		if player.Parent ~= nil then
-			AnalyticsService.emit(eventName, payloadBuilder(player))
+	if targetPlayer ~= nil then
+		if isNetworkPlayer(targetPlayer) then
+			self.alertRaised:FireClient(targetPlayer, payload)
 		end
-	end
-end
-
-local taskService = TaskService.new({
-	sendAlert = sendAlert,
-	onRoundSuccess = function()
-		-- Set below after function declarations.
-	end,
-	onProgressChanged = broadcastProgress,
-	onTaskCompleted = function()
-		-- Set below after function declarations.
-	end,
-	onMimicTriggered = function()
-		-- Set below after function declarations.
-	end,
-	onMimicExpired = function()
-		-- Set below after function declarations.
-	end,
-	onSecurityAlarmTriggered = function()
-		return false
-	end,
-})
-
-local eventService = EventService.new(taskService, {
-	sendAlert = sendAlert,
-	onBlackoutSeen = function(remainingSeconds)
-		if roundSession == nil then
-			return
-		end
-		emitForPlayers("blackout_seen", roundSession.activePlayers, function(player)
-			return {
-				user_id = player.UserId,
-				round_id = roundSession.roundId,
-				remaining_seconds = math.floor(remainingSeconds + 0.5),
-			}
-		end)
-	end,
-	onMimicSpawned = function(nodeId, remainingSeconds)
-		if roundSession == nil then
-			return
-		end
-		emitForPlayers("mimic_spawned", roundSession.activePlayers, function(player)
-			return {
-				user_id = player.UserId,
-				round_id = roundSession.roundId,
-				node_id = nodeId,
-				remaining_seconds = math.floor(remainingSeconds + 0.5),
-			}
-		end)
-	end,
-	onMimicTriggered = function(player, nodeId)
-		if roundSession == nil then
-			return
-		end
-		AnalyticsService.emit("mimic_triggered", {
-			user_id = player.UserId,
-			round_id = roundSession.roundId,
-			node_id = nodeId,
-			trigger_user_id = player.UserId,
-			timer_penalty_seconds = Constants.Events.Mimic.TimerPenaltySeconds,
-			cash_penalty = Constants.Events.Mimic.CashPenalty,
-		})
-	end,
-	onMimicExpired = function(nodeId)
-		if roundSession == nil then
-			return
-		end
-		emitForPlayers("mimic_expired", roundSession.activePlayers, function(player)
-			return {
-				user_id = player.UserId,
-				round_id = roundSession.roundId,
-				node_id = nodeId,
-			}
-		end)
-	end,
-	onSecurityAlarmSeen = function(nodeId, remainingSeconds, responseWindowSeconds)
-		if roundSession == nil then
-			return
-		end
-		emitForPlayers("security_alarm_seen", roundSession.activePlayers, function(player)
-			return {
-				user_id = player.UserId,
-				round_id = roundSession.roundId,
-				node_id = nodeId,
-				remaining_seconds = math.floor(remainingSeconds + 0.5),
-				response_window_seconds = responseWindowSeconds,
-			}
-		end)
-	end,
-	onSecurityAlarmReset = function(player, nodeId, secondsLeft, responseTimeSeconds)
-		if roundSession == nil then
-			return
-		end
-		roundSession.pendingXP[player.UserId] = (roundSession.pendingXP[player.UserId] or 0)
-			+ Constants.Progression.XPBySource.SecurityAlarmReset
-		AnalyticsService.emit("security_alarm_reset", {
-			user_id = player.UserId,
-			round_id = roundSession.roundId,
-			node_id = nodeId,
-			resolver_user_id = player.UserId,
-			seconds_left = math.max(0, math.floor(secondsLeft * 10 + 0.5) / 10),
-			response_time_seconds = math.floor(responseTimeSeconds * 10 + 0.5) / 10,
-		})
-	end,
-	onSecurityAlarmFailed = function(nodeId, timerPenaltySeconds)
-		if roundSession == nil then
-			return
-		end
-		emitForPlayers("security_alarm_failed", roundSession.activePlayers, function(player)
-			return {
-				user_id = player.UserId,
-				round_id = roundSession.roundId,
-				node_id = nodeId,
-				timer_penalty_seconds = timerPenaltySeconds,
-			}
-		end)
-	end,
-	onTimerPenalty = function(seconds)
-		if roundSession == nil then
-			return
-		end
-		roundSession.roundEndsAt = math.max(os.clock(), roundSession.roundEndsAt - seconds)
-		currentTimerSeconds = math.ceil(getRemainingSecondsPrecise())
-		broadcastState()
-	end,
-})
-
-local finishRound
-
-local function onTaskCompleted(player, taskId)
-	if roundSession == nil then
 		return
 	end
 
-	local xpGain = if taskId == Constants.TaskId.CloseRegister
-		then Constants.Progression.XPBySource.CloseRegister
-		else Constants.Progression.XPBySource.Task
-	roundSession.pendingXP[player.UserId] = (roundSession.pendingXP[player.UserId] or 0) + xpGain
+	local sentToActivePlayers = false
+	for _, player in ipairs(self.activePlayers) do
+		if isNetworkPlayer(player) then
+			self.alertRaised:FireClient(player, payload)
+			sentToActivePlayers = true
+		end
+	end
 
-	if roundSession.firstTaskCompleted[player.UserId] ~= true then
-		roundSession.firstTaskCompleted[player.UserId] = true
-		AnalyticsService.emit("first_task_completed", {
-			user_id = player.UserId,
-			round_id = roundSession.roundId,
-			task_id = taskId,
-			seconds_elapsed = math.floor(
-				Constants.Round.DurationSeconds - getRemainingSecondsPrecise() + 0.5
-			),
-		})
+	if not sentToActivePlayers then
+		self.alertRaised:FireAllClients(payload)
 	end
 end
 
-local function onMimicTriggered(player, nodeId)
-	eventService:handleMimicTriggered(player, nodeId)
-	sendAlert("mimic_triggered")
-end
-
-local function onMimicExpired(nodeId)
-	eventService:handleMimicExpired(nodeId)
-end
-
-taskService.onRoundSuccess = function()
-	finishRound(true)
-end
-
-taskService.onTaskCompleted = onTaskCompleted
-
-taskService.onMimicTriggered = onMimicTriggered
-
-taskService.onMimicExpired = onMimicExpired
-
-taskService.onSecurityAlarmTriggered = function(player, now)
-	return eventService:handleSecurityAlarmTriggered(player, now)
-end
-
-local function setState(nextState, timerSeconds, roundResult)
-	currentState = nextState
-	currentTimerSeconds = timerSeconds or 0
-	currentRoundResult = roundResult
-	broadcastState()
-end
-
-local function getActivePlayersSnapshot()
-	local players = Players:GetPlayers()
-	local activePlayers = {}
-	for index = 1, math.min(#players, Constants.Round.MaxPlayers) do
-		table.insert(activePlayers, players[index])
-	end
-	return activePlayers
-end
-
-local function startIntermissionTimer(durationSeconds)
-	setState(Constants.RoundState.Intermission, durationSeconds, nil)
-	ShiftService._emitOnboardingShownForPlayers(getActivePlayersSnapshot())
-	local endsAt = os.clock() + durationSeconds
-	while currentState == Constants.RoundState.Intermission and os.clock() < endsAt do
-		currentTimerSeconds = math.max(0, math.ceil(endsAt - os.clock()))
-		broadcastState()
-		task.wait(Constants.Round.TickSeconds)
-	end
-	currentTimerSeconds = 0
-end
-
-local function startRound()
-	local activePlayers = getActivePlayersSnapshot()
-	if #activePlayers < Constants.Round.MinPlayers then
-		return false
-	end
-
-	roundSession = {
-		roundId = string.format("r-%d-%d", os.time(), Random.new():NextInteger(1000, 9999)),
-		activePlayers = activePlayers,
-		pendingXP = {},
-		firstTaskCompleted = {},
-		roundEndsAt = os.clock() + Constants.Round.DurationSeconds,
-		resolving = false,
+function ShiftService:_buildStatePayload()
+	return {
+		state = self.currentState,
+		timerSeconds = self.currentTimerSeconds,
+		roundResult = self.currentRoundResult,
+		activeUserIds = cloneArray(self.activeUserIds),
+		progress = self.currentProgress,
 	}
-	for _, player in ipairs(activePlayers) do
-		ProfileStore.loadProfile(player)
-		roundSession.pendingXP[player.UserId] = 0
-	end
-	ShiftService._emitOnboardingCompletedForPlayers(activePlayers, roundSession.roundId)
-
-	local quotas = Config.getQuotaTemplate(#activePlayers)
-	taskService:startRound(activePlayers, quotas)
-	eventService:startRound()
-	currentProgress = taskService:getProgressSnapshot()
-	setState(Constants.RoundState.Playing, Constants.Round.DurationSeconds, nil)
-	sendAlert("round_start_hint")
-
-	emitForPlayers("shift_started", activePlayers, function(player)
-		local profile = ProfileStore.getProfile(player)
-		return {
-			user_id = player.UserId,
-			round_id = roundSession.roundId,
-			party_size = #activePlayers,
-			level = if profile ~= nil then profile.Level else 1,
-			cash = if profile ~= nil then profile.Cash else 0,
-		}
-	end)
-	return true
 end
 
-finishRound = function(success)
-	if roundSession == nil or roundSession.resolving then
+function ShiftService:_broadcastState()
+	self:_emitState(self:_buildStatePayload())
+end
+
+function ShiftService:_handleProgressChanged(progress)
+	self.currentProgress = progress
+	self:_emitProgress(progress)
+	if
+		self.currentState == Constants.RoundState.Playing
+		or self.currentState == Constants.RoundState.Ended
+	then
+		self:_broadcastState()
+	end
+end
+
+function ShiftService:_setWaitingState()
+	self.currentState = Constants.RoundState.Waiting
+	self.currentTimerSeconds = 0
+	self.currentRoundResult = nil
+	self.currentProgress = nil
+	self.activePlayers = {}
+	self.activeUserIds = {}
+	self:_broadcastState()
+end
+
+function ShiftService:_setIntermissionTimer(timerSeconds)
+	self.currentState = Constants.RoundState.Intermission
+	self.currentTimerSeconds = timerSeconds
+	self.currentRoundResult = nil
+	self.currentProgress = nil
+	self.activePlayers = {}
+	self.activeUserIds = {}
+	self:_broadcastState()
+end
+
+function ShiftService:_setPlayingState(activePlayers)
+	self.activePlayers = cloneArray(activePlayers)
+	self.activeUserIds = buildActiveUserIds(activePlayers)
+	self.currentState = Constants.RoundState.Playing
+	self.currentTimerSeconds = self.durationSeconds
+	self.currentRoundResult = nil
+end
+
+function ShiftService:_setEndedState(roundResult)
+	self.currentState = Constants.RoundState.Ended
+	self.currentTimerSeconds = 0
+	self.currentRoundResult = roundResult
+	self.currentProgress = self.taskService:getProgressSnapshot()
+	self:_broadcastState()
+end
+
+function ShiftService:sendAlert(alertIdOrPayload, targetPlayer)
+	self:_emitAlert(cloneAlertPayload(alertIdOrPayload), targetPlayer)
+end
+
+function ShiftService:_markRoundSuccess(player)
+	if self.round == nil then
 		return
 	end
-	roundSession.resolving = true
+	self.round.success = true
+	self.round.successPlayer = player
+end
 
-	local basePay = taskService:getBasePay()
-	local personalPenalties = taskService:getPersonalPenalties()
-	local awardedPayouts = PayoutService.calculateAwardedPayouts(
-		roundSession.activePlayers,
+function ShiftService:_applyTimerPenalty(seconds)
+	if self.round == nil then
+		return
+	end
+
+	self.round.endsAt -= seconds
+	local remainingSeconds = math.max(0, math.ceil(self.round.endsAt - os.clock()))
+	if remainingSeconds ~= self.currentTimerSeconds then
+		self.currentTimerSeconds = remainingSeconds
+		self:_broadcastState()
+	end
+end
+
+function ShiftService:_runIntermission()
+	local intermissionEndsAt = os.clock() + self.intermissionSeconds
+	local lastBroadcastTimer = -1
+
+	while self.running do
+		local eligiblePlayers = self:_getEligiblePlayers()
+		if #eligiblePlayers < self.minPlayers then
+			self:_setWaitingState()
+			return false
+		end
+
+		local remainingSeconds = math.max(0, math.ceil(intermissionEndsAt - os.clock()))
+		if remainingSeconds ~= lastBroadcastTimer then
+			lastBroadcastTimer = remainingSeconds
+			self:_setIntermissionTimer(remainingSeconds)
+		end
+
+		if remainingSeconds <= 0 then
+			return true
+		end
+
+		task.wait(self.heartbeatSeconds)
+	end
+
+	return false
+end
+
+function ShiftService:_finishRound(success)
+	local basePay = self.taskService:getBasePay()
+	local personalPenalties = self.taskService:getPersonalPenalties()
+	PayoutService.awardPlayers(
+		self.activePlayers,
 		basePay,
 		success,
-		personalPenalties
+		personalPenalties,
+		self.profileStore
 	)
-	local remainingSeconds = math.floor(getRemainingSecondsPrecise() + 0.5)
-	local outcome = if success then "success" else "failure"
 
-	setState(Constants.RoundState.Ended, remainingSeconds, outcome)
-	sendAlert(if success then "round_success" else "round_failure")
+	self:_setEndedState(if success then "success" else "failure")
+	self:sendAlert(if success then "round_success" else "round_failure")
 
-	for _, player in ipairs(roundSession.activePlayers) do
-		local userId = player.UserId
-		local profileBefore = ProfileStore.getProfile(player)
-		local playerStillPresent = player.Parent ~= nil
-		local cashAwarded = if playerStillPresent then awardedPayouts[userId] or 0 else 0
-		local xpAwarded = roundSession.pendingXP[userId] or 0
-		if playerStillPresent then
-			xpAwarded += if success
-				then Constants.Progression.XPBySource.ShiftSuccess
-				else Constants.Progression.XPBySource.ShiftFailure
-		end
-
-		local lastRoundResult = nil
-		if playerStillPresent then
-			lastRoundResult = {
-				outcome = outcome,
-				cashEarned = cashAwarded,
-				xpEarned = xpAwarded,
-				levelBefore = if profileBefore ~= nil then profileBefore.Level else 1,
-			}
-		end
-
-		local profileAfter = ProfileStore.commitRoundRewards(player, {
-			cashDelta = cashAwarded,
-			xpDelta = xpAwarded,
-			shiftsPlayedDelta = 1,
-			shiftsClearedDelta = if success and playerStillPresent then 1 else 0,
-			lastRoundResult = lastRoundResult,
-		})
-
-		if playerStillPresent and profileAfter ~= nil then
-			lastRoundResult.levelAfter = profileAfter.Level
-			lastRoundResult.cashTotal = profileAfter.Cash
-			lastRoundResult.xpTotal = profileAfter.XP
-			pushProfileUpdate(player, { lastRoundResult = lastRoundResult })
-			AnalyticsService.emit(if success then "shift_success" else "shift_failure", {
-				user_id = userId,
-				round_id = roundSession.roundId,
-				party_size = #roundSession.activePlayers,
-				remaining_seconds = remainingSeconds,
-				cash_awarded = cashAwarded,
-				xp_awarded = xpAwarded,
-			})
-			AnalyticsService.emit("results_shown", {
-				user_id = userId,
-				round_id = roundSession.roundId,
-				outcome = outcome,
-				cash_total = profileAfter.Cash,
-				xp_total = profileAfter.XP,
-				level = profileAfter.Level,
-			})
-		end
+	if self.endDelaySeconds > 0 then
+		task.wait(self.endDelaySeconds)
 	end
+
+	self.eventService:endRound()
+	self.taskService:endRound()
+	self.round = nil
+
+	if self.stopAfterRound then
+		self:shutdown()
+		return
+	end
+
+	self:_setWaitingState()
 end
 
-local function endRoundCleanup()
-	eventService:endRound()
-	taskService:endRound()
-	currentProgress = taskService:getProgressSnapshot()
-	roundSession = nil
+function ShiftService:_runRound()
+	local activePlayers = self:_getEligiblePlayers()
+	if #activePlayers < self.minPlayers then
+		self:_setWaitingState()
+		return false
+	end
+
+	self:_setPlayingState(activePlayers)
+	self.round = {
+		endsAt = os.clock() + self.durationSeconds,
+		success = false,
+		successPlayer = nil,
+	}
+
+	self.taskService:startRound(activePlayers, Config.getQuotaTemplate(#activePlayers))
+	self.eventService:startRound()
+	self.currentProgress = self.taskService:getProgressSnapshot()
+	self:_broadcastState()
+	self:sendAlert("round_start_hint")
+
+	local lastBroadcastTimer = -1
+	while self.running and self.round ~= nil do
+		local now = os.clock()
+		self.taskService:update(now)
+		self.eventService:update(
+			now,
+			math.max(0, math.ceil(self.round.endsAt - now)),
+			self.taskService:getRemainingRealTasks()
+		)
+
+		local remainingSeconds = math.max(0, math.ceil(self.round.endsAt - os.clock()))
+		if remainingSeconds ~= lastBroadcastTimer then
+			lastBroadcastTimer = remainingSeconds
+			self.currentTimerSeconds = remainingSeconds
+			self:_broadcastState()
+		end
+
+		if self.round.success then
+			self:_finishRound(true)
+			return true
+		end
+		if remainingSeconds <= 0 then
+			self:_finishRound(false)
+			return true
+		end
+
+		task.wait(self.heartbeatSeconds)
+	end
+
+	return false
 end
 
-Players.PlayerRemoving:Connect(function(player)
-	onboardingStateByUserId[player.UserId] = nil
-end)
-
-function ShiftService.start()
-	ShopAction.OnServerInvoke = function(player, request)
-		return shopService:handleRequest(player, request, currentState)
+function ShiftService:run()
+	if self.started then
+		return self
 	end
 
-	for _, player in ipairs(Players:GetPlayers()) do
-		ProfileStore.loadProfile(player)
-	end
+	self.started = true
+	self.running = true
+	self:_setWaitingState()
 
 	task.spawn(function()
-		while true do
-			if #Players:GetPlayers() < Config.minPlayers then
-				setState(Constants.RoundState.Waiting, 0, nil)
-				currentProgress = taskService:getProgressSnapshot()
-				task.wait(2)
-				continue
-			end
-
-			startIntermissionTimer(Config.intermissionSeconds)
-			if #Players:GetPlayers() < Config.minPlayers then
-				continue
-			end
-			if not startRound() then
-				continue
-			end
-
-			while roundSession ~= nil and not roundSession.resolving do
-				local now = os.clock()
-				currentTimerSeconds = math.max(0, math.ceil(roundSession.roundEndsAt - now))
-				currentProgress = taskService:getProgressSnapshot()
-				broadcastState()
-				taskService:update(now)
-				eventService:update(
-					now,
-					math.max(0, roundSession.roundEndsAt - now),
-					taskService:getRemainingRealTasks()
-				)
-				if now >= roundSession.roundEndsAt then
-					finishRound(false)
-					break
+		while self.running do
+			local eligiblePlayers = self:_getEligiblePlayers()
+			if #eligiblePlayers < self.minPlayers then
+				self:_setWaitingState()
+				task.wait(1)
+			else
+				local intermissionFinished = self:_runIntermission()
+				if intermissionFinished and self.running then
+					self:_runRound()
 				end
-				task.wait(Constants.Round.TickSeconds)
 			end
-
-			if roundSession ~= nil then
-				currentProgress = taskService:getProgressSnapshot()
-				broadcastState()
-				task.wait(Constants.Round.ResultsSeconds)
-			end
-			endRoundCleanup()
-			setState(Constants.RoundState.Waiting, 0, nil)
 		end
 	end)
+
+	return self
+end
+
+function ShiftService:shutdown()
+	self.running = false
+	self.started = false
+	if self.round ~= nil then
+		self.eventService:endRound()
+		self.taskService:endRound()
+		self.round = nil
+	end
+	self:_setWaitingState()
+end
+
+function ShiftService.start(options)
+	if singleton == nil then
+		singleton = ShiftService.new(options)
+	end
+	return singleton:run()
+end
+
+function ShiftService.stop()
+	if singleton ~= nil then
+		singleton:shutdown()
+	end
 end
 
 return ShiftService

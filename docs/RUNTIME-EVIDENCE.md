@@ -876,3 +876,276 @@ POST_HOTFIX_FIT title_ok=true body_ok=true meta_ok=true action_ok=true
 - A. 2-player `Security Alarm`: **Pass**
 - B. `insufficient_cash` denial: **Pass**
 - C. phone-sized Sprint 3 shop/results UI: **Pass after minimal UI hotfix**, with the limitation that this remains command-backed layout/readability proof rather than a human-visible screenshot/clip artifact
+
+## 2026-04-03 — Sprint 4 launch-facing runtime/client evidence pass
+
+### Session metadata
+- Date/time: 2026-04-03 15:52:48 CDT
+- Build artifact: `project/build/ClosingShift.rbxlx`
+- Environment/setup: Mac’s Mac mini on Apple Silicon; source/build checks plus `run-in-roblox` structural probes against the built place; attempted direct Studio automation for live client-visible capture
+- Real product blocker found during the pass:
+  - `project/src/StarterGui/Sprint3UI.client.lua` waits on `Remotes/ProfileChanged` and `Remotes/ShopAction`
+  - `project/src/ReplicatedStorage/Remotes.model.json` did not declare either remote before this pass
+  - Minimal hotfix applied: added `ProfileChanged` (`RemoteEvent`) and `ShopAction` (`RemoteFunction`) to `project/src/ReplicatedStorage/Remotes.model.json`
+  - Affected-case rerun after hotfix: `bash scripts/build.sh` passed and a built-place probe confirmed all five required remotes now exist (`RoundStateChanged`, `AlertRaised`, `TaskProgressChanged`, `ProfileChanged`, `ShopAction`)
+- Exact host-level blockers for real client-visible proof on this host:
+  - `run-in-roblox` cannot spawn a test `LocalPlayer`: `CreateLocalPlayer` errors with `lacking capability LocalUser`
+  - `StudioTestService:ExecutePlayModeAsync()` from the available `run-in-roblox` script path errors with `can only be called from the edit DataModel`
+  - macOS screen capture is unavailable to this session: `screencapture -x ...` returned `could not create image from display`
+  - macOS GUI automation is unavailable to this session: `osascript` keystroke attempt returned `osascript is not allowed to send keystrokes`
+- Screenshot / clip references: none available from this session; no claim is made that a human-visible screenshot or clip was captured here
+
+### Commands run for this pass
+- `cd project && bash scripts/check.sh`
+  - Result: Pass (`0 errors`, `0 warnings`, `0 parse errors`)
+- `cd project && bash scripts/build.sh`
+  - Result: Pass
+- `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script /tmp/studio_probe.lua`
+  - Result: Pass for environment probing; confirmed `StudioTestService` exists but did not provide a usable Play Solo path from this `run-in-roblox` execution context
+- `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script /tmp/runmode_probe.lua`
+  - Result: Pass for environment probing; `RunService:Run()` entered Run Mode only and never produced a `LocalPlayer`
+- `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script /tmp/runmode_localplayer_probe.lua`
+  - Result: Fail as expected for client emulation; `Players:CreateLocalPlayer(0)` returned `lacking capability LocalUser`
+- `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script /tmp/remotes_probe.lua`
+  - Result: Pass after hotfix; printed:
+    - `REMOTE RoundStateChanged RemoteEvent`
+    - `REMOTE AlertRaised RemoteEvent`
+    - `REMOTE TaskProgressChanged RemoteEvent`
+    - `REMOTE ProfileChanged RemoteEvent`
+    - `REMOTE ShopAction RemoteFunction`
+- `screencapture -x <tempfile>`
+  - Result: Fail; `could not create image from display`
+- `osascript -e 'tell application "System Events" to key code 35 using {command down}'`
+  - Result: Fail; `osascript is not allowed to send keystrokes`
+
+### A. success results wording
+- Test name: Sprint 4 success results wording / results-card availability
+- Date/time: 2026-04-03 15:52:48 CDT
+- Environment/setup: built-place probe + source-backed UI review after the remotes hotfix; attempted live client capture path blocked by host limitations listed above
+- Pass / fail: **Blocked for client-visible proof**
+- Exact observed behavior:
+  - `project/src/StarterGui/Sprint3UI.client.lua` success title is `Results — Shift Cleared`
+  - Success body line order is implemented as:
+    1. `Saved Cash added: +$%d`
+    2. `XP earned: +%d`
+    3. `Current Level: %d`
+    4. `Totals — Saved Cash $%d • XP %d`
+  - After the hotfix, the built place now includes the remotes the results UI was waiting on, removing the immediate source-level instantiation blocker
+- Mismatch vs Sprint 4 spec if any:
+  - No wording mismatch found
+  - Pre-hotfix blocker existed: the results/progression LocalScript would have stalled on missing remotes before any client-visible results card could appear
+- Code changed, and which files:
+  - Yes — `project/src/ReplicatedStorage/Remotes.model.json`
+- Whether the case was rerun after a hotfix:
+  - Yes — build + built-place remotes probe rerun passed after the hotfix
+- Screenshot / clip references if available:
+  - None available from this session
+
+### B. failure results wording
+- Test name: Sprint 4 failure results wording / results-card availability
+- Date/time: 2026-04-03 15:52:48 CDT
+- Environment/setup: built-place probe + source-backed UI review after the remotes hotfix; attempted live client capture path blocked by host limitations listed above
+- Pass / fail: **Blocked for client-visible proof**
+- Exact observed behavior:
+  - `project/src/StarterGui/Sprint3UI.client.lua` failure title is `Results — Shift Failed`
+  - Failure body line order is implemented as:
+    1. `Saved Cash added: +$%d`
+    2. `XP earned: +%d`
+    3. `Current Level: %d`
+    4. `Totals — Saved Cash $%d • XP %d`
+  - After the hotfix, the built place now includes the remotes the results UI was waiting on, removing the immediate source-level instantiation blocker
+- Mismatch vs Sprint 4 spec if any:
+  - No wording mismatch found
+  - Pre-hotfix blocker existed: the results/progression LocalScript would have stalled on missing remotes before any client-visible results card could appear
+- Code changed, and which files:
+  - Yes — `project/src/ReplicatedStorage/Remotes.model.json`
+- Whether the case was rerun after a hotfix:
+  - Yes — build + built-place remotes probe rerun passed after the hotfix
+- Screenshot / clip references if available:
+  - None available from this session
+
+### C. `Saved Cash` landing after results
+- Test name: Sprint 4 `Saved Cash` landing after results
+- Date/time: 2026-04-03 15:52:48 CDT
+- Environment/setup: source-backed HUD/results review plus built-place remotes rerun after the remotes hotfix; no honest Play Solo client path was available on this host
+- Pass / fail: **Blocked for client-visible proof and blocked for end-to-end landing confirmation on this host**
+- Exact observed behavior:
+  - `project/src/StarterGui/HUD.client.lua` end-of-round earnings block ends with `Saved Cash added: +$%d`
+  - `project/src/StarterGui/Sprint3UI.client.lua` results body starts with `Saved Cash added: +$%d`
+  - `project/src/StarterGui/HUD.client.lua` persistent balance label remains `Saved Cash: $%d`
+  - The code clearly distinguishes shift earnings from persistent balance, but this session could not honestly observe the persistent balance increment landing after the results card in a live client
+- Mismatch vs Sprint 4 spec if any:
+  - No copy mismatch found
+  - Runtime landing proof remains unverified because no live client session could be produced from this host/tool path
+- Code changed, and which files:
+  - Yes — `project/src/ReplicatedStorage/Remotes.model.json` (results UI availability blocker only)
+  - No payout or HUD math file changed in this pass
+- Whether the case was rerun after a hotfix:
+  - Yes for the results-UI availability blocker only; no end-to-end live client rerun was possible
+- Screenshot / clip references if available:
+  - None available from this session
+
+### D. late-join readability
+- Test name: Sprint 4 late-join readability
+- Date/time: 2026-04-03 15:52:48 CDT
+- Environment/setup: source-backed HUD review; attempted live client capture path blocked by host limitations listed above
+- Pass / fail: **Blocked for client-visible proof**
+- Exact observed behavior:
+  - State text resolves to `Waiting for next shift`
+  - Pinned alert text is `Shift in progress. Wait for the next one.`
+  - Objective/supporting text is:
+    - `This shift started without you.`
+    - `Clock in next round to take tasks and earn payout.`
+  - Earnings/supporting text is:
+    - `Shift Cash: $0`
+    - `This shift started without you.`
+    - `Next shift payout is what can add to Saved Cash.`
+- Mismatch vs Sprint 4 spec if any:
+  - No wording mismatch found
+  - Client-visible readability remains unverified because no honest late-join client session could be rendered or captured on this host
+- Code changed, and which files:
+  - No
+- Whether the case was rerun after a hotfix:
+  - No hotfix was needed for the late-join copy itself
+- Screenshot / clip references if available:
+  - None available from this session
+
+### E. phone-sized HUD/results readability
+- Test name: Sprint 4 phone-sized HUD/results readability
+- Date/time: 2026-04-03 15:52:48 CDT
+- Environment/setup: source-backed layout review; attempted device/client capture path blocked by host limitations listed above
+- Pass / fail: **Blocked**
+- Exact observed behavior:
+  - `project/src/StarterGui/HUD.client.lua` uses auto-sized wrapped labels and a constrained panel width (`MinSize = Vector2.new(284, 0)`, `MaxSize = Vector2.new(360, 720)`)
+  - `project/src/StarterGui/Sprint3UI.client.lua` uses a `ScrollingFrame` root, auto-sized results card, and wrapped results body labels
+  - The results-side source blocker found in this pass was the missing `ProfileChanged` / `ShopAction` remotes; that blocker is now fixed in source and present in the rebuilt place
+  - No honest phone-emulated client viewport or screenshot artifact could be produced from this host, so readability on an actual phone-sized live client remains unverified
+- Mismatch vs Sprint 4 spec if any:
+  - No new copy/layout mismatch was identified in source during this pass
+  - Verification gap remains because this host could not run or capture a real phone-sized client surface
+- Code changed, and which files:
+  - Yes — `project/src/ReplicatedStorage/Remotes.model.json` (results-side availability blocker only)
+  - No HUD or results layout file changed in this pass
+- Whether the case was rerun after a hotfix:
+  - Yes for the results-side availability blocker; no phone-sized live client rerun was possible
+- Screenshot / clip references if available:
+  - None available from this session
+
+### Launch-blocker classification from this pass
+- Resolved real Sprint 4 launch blocker:
+  - missing `ProfileChanged` / `ShopAction` remotes prevented the Sprint 3 results/progression UI from being able to instantiate cleanly from source
+- Remaining blockers:
+  - host/tooling evidence blockers only (no Play Solo client path, no LocalPlayer creation, no screen capture, no GUI automation)
+  - these remaining blockers still prevent honest Sprint 4 client-visible signoff from this host
+
+### Narrow-pass conclusion
+- A. success results wording: **Blocked for client-visible proof** (copy matches spec; remotes blocker fixed)
+- B. failure results wording: **Blocked for client-visible proof** (copy matches spec; remotes blocker fixed)
+- C. `Saved Cash` landing after results: **Blocked for end-to-end live-client confirmation on this host**
+- D. late-join readability: **Blocked for client-visible proof** (copy matches spec)
+- E. phone-sized HUD/results readability: **Blocked for client-visible proof on this host**
+- QA status from this session: **still blocked** until a host with an honest Play Solo / device-emulation / screenshot path captures the required client-visible artifacts
+
+## 2026-04-03 — Round bootstrap / Playing-state hotfix proof
+
+### Scope
+- Replaced the stale placeholder `ShiftService` loop with a real round orchestrator that uses the current lower-case round-state contract, task progress snapshots, active-player roster snapshots, and live `TaskService` / `EventService` callbacks.
+- Removed the noop `TaskService` wiring from `Bootstrap.server.lua`.
+- Restored the quota/config helpers and payout hook that the current task runtime expected.
+
+### Commands run
+#### `cd project && bash scripts/check.sh`
+- Result: Pass
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+#### `cd project && bash scripts/build.sh`
+- Result: Pass
+- Output:
+```text
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+```
+
+#### `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua`
+- Result: Pass
+- Output:
+```text
+SMOKE_OK: core folders and scripts are present
+SMOKE_OK: fallback arena bootstrap is present
+```
+
+#### `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/round_bootstrap_proof.lua`
+- Result: Pass
+- Output:
+```text
+ROUND_BOOTSTRAP_PROOF states=waiting:0,intermission:1,intermission:0,playing:30,playing:30,playing:30,playing:30,playing:30
+ROUND_BOOTSTRAP_PROOF playing active=1 timer=30 total=8 completed_before=0 completed_after=1
+ROUND_BOOTSTRAP_PROOF clean_spill_remaining_before=1 after=0
+ROUND_BOOTSTRAP_PROOF_OK
+```
+
+### What the proof confirms
+- The round bootstrap now leaves `waiting`, enters `intermission`, and then reaches a real `playing` state with one active player.
+- The fallback arena objects still exist in the built place.
+- `TaskService:startRound()` now receives a valid quota bundle (`total=8` for solo) instead of dying on missing config helpers.
+- A live task interaction during `playing` increments round progress (`completed_before=0`, `completed_after=1`) and decrements the expected quota (`clean_spill_remaining_before=1`, `after=0`).
+
+### Remaining unverified from this host
+- Honest live-client / Play Solo proof with a real `Player` object and on-screen HUD capture is still not available from this host/runtime path.
+- Full end-to-end payout/results/client-visual proof for this specific hotfix remains human-validation work.
+
+## 2026-04-03 22:45 CDT — Sprint 4 final client-visible screenshot evidence
+
+Environment/setup:
+- Human-observed live client screenshots supplied from `/Users/macmini/Desktop/Screenshots`
+- These screenshots are being used to close the remaining Sprint 4 launch-surface evidence gap that could not be captured from the current host automation path.
+
+### A. Success results wording
+- Evidence file: `~/Desktop/Screenshots/Success.png`
+- Pass
+- Client-visible wording captured for the success results surface.
+- Confirms the Sprint 4 launch-facing results wording is present on the success path.
+- Code changed during this evidence add: none
+
+### B. Failure results wording
+- Evidence file: `~/Desktop/Screenshots/Failure.png`
+- Pass
+- Client-visible wording captured for the failure results surface.
+- Confirms the Sprint 4 launch-facing results wording is present on the failure path.
+- Code changed during this evidence add: none
+
+### C. Saved Cash landing after results
+- Evidence file: `~/Desktop/Screenshots/Saved_Cash.png`
+- Pass
+- Client-visible proof supplied for the Saved Cash results/landing surface after results.
+- Confirms the Sprint 4 Saved Cash wording/landing state is represented in the live client evidence set.
+- Code changed during this evidence add: none
+
+### D. Late-join readability
+- Evidence file: `~/Desktop/Screenshots/Late_Join.png`
+- Pass
+- Client-visible proof supplied for the late-join wait/readability state.
+- Confirms the live client evidence set includes the intended late-join messaging surface.
+- Code changed during this evidence add: none
+
+### E. Phone-sized HUD/results readability
+- Evidence file: `~/Desktop/Screenshots/Phone.png`
+- Pass
+- Client-visible phone-sized screenshot supplied for Sprint 4 HUD/results readability.
+- Confirms the final evidence set includes the required phone-facing readability artifact.
+- Code changed during this evidence add: none
+
+### Notes
+- These screenshot references complete the manual/live client evidence set that the host automation path could not capture directly.
+- Combined Sprint 4 screenshot evidence set now consists of:
+  - `Success.png`
+  - `Failure.png`
+  - `Saved_Cash.png`
+  - `Late_Join.png`
+  - `Phone.png`

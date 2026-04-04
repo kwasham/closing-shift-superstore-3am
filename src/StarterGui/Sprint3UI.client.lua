@@ -188,6 +188,8 @@ dismissCorner.Parent = dismissResults
 local statusLabel = makeLabel(root, "StatusLabel", 12, false)
 
 local resultsCard = makeFrame(root, "ResultsCard", 118)
+resultsCard.Size = UDim2.fromScale(1, 0)
+resultsCard.AutomaticSize = Enum.AutomaticSize.Y
 local resultsTitle = makeLabel(resultsCard, "ResultsTitle", 14, true)
 resultsTitle.Position = UDim2.fromOffset(12, 10)
 resultsTitle.Size = UDim2.new(1, -24, 0, 0)
@@ -352,11 +354,11 @@ local function updateResults()
 		then "Results — Shift Cleared"
 		else "Results — Shift Failed"
 	resultsBody.Text = table.concat({
-		string.format("Cash earned: +$%d", lastRoundResult.cashEarned or 0),
+		string.format("Saved Cash added: +$%d", lastRoundResult.cashEarned or 0),
 		string.format("XP earned: +%d", lastRoundResult.xpEarned or 0),
 		string.format("Current Level: %d", lastRoundResult.levelAfter or getCurrentLevel()),
 		string.format(
-			"Totals — Cash $%d • XP %d",
+			"Totals — Saved Cash $%d • XP %d",
 			lastRoundResult.cashTotal or getCurrentCash(),
 			lastRoundResult.xpTotal or 0
 		),
@@ -365,9 +367,10 @@ end
 
 local function updateHeader()
 	title.Text = "Employee Rank"
-	subtitle.Text = "Cash buys cosmetics. XP raises Employee Rank. Rank unlocks cosmetics only."
+	subtitle.Text =
+		"Saved Cash buys cosmetics. XP raises Employee Rank. Rank unlocks cosmetics only."
 	profileSummary.Text = string.format(
-		"Cash $%d • Level %d • %s",
+		"Saved Cash $%d • Level %d • %s",
 		getCurrentCash(),
 		getCurrentLevel(),
 		getXPProgressText()
@@ -380,7 +383,7 @@ local function updateHeader()
 		then "Primary action order: equip owned items, otherwise buy if Rank and Cash allow it."
 		else "Shop unavailable during Playing."
 	statusLabel.Text = if currentRoundState == Constants.RoundState.Playing
-		then "Shop locked during shift. Persistent Cash and Rank stay visible here for QA."
+		then "Shop locked during shift. Saved Cash and Rank stay visible here for QA."
 		else "Open the shop in lobby/results. Purchase does not auto-equip."
 	updatePreview()
 	updateResults()
