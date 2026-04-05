@@ -1,94 +1,68 @@
 # Launch Watchlist — Sprint 4
 
 ## Purpose
-This is the minimum Milestone 4 watchlist.
-It exists to answer one question quickly and honestly:
+This is the minimum watchlist for Milestone 4. It is not a giant dashboard wishlist.
+It exists to answer one question:
 
-**If fresh players enter this build, do they understand the shift and does the launch package describe the real game truthfully?**
+**If we put this build in front of fresh players, what will tell us quickly whether the launch candidate is healthy?**
 
-This is **not** a dashboard wishlist. Broader analytics views are follow-up work if the required proof already exists.
+## First 72-hour questions
+1. Are players getting through the first 10 minutes without confusion?
+2. Are players understanding payout, saved `Cash`, XP, and results flow?
+3. Are players hitting major runtime blockers on mobile-sized layouts?
+4. Are the new Sprint 3 systems still behaving after the Sprint 4 hardening pass?
+5. Are the publish surfaces setting accurate expectations?
 
-## First-session funnel questions
-1. Does a fresh player start a real task in the first shift without asking where to go?
-2. After the first completed task, does that player understand that tasks build **`Shift Cash`** during the run?
-3. When the round ends, can that player tell what got added to **`Saved Cash`** without somebody explaining it?
-4. Does the player understand that `Cash` buys cosmetics only and does not unlock gameplay power?
-5. If a player joins mid-round, do they understand they are waiting for the next shift instead of assuming the game is bugged?
-6. Do the title, icon, thumbnails, and descriptions set expectations that match the actual one-store, short-session build?
+## Must-watch evidence
+### First-session funnel
+- session started
+- onboarding shown
+- onboarding completed
+- first task completed
+- first shift success / failure
+- results viewed
+- second shift started in the same session, if available
 
-## Economy / progression clarity checks
-- `Shift Cash` goes up when tasks are completed.
-- The clear / timeout projection reads as a future outcome, not the current saved balance.
-- The round-end `Saved Cash added` line matches the actual persistent-balance change.
-- Shop spend still uses persistent `Cash` only.
-- XP / level language does not imply gameplay power or hidden pay multipliers.
-- No player-facing launch surface still uses unexplained `Banked` wording.
+### Economy / progression clarity
+- payout credited to saved `Cash`
+- shop opened after a round
+- purchase succeeded
+- equip succeeded
+- XP earned
+- level-up occurred or near-level-up proof
+- no unexplained discrepancy between round result language and saved values
 
-## Must-have proof before Milestone 4 can be called ready
+### Runtime stability
+- no save-data corruption
+- no payout loss
+- no broken late-join state
+- no broken blackout / mimic / security alarm regression
+- no obvious UI clipping blocker on phone-sized play
 
-### 1) Structural / build proof
-- `bash scripts/check.sh` passed
-- `bash scripts/build.sh` passed
-- structural smoke passed
-- any remaining non-blocking tooling warning documented truthfully
-
-### 2) Runtime regression proof
-- 1-player success path verified
-- 1-player failure path verified
-- payout lands in persistent `Cash`
-- blackout still behaves correctly
-- false task / mimic still behaves correctly
-- security alarm still behaves correctly
-- late join remains excluded correctly
-- persistence / shop spend-equip sanity verified
-
-### 3) Live client readability proof
-Need actual client-visible proof for:
-- tutorial / first-playable HUD readability
-- active HUD readability with `Shift Cash` vs `Saved Cash`
-- late-join wait-state readability
-- results-screen readability
-
-Headless probes and layout math may support this category, but they do **not** replace it.
-
-### 4) Publish-surface completeness
-- title and tagline locked
-- short-description direction locked
-- long-description direction locked
-- icon brief complete
-- three thumbnail beats complete
-- release-note bullets complete
-- genre / mood positioning documented
-- content-maturity guidance documented
-
-### 5) Release discipline
-- release checklist completed
-- rollback reference known
-- known issues documented
-- no blocking mismatch remains between docs, store-page direction, and the actual build
+### Device / client sanity
+- phone-sized HUD readability in live play
+- results screen readability in live play
+- shop readability in live play
+- at least one actual client/device observation in addition to emulator checks
 
 ## No-go triggers
-Do **not** call Milestone 4 ready if any of these appear:
-- a fresh-player note still asks what `Banked` means or where the payout went after the Sprint 4 wording pass
-- the `Saved Cash added` result does not match the actual saved-balance change and the discrepancy is unexplained
-- a phone-sized client view still clips or hides tutorial, payout, late-join, or results text
-- a late joiner can reasonably mistake the wait state for active participation
-- the publish surface promises extra maps, roaming enemies, combat, live events, badges, or monetization scope that are not in the build
-- any known Sev 1 / Sev 2 gameplay, save, payout, or progression issue remains open
+Do **not** call Milestone 4 ready if any of the following appear:
+- payout text suggests one value but `Cash` lands differently and the discrepancy is unexplained
+- save data is lost, reset, or incorrectly migrated
+- late-join clients initialize into a broken or misleading state
+- phone-sized UI blocks core play or understanding
+- known Sev 1 / Sev 2 issue remains open
+- publish-surface copy materially overpromises the experience
 
-## Release-day operator spot checks
-- verify the live build still uses the locked `Shift Cash` / `Saved Cash` wording
-- verify one real results flow from task completion through saved-balance landing
-- verify one late-join client view on the actual build
-- verify one phone-width HUD / results capture on the actual build
-- verify store-page assets and release notes do not overpromise the current feature set
-- verify non-blocking issues are written down before ship/no-ship is called
-
-## Non-blocking follow-up
-These are useful after Milestone 4, but they are not blockers for the launch-candidate decision if the proof above exists:
-- broader analytics dashboards
-- more detailed funnel instrumentation
-- richer post-launch KPI cuts
+## Release-day operator checks
+Before a release candidate is called ready:
+- structural checks green
+- live runtime proof captured
+- release checklist completed
+- rollback tag known
+- known issues documented
+- launch-facing copy approved
+- publish surface package complete
 
 ## Suggested proof sources
 - `project/docs/RUNTIME-EVIDENCE.md`
@@ -96,4 +70,7 @@ These are useful after Milestone 4, but they are not blockers for the launch-can
 - `project/docs/RELEASE-CHECKLIST-S4.md`
 - local structured logs
 - captured screenshots / clips from actual client runs
-- human session notes from fresh-player observation
+
+## Notes
+If external analytics lag, local evidence still counts for the go / no-go call.
+The watchlist is meant to keep the team honest, not to block progress on missing dashboard screenshots.

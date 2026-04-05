@@ -1,77 +1,83 @@
 # Sprint
 
-## Sprint 1 — First playable MVP slice
+## Sprint 6 — Visual Identity + Environment Art Foundation
 
 ## Sprint goal
-Ship a cold-server playable internal build where a player can enter intermission, start a closing shift, complete supermarket tasks, experience blackout + mimic events, receive payout, and see the result in the HUD.
+Take the Sprint 5 Ready baseline and move the game off an obvious primitive / graybox look by shipping one polished visual vertical slice and the reusable visual rules behind it.
 
 ## Scope locked for this sprint
-- waiting → intermission → playing → ended round lifecycle
-- 6 MVP task types with readable interaction text
-- task progress and objective counting
-- blackout event
-- mimic / false-task event
-- payout into `Cash` leaderstat
-- HUD showing state, timer, objectives, cash, and alerts
-- smoke-path validation for core folders/scripts
+- lobby / entrance
+- checkout zone
+- one hero aisle
+- freezer section
+- stockroom corner
+- lighting states for normal / blackout / mimic / round-end
+- HUD / UI skin refresh
+- interaction feedback polish
+- before / after proof captures
+- live visual proof standards for QA
 
 ## Explicitly out of scope
-- persistence / DataStore save
-- revive loop
-- roaming manager NPC
-- cosmetic shop UI
-- stamina system
-- extra maps or store types
-- seasonal / live-ops content
+- new gameplay systems
+- new map
+- new round event or enemy type
+- economy rebalance
+- progression expansion
+- monetization changes
+- full-store bespoke prop pass
+- photoreal rendering target
+- heavy VFX spam or cinematic-only lighting setups that hurt gameplay readability
 
 ## File-ownership rule for this sprint
 To reduce merge conflicts:
 - `main` owns `project/docs/SPRINT.md`
-- `design` owns `project/docs/HANDOFF-ENGINEERING.md` and design-level decisions
-- `engineer` owns `project/src/**` and `project/scripts/smoke_runner.lua`
-- `content` owns `project/docs/ART-DIRECTION.md`, `project/docs/HANDOFF-CONTENT.md`, and `project/docs/STORE-BEATS.md`
+- `design` owns visual direction and handoff lock in docs
+- `engineer` owns implementation in `project/src/**` and proof/support scripts
+- `content` owns environment/UI art-facing docs, signage/copy/art-surface support, and capture-direction support docs
 - `qa` owns `project/docs/QA.md` and QA follow-ups in `project/docs/BACKLOG.md`
 
 ## Suggested execution order
-1. `design` finalizes task/event/payout spec.
-2. `engineer` implements the round/task/event/HUD slice.
-3. `content` defines the first store beats and player-facing copy.
-4. `qa` hardens acceptance criteria and smoke/manual test coverage.
-5. `main` integrates status and decides whether Milestone 1 is on track.
+1. `design` locks the visual language and priority zones.
+2. `engineer` and `content` execute in parallel from the locked design contract.
+3. `qa` validates the visual vertical slice with before / after and live proof.
+4. `main` integrates status and decides whether Sprint 6 is Ready.
 
 ## Acceptance criteria for sprint completion
-- A fresh server can reach the intermission state with one player present.
-- A round can start and expose six readable objectives.
-- At least one task can be completed and progress updates correctly.
-- Blackout can fire and recover without soft-locking the round.
-- Mimic can mark a task as dangerous and apply its consequence.
-- End-of-round payout reaches the player-visible cash display.
-- Smoke runner validates the required files/modules/instances for the MVP slice.
-- Docs reflect what was actually built and what still needs follow-up.
+- The critical-path slice zones no longer read as obvious graybox from player camera positions.
+- The visual slice follows one consistent art language across architecture, props, signage, lighting, and UI.
+- Blackout, mimic, and round-end are visually distinct and readable in runtime proof.
+- Phone HUD readability remains green after the skin refresh.
+- Existing gameplay interaction points remain stable after the art pass.
+- Build, smoke, and basic 1-player / 2-player runtime sanity remain green.
+- QA has before / after captures and live evidence for the key visual states.
 
 ## Current status
 ### Ready for delegation
-- engineer implementation pass using `project/prompts/ENGINEER_SPRINT5_SOFT_LAUNCH_IMPLEMENTATION.md` after design lands
-- content pass using `project/prompts/CONTENT_SPRINT5_COPY_BADGES_AND_SHARE.md` after design lands
-- follow-up cleanup for remaining non-blocking release-surface/doc contradictions
+- engineer implementation pass from the locked Sprint 6 visual handoff
+- content environment / UI art pass from the locked Sprint 6 visual handoff
 
 ### In progress
-- Sprint 5 is active as **Soft Launch Retention and Distribution**
-- awaiting Sprint 5 design handoff from `project/prompts/DESIGN_SPRINT5_SOFT_LAUNCH_SPEC.md`
+- Sprint 6 is active as **Visual Identity + Environment Art Foundation**
+- design lock is complete
 
 ### Done
-- OpenClaw multi-agent pipeline scaffolded
-- Rojo/Rokit project scaffolded
-- starter round loop and HUD placeholders committed
 - Sprint 1 is **Ready**
 - Sprint 2 is **Ready**
 - Sprint 3 is **Ready**
 - Sprint 4 is **Ready**
+- Sprint 5 is **Ready**
+- Sprint 6 visual direction is locked across:
+  - `project/docs/GDD.md`
+  - `project/docs/ART-DIRECTION.md`
+  - `project/docs/DECISIONS.md`
+  - `project/docs/HANDOFF-ENGINEERING.md`
+  - `project/docs/HANDOFF-CONTENT.md`
+  - `project/docs/BACKLOG.md`
 
 ## Risks
-- Sprint 5 must stay scoped to soft launch retention/distribution and not expand into large new systems
-- workers may collide if they all edit `SPRINT.md`; keep ownership with `main`
-- the release-surface wording contradiction in `project/docs/GDD.md` remains a non-blocking follow-up unless the Sprint 5 design chooses to resolve it directly
+- Optional imported art could cause scope slip if the team chases bespoke polish too early.
+- The sprint must preserve phone readability and the Sprint 5 gameplay baseline.
+- The team should favor Studio-first modular reuse over expensive one-off assets.
 
 ## Next producer action
-Complete Sprint 5 design step 1, then dispatch engineering and content from the locked Sprint 5 design contract.
+Dispatch Sprint 6 engineering and content in parallel from the locked visual direction handoff, then send QA on the visual vertical slice gate.

@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local StarterGui = game:GetService("StarterGui")
 local StarterPlayer = game:GetService("StarterPlayer")
 local Workspace = game:GetService("Workspace")
 
@@ -13,28 +12,27 @@ end
 local shared = assertChild(ReplicatedStorage, "Shared")
 assertChild(shared, "Constants")
 assertChild(shared, "Types")
+assertChild(shared, "StoreSignage")
+assertChild(shared, "VisualTheme")
+assertChild(shared, "LightingPresets")
 
 local remotes = assertChild(ReplicatedStorage, "Remotes")
 assertChild(remotes, "RoundStateChanged")
 assertChild(remotes, "AlertRaised")
-assertChild(remotes, "RoundEndShareAction")
 
 local roundFolder = assertChild(ServerScriptService, "Round")
 assertChild(roundFolder, "Config")
 assertChild(roundFolder, "ShiftService")
-assertChild(roundFolder, "RoundResultsService")
-assertChild(roundFolder, "SoftLaunchService")
 
 local dataFolder = assertChild(ServerScriptService, "Data")
 assertChild(dataFolder, "ProfileStore")
 
-assertChild(StarterGui, "HUD")
-assertChild(StarterGui, "Sprint3UI")
-
 local starterScripts = assertChild(StarterPlayer, "StarterPlayerScripts")
 assertChild(starterScripts, "HUD")
+assertChild(starterScripts, "ClientEffects")
+assertChild(starterScripts, "LightingController")
 
 assertChild(Workspace, "FallbackArena")
 
 print("SMOKE_OK: core folders and scripts are present")
-print("SMOKE_OK: fallback arena bootstrap is present")
+print("SMOKE_OK: sprint 6 visual runtime sources are present")

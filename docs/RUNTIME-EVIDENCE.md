@@ -1328,3 +1328,344 @@ S5_PROOF_OK
 
 ### QA status from this rerun
 - QA is **unblocked** for the Sprint 5 proof gate from this harness path.
+
+## 2026-04-05 — Sprint 6 environment + UI art pass packaging
+
+### Scope
+- Converted the locked Sprint 6 art direction into a concrete content execution package for the five priority zones.
+- Added reusable signage-copy and UI-theme source assets so the vertical slice can ship Studio-first.
+- Built a text-managed fallback visual slice in `project/src/Workspace/FallbackArena.server.lua` covering lobby / entrance, checkout, hero aisle, freezer, and stockroom reads.
+- Reskinned the live HUD/task-presentation support toward the locked `security terminal + receipt printer` direction without changing gameplay rules.
+- Documented exact before / after camera intents and hero-shot rules for QA and release-surface proof.
+
+### Files changed
+- `project/docs/SPRINT6-ENVIRONMENT-UI-ART-PASS.md`
+- `project/docs/ART-DIRECTION.md`
+- `project/docs/HANDOFF-CONTENT.md`
+- `project/docs/BACKLOG.md`
+- `project/src/ReplicatedStorage/Shared/StoreSignage.lua`
+- `project/src/ReplicatedStorage/Shared/VisualTheme.lua`
+- `project/src/StarterPlayer/StarterPlayerScripts/HUD.client.lua`
+- `project/src/StarterPlayer/StarterPlayerScripts/ClientEffects.client.lua`
+- `project/src/StarterGui/HUD.client.lua`
+- `project/src/Workspace/FallbackArena.server.lua`
+
+### Commands run
+#### `bash scripts/check.sh`
+- Result: Pass
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+#### `bash scripts/build.sh`
+- Result: Pass
+- Output:
+```text
+[WARN  librojo::snapshot_middleware::json_model] Model at path Remotes.model.json had a top-level Name field. This field has been ignored since Rojo 6.0.
+        Consider removing this field and renaming the file to /Users/macmini/RobloxProjects/closing-shift-superstore-3am/src/ReplicatedStorage/Remotes.model.json.
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+```
+
+### Proof status from this pass
+- Content packaging for the five priority zones: ready
+- Reusable signage / decal language pack: ready in docs + source config
+- HUD / task-presentation visual treatment support: ready in source-backed theme hooks
+- Before / after camera plan for the five zones: ready
+- Live in-client screenshots or runtime captures for the Sprint 6 slice: **not captured in this pass**
+
+### Exact remaining blocker for QA
+- QA still needs Studio/runtime captures for:
+  - lobby / entrance before vs after
+  - checkout before vs after
+  - hero aisle before vs after
+  - freezer before vs after
+  - stockroom corner before vs after
+  - live blackout readability
+  - live mimic readability
+  - live round-end readability
+- This content pass prepared the exact shot list and visual rules, but it did not itself generate the human-visible capture set.
+
+## 2026-04-05 — Sprint 6 engineer retry: visual implementation + proof support
+
+### Scope
+- Kept the repo-health precheck as the first execution step before code edits.
+- Completed the Sprint 6 runtime-side visual pass for shared lighting presets, HUD safety hardening, fallback-art hook exposure, and proof-support coverage.
+- Preserved scope freeze to visual identity + environment art foundation support only; no new gameplay mechanics or economy/progression tuning were introduced in this retry.
+
+### Repo-health precheck before edits
+#### `cd project && printf '=== git status ===\n' && git status --short && printf '\n=== rokit install ===\n' && rokit install && printf '\n=== selene src ===\n' && selene src && printf '\n=== stylua --check src scripts ===\n' && stylua --check src scripts && printf '\n=== rojo build ===\n' && mkdir -p build && rojo build default.project.json --output build/ClosingShift.rbxlx && printf '\n=== smoke_runner ===\n' && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua`
+- Result: Pass with pre-existing dirty tree already present in the workspace
+- Output highlights:
+```text
+=== git status ===
+ M .gitignore
+ M docs/ART-DIRECTION.md
+ M docs/BACKLOG.md
+ M docs/DECISIONS.md
+ M docs/GDD.md
+ M docs/HANDOFF-CONTENT.md
+ M docs/HANDOFF-ENGINEERING.md
+ M docs/LAUNCH-WATCHLIST-S4.md
+ M docs/QA.md
+ M docs/RELEASE_NOTES.md
+ M docs/RUNTIME-EVIDENCE.md
+ M docs/SPRINT.md
+ M docs/TEST-PLAN-SMOKE.md
+ M scripts/smoke_runner.lua
+ M src/ReplicatedStorage/Remotes.model.json
+ M src/ReplicatedStorage/Shared/Constants.lua
+ M src/ServerScriptService/Bootstrap.server.lua
+ M src/ServerScriptService/Data/ProfileStore.lua
+ M src/ServerScriptService/Round/Config.lua
+ M src/ServerScriptService/Round/ShiftService.lua
+ M src/StarterGui/HUD.client.lua
+ M src/StarterPlayer/StarterPlayerScripts/ClientEffects.client.lua
+ M src/StarterPlayer/StarterPlayerScripts/HUD.client.lua
+ M src/Workspace/FallbackArena.server.lua
+?? .DS_Store
+?? docs/ART-BIBLE-S6.md
+?? docs/ENVIRONMENT-KIT-S6.md
+?? docs/HERO-SHOT-LIST-S6.md
+?? docs/SPRINT6-ENVIRONMENT-UI-ART-PASS.md
+?? docs/SPRINT6-PLAN.md
+?? prompts/CONTENT_SPRINT6_ENVIRONMENT_UI_ART_PASS.md
+?? prompts/DESIGN_SPRINT6_VISUAL_DIRECTION_SPEC.md
+?? prompts/ENGINEER_SPRINT6_VISUAL_IMPLEMENTATION.md
+?? prompts/MAIN_SPRINT6_SEQUENCE.md
+?? prompts/QA_SPRINT6_VISUAL_VERTICAL_SLICE_GATE.md
+?? src/ReplicatedStorage/Shared/StoreSignage.lua
+?? src/ReplicatedStorage/Shared/VisualTheme.lua
+
+=== selene src ===
+Results:
+0 errors
+0 warnings
+0 parse errors
+
+=== rojo build ===
+[WARN  librojo::snapshot_middleware::json_model] Model at path Remotes.model.json had a top-level Name field. This field has been ignored since Rojo 6.0.
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+
+=== smoke_runner ===
+SMOKE_OK: core folders and scripts are present
+```
+- Precheck note:
+  - The repo was already mid-change before this retry.
+  - The existing non-blocking Rojo warning on `Remotes.model.json` was present before and after the retry.
+
+### Post-change verification
+#### `cd project && bash scripts/check.sh`
+- Result: Pass
+- Output:
+```text
+Results:
+0 errors
+0 warnings
+0 parse errors
+```
+
+#### `cd project && bash scripts/build.sh`
+- Result: Pass
+- Output:
+```text
+Building project 'ClosingShift'
+Built project to ClosingShift.rbxlx
+```
+
+#### `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua`
+- Result: Pass
+- Output:
+```text
+SMOKE_OK: core folders and scripts are present
+SMOKE_OK: sprint 6 visual runtime sources are present
+```
+
+#### `cd project && run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint6_visual_probe.lua`
+- Result: Pass
+- Output:
+```text
+S6_VISUAL_PROOF presets=normal,blackout,mimic,round_success,round_failure
+S6_VISUAL_PROOF slice_bootstrap=source_only:FallbackArena
+S6_VISUAL_PROOF zones=Lobby,Checkout,HeroAisle,Freezer,Stockroom
+S6_VISUAL_PROOF hooks=LobbyCaptureAnchor,CheckoutCaptureAnchor,HeroAisleCaptureAnchor,FreezerCaptureAnchor,StockroomCaptureAnchor,LobbyBrandHook,CheckoutSignHook,HeroAisleHeaderHook,FreezerHeaderHook,StockroomNoticeHook
+S6_VISUAL_PROOF_OK
+```
+- Probe note:
+  - In this `run-in-roblox` path, the proof harness could validate the fallback-art bootstrap script and the visual preset contract, but it did not observe the `FallbackArtSlice` folder live-instantiated during the probe window.
+  - The probe therefore records `slice_bootstrap=source_only:FallbackArena` rather than claiming a live content-capture run.
+
+### Confirmed runtime-source risks from this retry
+- **Confirmed:** `project/src/ReplicatedStorage/Shared/Constants.lua` still does not match the richer contract expected by several partially-landed runtime consumers outside the narrowed Sprint 6 HUD hardening path.
+- **Confirmed:** the actively bootstrapped simple round loop and the richer dormant round/task/event stack are still source-drifted from each other.
+- **Unverified from this host:** a full live client capture set for Sprint 6 before/after, blackout, mimic, and round-end presentation still requires QA / human-visible Studio evidence.
+
+### QA status from this retry
+- Structural build + smoke + Sprint 6 visual probe are green.
+- QA is unblocked for the **engineer implementation handoff / capture phase**.
+- QA still needs human-visible capture evidence to close the full Sprint 6 visual gate.
+
+## 2026-04-05 11:50 CDT — Sprint 6 visual vertical slice gate
+
+### Scope of this QA call
+- This gate judged the locked Sprint 6 visual-slice requirements in `project/prompts/QA_SPRINT6_VISUAL_VERTICAL_SLICE_GATE.md`.
+- Previously established command-backed checks were accepted as already green:
+  - `bash scripts/check.sh`
+  - `bash scripts/build.sh`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint6_visual_probe.lua`
+- The remaining decision scope for this pass was the required human-visible proof pack.
+
+### Additional evidence search performed in this QA pass
+- Searched the project tree for image artifacts: none found.
+- Searched common local screenshot folders used by prior manual proof adds: no Sprint 6 proof images found.
+- Re-read the current Sprint 6 docs/handoffs/runtime notes to verify whether any existing live-capture set had already been recorded: none had.
+
+### Gate result
+- Verdict: **Not Ready**
+- Reason: the required human-visible Sprint 6 proof pack is still missing, so QA cannot honestly clear readability proof or regression sanity for the visual slice even though build / structure sanity is green.
+
+### What is already established and does not block this gate by itself
+- Build / structure sanity: pass
+- Sprint 6 runtime-source visual contract: pass
+  - presets confirmed: `normal`, `blackout`, `mimic`, `round_success`, `round_failure`
+  - source-backed capture hooks confirmed for Lobby / Checkout / HeroAisle / Freezer / Stockroom
+- Known broader runtime-source drift remains tracked separately and is not being used as a Sprint 6 visual-slice blocker unless it directly breaks the required proof capture.
+
+### Exact missing proof required to clear the gate
+- Matched before / after capture for `lobby / entrance`
+- Matched before / after capture for `checkout zone`
+- Matched before / after capture for `hero aisle`
+- Matched before / after capture for `freezer section`
+- Matched before / after capture for `stockroom corner`
+- Live phone-sized blackout readability proof showing the dressed slice remains navigable and the HUD / alert / prompt state stays readable
+- Live phone-sized mimic readability proof showing the local cue reads clearly and stays distinct from blackout
+- Live phone-sized round-end readability proof showing the updated summary remains legible; strongest closeout is to include both `round_success` and `round_failure` since both shipped presets now exist in source
+- At least one live active-shift frame in a dressed zone where prompt / objective readability is clearly visible on the Sprint 6 HUD skin
+
+### Blocker classification
+- Evidence blocker only
+- No new confirmed art-pass regression was proven in this QA pass
+- No honest Ready call is possible without the captures above
+
+## 2026-04-05 17:25 CDT — Sprint 6 proof-pack completion pass
+
+### Objective
+- Close the remaining Sprint 6 visual-slice evidence gap with real human-visible captures for:
+  - five matched before/after zone pairs
+  - live active-shift HUD/prompt readability
+  - live blackout readability
+  - live mimic readability
+  - live round-end readability (`success` + `failure`)
+
+### Build / runtime path used
+- Fresh rebuilt place: `project/build/ClosingShift.rbxlx`
+- Studio mode used for the final proof pass: mobile-view `Test Here` session in Roblox Studio on macOS
+- Commands used during the successful final pass:
+  - `bash scripts/build.sh`
+  - local Studio reopen on the rebuilt `ClosingShift.rbxlx`
+  - mobile-view `Test > Start Test Session > Test Here`
+  - client-side proof injections through the Studio command bar in the fresh rebuilt session
+
+### Root cause discovered during proof capture
+- The missing Sprint 6 HUD/readability proof was not only a capture problem.
+- In the mobile client, `ShiftHUD` / `ShiftPresentation` were absent from `PlayerGui`.
+- Live probe showed only default `PlayerScripts` in the test client, so the Sprint 6 visual client boot path was not loading reliably from the prior runtime path.
+
+### Minimal unblock fix applied
+- Promoted the Sprint 6 visual client boot scripts into `StarterGui` so the HUD/presentation path loads reliably in the live client:
+  - `project/src/StarterGui/HUD.client.lua`
+  - `project/src/StarterGui/ClientEffects.client.lua`
+  - `project/src/StarterGui/LightingController.client.lua`
+- Also touched `project/default.project.json` while investigating the `StarterPlayerScripts` pathing issue.
+- After rebuild + reopen, live HUD probe confirmed the client HUD was now present and readable in the fresh session.
+
+### Matched before / after capture pairs
+- Lobby / entrance:
+  - before: `project/docs/proof/sprint6/before_lobby_raw.png`
+  - after: `project/docs/proof/sprint6/after_lobby_raw2.png`
+- Checkout zone:
+  - before: `project/docs/proof/sprint6/before_checkout_raw.png`
+  - after: `project/docs/proof/sprint6/after_checkout_raw.png`
+- Hero aisle:
+  - before: `project/docs/proof/sprint6/before_hero_aisle_raw.png`
+  - after: `project/docs/proof/sprint6/after_hero_aisle_raw.png`
+- Freezer section:
+  - before: `project/docs/proof/sprint6/before_freezer_raw.png`
+  - after: `project/docs/proof/sprint6/after_freezer_raw.png`
+- Stockroom corner:
+  - before: `project/docs/proof/sprint6/before_stockroom_raw.png`
+  - after: `project/docs/proof/sprint6/after_stockroom_raw.png`
+
+### Live readability proof captures
+- Active-shift HUD + prompt readability:
+  - `project/docs/proof/sprint6/fixed_active_shift_full.png`
+  - Shows mobile-view HUD shell, active-shift state, timer, cash, objectives, alert copy, and an on-screen `Restock Shelf` prompt.
+- Blackout readability:
+  - `project/docs/proof/sprint6/fixed_blackout_full.png`
+  - Shows blackout lighting treatment plus readable HUD shell / alert / prompt state.
+- Mimic readability:
+  - `project/docs/proof/sprint6/fixed_mimic_full.png`
+  - Shows mimic-violet cue and a distinct lighting state from blackout while the HUD remains readable.
+- Round-end success readability:
+  - `project/docs/proof/sprint6/fixed_round_success_full.png`
+  - Shows readable round-end summary text on the Sprint 6 HUD treatment.
+- Round-end failure readability:
+  - `project/docs/proof/sprint6/fixed_round_failure_full.png`
+  - Shows readable failure summary text on the Sprint 6 HUD treatment.
+
+### Proof interpretation notes
+- The live proof shots above were captured after the fresh rebuild and HUD bootstrap fix, so they reflect the fixed Sprint 6 client presentation path rather than the earlier stale session.
+- The mobile proof was taken from the in-Studio mobile-view test surface rather than external device hardware.
+- This pass was intentionally narrow: it did not attempt additional gameplay/system scope beyond the proof states QA explicitly requested.
+
+### Status after this proof pass
+- Sprint 6 now has:
+  - matched before/after zone captures
+  - live active-shift readability capture
+  - live blackout readability capture
+  - live mimic readability capture
+  - live round-end readability capture (`success` and `failure`)
+- Next action: rerun the Sprint 6 QA gate on evidence only.
+
+## 2026-04-05 17:32 CDT — Sprint 6 QA evidence-only rerun
+
+### Scope of this rerun
+- Rejudged Sprint 6 only from the newly appended proof pack above plus the referenced capture files in `project/docs/proof/sprint6/`.
+- Previously-green build / structure / smoke / visual-probe checks were treated as already established.
+- Known broader runtime-source debt was kept out of the acceptance decision unless it invalidated the honesty of the new proof.
+
+### Evidence rechecked
+- Matched before / after pairs:
+  - `before_lobby_raw.png` → `after_lobby_raw2.png`
+  - `before_checkout_raw.png` → `after_checkout_raw.png`
+  - `before_hero_aisle_raw.png` → `after_hero_aisle_raw.png`
+  - `before_freezer_raw.png` → `after_freezer_raw.png`
+  - `before_stockroom_raw.png` → `after_stockroom_raw.png`
+- Live readability captures:
+  - `fixed_active_shift_full.png`
+  - `fixed_blackout_full.png`
+  - `fixed_mimic_full.png`
+  - `fixed_round_success_full.png`
+  - `fixed_round_failure_full.png`
+- Source-backed bootstrap fix documentation:
+  - `project/src/StarterGui/HUD.client.lua`
+  - `project/src/StarterGui/ClientEffects.client.lua`
+  - `project/src/StarterGui/LightingController.client.lua`
+  - `project/default.project.json`
+
+### Gate result
+- Verdict: **Ready**
+- Reason:
+  - The new proof pack closes the prior evidence blocker with all five required matched before / after captures present.
+  - The live capture set now demonstrates active-shift HUD / prompt readability plus distinct blackout, mimic, round-success, and round-failure presentation states.
+  - Within the narrow evidence-only scope, the slice now reads as a genuine visual uplift over raw graybox and the documented HUD bootstrap fix is honest enough to support the live proof.
+
+### Non-blocking follow-ups
+- The mobile proof was captured from Studio mobile-view rather than external device hardware.
+- Broader runtime/constants reconciliation remains separate backlog work and is not a Sprint 6 visual-slice blocker on this rerun.
