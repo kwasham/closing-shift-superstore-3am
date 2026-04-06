@@ -36,7 +36,7 @@ local service = TaskService.new({
 	onMimicTriggered = function() end,
 })
 
-service:startRound({ activePlayer }, Config.getQuotaTemplate(1))
+service:startRound({ activePlayer }, Config.getTaskQuotas(1))
 
 local node = nil
 for _, candidate in ipairs(service.nodes) do

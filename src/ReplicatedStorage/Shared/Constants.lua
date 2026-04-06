@@ -262,17 +262,17 @@ Constants.SoftLaunch = {
 		first_shift = {
 			badgeId = "first_shift",
 			badgeName = "First Shift",
-			assetId = 0,
+			assetId = 2926838285493434,
 		},
 		shift_cleared = {
 			badgeId = "shift_cleared",
 			badgeName = "Store Closed",
-			assetId = 0,
+			assetId = 1012078972936691,
 		},
 		three_am_regular = {
 			badgeId = "three_am_regular",
 			badgeName = "3AM Regular",
-			assetId = 0,
+			assetId = 3195093201982269,
 		},
 	},
 }

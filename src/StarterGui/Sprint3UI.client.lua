@@ -260,7 +260,10 @@ local shareShownTelemetryRoundId = nil
 local shareFallbackTelemetryKeys = {}
 
 local function emitShareAction(payload)
-	roundEndShareAction:FireServer(payload)
+	local ok, result = pcall(function()
+		return roundEndShareAction:InvokeServer(payload)
+	end)
+	return ok, result
 end
 
 local function resetShareState(roundId)
@@ -655,8 +658,14 @@ profileChanged.OnClientEvent:Connect(function(payload)
 	if typeof(payload) ~= "table" then
 		return
 	end
-	currentProfile = payload
-	lastRoundResult = payload.lastRoundResult
+	if typeof(payload.profile) == "table" then
+		currentProfile = payload.profile
+	end
+	if payload.lastRoundResult ~= nil then
+		lastRoundResult = payload.lastRoundResult
+	elseif currentProfile ~= nil and typeof(currentProfile.lastRoundResult) == "table" then
+		lastRoundResult = currentProfile.lastRoundResult
+	end
 	updateHeader()
 end)
 

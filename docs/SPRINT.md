@@ -22,10 +22,10 @@ Out of scope:
 - speculative implementation unrelated to the proof blocker
 
 ## Current truth
-- **Sprint 7 is active.**
+- **Sprint 7 is complete.**
 - **Implementation is in.**
-- **QA status is Not Ready.**
-- The remaining blocker is **narrow proof / recapture work**, not broad engineering scope.
+- **QA status is Ready.**
+- The Sprint 7 full-store art gate is cleared.
 
 ## File-ownership rule for this sprint
 To reduce merge conflicts:
@@ -56,61 +56,48 @@ To reduce merge conflicts:
 
 ## Current QA state
 ### Verdict
-- **Not Ready**
+- **Ready**
 
-### What QA has already accepted as established
+### What QA accepted
 - build / structure sanity
 - rollout/runtime support
 - 1-player / 2-player sanity coverage used for the Sprint 7 implementation pass
+- recovered Tier A before / after pack
+- continuity proof
+- honest public asset pack + crop review
+- widened-store readability pack including round-end and phone-sized proof
 
-### True blocker
-QA is still blocked on the **honesty and uniqueness of the Sprint 7 proof pack**.
-This is now a capture-quality problem, not a broad implementation problem.
+### Cleared notes
+- The earlier evidence blocker is resolved.
+- Known Studio host/plugin instability and some viewport chrome did not invalidate the final attached proof.
 
-## Remaining blocker to clear Sprint 7
-The recapture pass still needs a proof pack that honestly covers the widened store.
-
-### Required recapture / proof items
-- one distinct post-pass `after` frame each for:
-  - lobby / entrance
-  - main aisle coverage
-  - checkout / queue
-  - freezer / cooler path
-  - stockroom corner
-- one true continuity frame showing adjacent zones reading as one store
-- one distinct live-build public asset set for:
-  - icon
-  - `Store at 3AM` thumbnail
-  - `Blackout` thumbnail
-  - `Mimic tension` thumbnail
-  - update / social shot
-- matching crop-review exports for that distinct public asset set
-- one widened-store round-end summary readability capture
-- one phone-sized widened-store active-shift readability capture
-- at least one additional live normal-shift widened-store zone frame beyond the current aisle proof
+## What landed in the final proof pass
+- distinct Tier A `after` frames for lobby / entrance, main aisle, checkout / queue, freezer / cooler path, and stockroom corner
+- continuity proof showing widened front-store adjacency
+- distinct public asset exports for icon, `Store at 3AM`, `Blackout`, `Mimic tension`, plus update/social framing
+- crop-review exports for that asset set
+- widened-store round-end summary readability capture
+- phone-sized widened-store active-shift readability capture
+- additional widened-store normal-shift live checkout proof
 
 ## In progress now
-- narrow Sprint 7 recapture pass only
-- replacing weak or reused proof angles with distinct zone-honest framing
-- collecting the remaining readability evidence QA asked for
+- no blocking Sprint 7 work
 
 ## Explicitly not the next step
-- no new feature work
-- no scope expansion
-- no blind implementation pass
-- no reopening Sprint 7 design lock unless QA finds a real honesty blocker in the live build
+- no emergency rework on Sprint 7 scope
+- no new implementation tied to the cleared art gate
 
 ## Risks / operating notes
-- Roblox Studio capture work must stay **serial**; overlapping interactive capture attempts can hang/fail on this host.
-- Capture success depends on honest live-build framing; repeated crops of the same front-store view will fail QA even if files exist.
-- `project/docs/SPRINT.md` was previously stale; `main` should keep this file aligned with the active Sprint 7 proof/QA state.
+- Roblox Studio capture work still needs to stay **serial** on this host; overlapping interactive capture attempts can hang/fail.
+- External-device spot-checks and cleaner marketing captures remain optional follow-up, not Sprint 7 blockers.
+- `project/docs/SPRINT.md` should stay aligned with the cleared Sprint 7 state.
 
 ## Definition of done for this sprint
 Sprint 7 is done when:
-- the recaptured proof pack in `project/docs/proof/sprint7/` honestly covers the named zones and public surfaces
+- the proof pack in `project/docs/proof/sprint7/` honestly covers the named zones and public surfaces
 - readability evidence is attached for active shift, blackout, mimic, round-end, and phone-sized review where required
-- QA reruns on evidence only and flips Sprint 7 to **Ready**
+- QA clears Sprint 7 to **Ready**
 - docs reflect the real result and next action
 
 ## Next producer action
-Finish the narrow Sprint 7 recapture/proof pass, update the evidence files, and rerun QA on the recaptured evidence only.
+Close out Sprint 7 documentation cleanly and treat any remaining device spot-checks or cleaner marketing recaptures as optional follow-up, not blockers.

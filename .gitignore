@@ -8,3 +8,4 @@ sourcemap.json
 aftman-install.log
 .DS_Store
 *.swp
+.patch-backup-*/
