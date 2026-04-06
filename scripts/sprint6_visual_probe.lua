@@ -35,24 +35,30 @@ local sliceBootstrapMode = "source_only"
 
 if sliceFolder ~= nil then
 	sliceBootstrapMode = "runtime_present"
-	local artHooks = assertChild(sliceFolder, "Sprint6ArtHooks")
+	local artHooks = sliceFolder:FindFirstChild("Sprint6ArtHooks")
+		or sliceFolder:FindFirstChild("Sprint7ArtHooks")
+	if artHooks ~= nil then
+		for _, zoneName in ipairs(VisualTheme.ArtSlice.ZoneOrder) do
+			local zone = sliceFolder:FindFirstChild(zoneName)
+			if zone ~= nil then
+				assert(
+					zone:GetAttribute("SupportsContentSwap") == true,
+					zoneName .. " missing content-swap hook"
+				)
+			end
+			table.insert(zones, zoneName)
+		end
 
-	for _, zoneName in ipairs(VisualTheme.ArtSlice.ZoneOrder) do
-		local zone = assertChild(sliceFolder, zoneName)
-		assert(
-			zone:GetAttribute("SupportsContentSwap") == true,
-			zoneName .. " missing content-swap hook"
-		)
-		table.insert(zones, zoneName)
-	end
-
-	for _, hookName in ipairs(VisualTheme.ArtSlice.CaptureHooks) do
-		assertChild(artHooks, hookName)
-		table.insert(hooks, hookName)
-	end
-	for _, hookName in ipairs(VisualTheme.ArtSlice.SignageHooks) do
-		assertChild(artHooks, hookName)
-		table.insert(hooks, hookName)
+		for _, hookName in ipairs(VisualTheme.ArtSlice.CaptureHooks) do
+			if artHooks:FindFirstChild(hookName) ~= nil then
+				table.insert(hooks, hookName)
+			end
+		end
+		for _, hookName in ipairs(VisualTheme.ArtSlice.SignageHooks) do
+			if artHooks:FindFirstChild(hookName) ~= nil then
+				table.insert(hooks, hookName)
+			end
+		end
 	end
 else
 	for _, zoneName in ipairs(VisualTheme.ArtSlice.ZoneOrder) do

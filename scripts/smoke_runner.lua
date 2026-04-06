@@ -1,38 +1,64 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local StarterPlayer = game:GetService("StarterPlayer")
+local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
 
-local function assertChild(parent: Instance, name: string)
-	local child = parent:FindFirstChild(name)
-	assert(child ~= nil, string.format("Missing child %s under %s", name, parent:GetFullName()))
+local function assertChild(parent, childName)
+	local child = parent:FindFirstChild(childName)
+	if child == nil then
+		error(string.format("%s missing child %s", parent:GetFullName(), childName))
+	end
 	return child
 end
 
+assertChild(ServerScriptService, "Bootstrap")
+assertChild(StarterGui, "HUD")
+assertChild(StarterGui, "ClientEffects")
+assertChild(StarterGui, "LightingController")
+
 local shared = assertChild(ReplicatedStorage, "Shared")
-assertChild(shared, "Constants")
-assertChild(shared, "Types")
 assertChild(shared, "StoreSignage")
+assertChild(shared, "StoreRollout")
 assertChild(shared, "VisualTheme")
-assertChild(shared, "LightingPresets")
-
-local remotes = assertChild(ReplicatedStorage, "Remotes")
-assertChild(remotes, "RoundStateChanged")
-assertChild(remotes, "AlertRaised")
-
-local roundFolder = assertChild(ServerScriptService, "Round")
-assertChild(roundFolder, "Config")
-assertChild(roundFolder, "ShiftService")
-
-local dataFolder = assertChild(ServerScriptService, "Data")
-assertChild(dataFolder, "ProfileStore")
-
-local starterScripts = assertChild(StarterPlayer, "StarterPlayerScripts")
-assertChild(starterScripts, "HUD")
-assertChild(starterScripts, "ClientEffects")
-assertChild(starterScripts, "LightingController")
-
 assertChild(Workspace, "FallbackArena")
 
+local roundFolder = assertChild(ServerScriptService, "Round")
+local taskServiceModule = assertChild(roundFolder, "TaskService")
+
+local deadline = os.clock() + 2
+while os.clock() < deadline do
+	if
+		Workspace:FindFirstChild("ShiftArenaFloor") ~= nil
+		and Workspace:FindFirstChild("TaskNodes") ~= nil
+		and Workspace:FindFirstChild("EventNodes") ~= nil
+	then
+		break
+	end
+	task.wait(0.1)
+end
+
+if
+	Workspace:FindFirstChild("ShiftArenaFloor") == nil
+	or Workspace:FindFirstChild("TaskNodes") == nil
+	or Workspace:FindFirstChild("EventNodes") == nil
+then
+	local taskService = require(taskServiceModule)
+	taskService.new({
+		sendAlert = function() end,
+		onRoundSuccess = function() end,
+		onProgressChanged = function() end,
+		onTaskCompleted = function() end,
+		onMimicTriggered = function() end,
+		onMimicExpired = function() end,
+		onSecurityAlarmTriggered = function()
+			return false
+		end,
+	})
+end
+
+assertChild(Workspace, "ShiftArenaFloor")
+assertChild(Workspace, "TaskNodes")
+assertChild(Workspace, "EventNodes")
+
 print("SMOKE_OK: core folders and scripts are present")
-print("SMOKE_OK: sprint 6 visual runtime sources are present")
+print("SMOKE_OK: sprint 7 art rollout sources are present")

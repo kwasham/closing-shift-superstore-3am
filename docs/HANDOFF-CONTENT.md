@@ -1,263 +1,223 @@
-# Content handoff — Sprint 6 visual identity pack
+# Content handoff
 
-Use this file as the content brief for Sprint 6 visual identity execution, capture support, and public-facing visual proof.
+Use this file when engineering or production needs content, UI text, map beats, or thumbnail/store-page deliverables.
 
 ## Objective
-Deliver the authored visual identity for the Sprint 6 slice so players, QA, and store-page surfaces immediately read **supermarket at 3AM** instead of generic graybox horror.
+Deliver the Sprint 7 content package for the full-store visual rollout: reusable signage, repeated prop/decal dressing, and an honest store-presence asset pack that matches the final in-game build.
 
-Content should execute the locked art direction without inventing new gameplay scope.
+## Protect first
+- Protect the Sprint 6 Ready baseline.
+- Stay inside a modular, shippable art scope.
+- Do not invent new gameplay or event content to justify the art pass.
+- Keep phone-safe readability and honest public capture above decorative ambition.
 
 ## Read first
-- `project/docs/SPRINT6-PLAN.md`
-- `project/docs/ART-BIBLE-S6.md`
-- `project/docs/ENVIRONMENT-KIT-S6.md`
-- `project/docs/HERO-SHOT-LIST-S6.md`
-- `project/docs/ART-DIRECTION.md`
+- `project/prompts/MAIN_SPRINT7_SEQUENCE.md`
+- `project/prompts/CONTENT_SPRINT7_FULL_STORE_ART_AND_CAPTURE.md`
 - `project/docs/GDD.md`
+- `project/docs/ART-DIRECTION.md`
 - `project/docs/DECISIONS.md`
+- `project/docs/SPRINT7-PLAN.md`
+- `project/docs/FULL-STORE-ART-ROLLOUT-S7.md`
+- `project/docs/PERFORMANCE-BUDGET-S7.md`
+- `project/docs/STORE-PRESENCE-ASSETS-S7.md`
+- `project/docs/HANDOFF-ENGINEERING.md`
 
-## Scope lock
-In scope:
+## Files to edit
+- content-facing source assets and content docs needed for Sprint 7
+- store-presence image exports / shot logs / proof files
+- any content checklist docs needed to complete the rollout
+- `project/src/ReplicatedStorage/Shared/StoreSignage.lua`
+- `project/src/ReplicatedStorage/Shared/VisualTheme.lua`
+- `project/src/Workspace/FallbackArena.server.lua`
+- `project/docs/SPRINT7-CONTENT-PACK.md`
+- `project/docs/proof/sprint7/README.md`
+- `project/docs/proof/sprint7/SHOT-LOG.md`
+
+## Sprint 7 lock summary
+**Style sentence:** Closing Shift should now read as a fluorescent suburban supermarket that is modular, phone-legible, and subtly wrong—an ordinary late-night retail box where every player-traversed space shares the same signage grammar, material language, and lighting rhythm, and where the horror lands through contrast and disruption instead of bespoke hero clutter.
+
+## Zone priorities for content execution
+### Tier A — must look shipped
 - lobby / entrance
-- checkout zone
-- one hero aisle
-- freezer section
-- stockroom corner
-- signage pack and decal language for those spaces
-- HUD / UI skin visual references
-- event-state visual identity references for normal / blackout / mimic / round-end
-- before / after capture support
-- hero-shot and thumbnail direction
+- all main playable aisles
+- checkout + queue
+- freezer / cooler path
+- stockroom corner / entered back-of-house space
+- all transitions between those spaces
 
-Out of scope:
-- new map areas
-- new gameplay mechanics
-- lore-heavy environmental storytelling that muddies readability
-- bespoke hero art dependency that blocks the sprint
+### Tier B — must support Tier A consistency
+- secondary aisle edges
+- visible background walls and ceiling runs
+- visible staff-hall segments
+- visible corners next to task nodes
 
-## Final style statement
-**Closing Shift: Superstore 3AM is stylized retail horror: an ordinary late-night supermarket built from clean modular forms, readable materials, and fluorescent lighting that becomes subtly wrong under pressure.**
+### Tier C — only if hidden
+- unseen fixture backsides
+- sealed support rooms
+- distant background views outside the real playable frame
 
-## Locked priority order
-1. **lobby / entrance**
-2. **checkout zone**
-3. **one hero aisle**
-4. **freezer section**
-5. **stockroom corner**
+## Content deliverables
+### 1. Reusable signage / decal kit
+Ship a repeated, modular set for:
+- aisle numbers
+- category headers
+- checkout numbers
+- staff-only signs
+- hazard signs
+- exit / back-door signs
+- one sale-card family
+- stockroom / notice-board flavor pieces
 
-## Content rules
-- Retail first, horror second.
-- Phone readability beats micro-detail.
-- Prefer reusable kits over one-off hero set dressing.
-- Horror should come from emptiness, wrongness, and lighting contrast, not gore or shock props.
-- Studio-first with optional imports is the policy; do not assume an import pipeline is available.
+Do not create multiple competing sign systems.
 
-## Required content deliverables
-### 1. Signage and decal language pack
-Provide or define:
-- store branding focal element for lobby / entrance
-- aisle numerals and category header system
-- sale / price card system with one-accent-color discipline
-- checkout lane / register support signage
-- freezer warning / cooler labeling
-- employee-only, hazard, payroll, and policy signage for stockroom flavor
-- shelf-price strips, box labels, receipt clutter, scanner / terminal surface accents
+### 2. Zone dressing pass
+For each Tier A zone, content should provide:
+- approved sign placement logic
+- repeated prop family usage
+- wall / floor / ceiling treatment support
+- task-safe clutter placement
+- at least one capture-safe angle
 
-### Sprint 6 execution package in this pass
-Use `project/docs/SPRINT6-ENVIRONMENT-UI-ART-PASS.md` as the concrete implementation guide.
+### 3. Public store-presence asset pack
+Required outputs:
+- one approved icon direction
+- three final thumbnail candidates
+- one update / social shot set
+- shot log noting in-game zone and camera setup used for each final image
 
-Locked authored calls made for content execution:
-- repeatable brand mark = `SUPERSTORE` + `3AM` tag + optional `OPEN LATE` support line
-- hero aisle = **Aisle 05 — Snacks + Soda**
-- reusable sign-copy pack source = `project/src/ReplicatedStorage/Shared/StoreSignage.lua`
-- reusable UI token source = `project/src/ReplicatedStorage/Shared/VisualTheme.lua`
-- live HUD skin support path = `project/src/StarterPlayer/StarterPlayerScripts/HUD.client.lua`
-- task-node / event-color support path = `project/src/StarterPlayer/StarterPlayerScripts/ClientEffects.client.lua`
-- text-managed fallback slice support path = `project/src/Workspace/FallbackArena.server.lua`
+## Signage and copy grammar
+### Aisle numbers
+- One hanging aisle marker per aisle mouth.
+- Large numeral, short secondary label.
+- Keep all markers in one style family.
 
-Dependency note:
-- no external mesh, texture, or decal import is required by this pass
-- optional imports remain unlocked only after the Studio-first version is approved
+### Category headers
+- One or two words maximum.
+- Use practical supermarket nouns only.
+- Good families: `SNACKS`, `FROZEN`, `DAIRY`, `CLEANING`, `HOUSEHOLD`, `CANNED`.
 
-### 2. Zone-authored set dressing for the five priority spaces
-Content should author the minimum visual density that makes each zone feel intentional from normal player camera height.
+### Checkout numbers
+- Big read from the front store.
+- Same shape, scale, and placement family for every lane.
 
-### 3. UI skin reference package
-Provide visual references or mock-level direction for:
-- HUD shell
-- timer block
-- objective card styling
-- alert card variants
-- payout / round-end receipt treatment
-- interaction feedback feel
+### Staff / hazard signs
+Use direct wording only:
+- `EMPLOYEES ONLY`
+- `STOCKROOM`
+- `FREEZER`
+- `NO ENTRY`
+- `WET FLOOR`
+- `EXIT`
+- `BACK DOOR`
+- `NOTICE BOARD`
 
-### 4. Proof and capture package
-Prepare matching before / after camera spots and hero-shot compositions for QA and release-facing use.
+### Sale cards
+- One family only.
+- Short headline plus large price read.
+- Accent color is consistent and reserved.
+- Do not flood shelves with sale spam.
 
-## Zone-by-zone brief
-### 1. Lobby / entrance
-**Purpose:** first impression, branding, and immediate fantasy read.
+## Primitive-remnant policy for content
+Must replace or shell in Tier A and readable Tier B:
+- raw gray architecture
+- primitive shelves / checkout / freezer blocks
+- blank sign planes
+- unlabeled cube crates and pallets in readable spaces
+- placeholder threshold doors
 
-Must include:
-- one memorable branded focal point
-- authored floor and wall treatment
-- threshold framing that reads as supermarket entry, not warehouse spawn
-- enough signage to teach the store language immediately
+Can remain only if hidden from play and capture:
+- unseen fixture backsides
+- sealed-room internals
+- upper unseen faces
+- fully occluded support geometry
 
-Avoid:
-- empty gray foyer
-- clutter that hides the first route into the store
+## Transition support rules
+### Lobby -> main floor
+- Carry the same store identity into the entrance.
+- Make checkout or the aisle structure readable from the threshold.
+- Avoid a dead vestibule that feels disconnected from the store.
 
-### 2. Checkout zone
-**Purpose:** operational heart of the store and strongest gameplay focal point.
+### Main floor -> freezer
+- Use colder tint, cooler frames, and utility-floor cues.
+- Keep signage and path readability strong.
 
-Must include:
-- authored checkout counter language
-- bagging / register framing
-- lane identity and queue support
-- readable price / lane / store-system signage
-- the close-register objective should look important before the player is told it is important
+### Main floor -> stockroom
+- Use staff-only doors, utility materials, and operations signage.
+- Keep the area sparse but authored.
 
-Avoid:
-- generic desk cubes
-- prop piles that muddy counter readability
+### Global continuity
+- Adjacent zones should feel like variants of one store, not unrelated mood boards.
+- No public-facing shot should expose a raw style reset between connected spaces.
 
-### 3. One hero aisle
-**Purpose:** prove the reusable shelf kit, category signage, and store identity at gameplay scale.
+## Public asset direction
+### Experience icon
+- Square composition.
+- Checkout or front-store identity first.
+- Threat second.
+- Must survive small-size read.
 
-Must include:
-- modular shelf bay language
-- one clear category identity
-- price strips and repeatable product-facing silhouettes
-- an endcap or aisle-top element that reads in thumbnails and mid-distance shots
+### Thumbnail set
+1. **Store at 3AM**
+   - clear supermarket read
+   - signage visible
+   - honest Tier A geometry
+2. **Blackout**
+   - same store under emergency conditions
+   - route and silhouette readability preserved
+3. **Mimic tension**
+   - uncanny wrongness in a real task zone
+   - still clearly this game
 
-Avoid:
-- clutter that narrows the lane or hides tasks
-- random assortment with no category read
+### Update / social shots
+Priority order:
+1. before / after visual-upgrade comparison
+2. full-store checkout or hero-aisle proof shot
+3. blackout readability shot
+4. mimic readability shot
 
-### 4. Freezer section
-**Purpose:** distinct material and color break that still belongs to the same store.
+## Capture constraints
+- Capture from the real shipped build or exact release candidate.
+- Do not invent non-playable one-off scenes for the store page.
+- Use completed Tier A spaces only.
+- Keep framing honest to what a player can actually find in the game.
+- Do not rely on paint-over, fake post, or impossible lighting.
+- Record the zone and camera setup for every final shot.
 
-Must include:
-- glass / cool metal read
-- cold-zone lighting feel
-- restrained `powder_blue` accent use
-- freezer warning or cooler labeling that supports the zone identity
+## Proof package expected from content
+### Environment / rollout proof
+- [ ] before / after pair for lobby / entrance
+- [ ] before / after pair for main aisle coverage
+- [ ] before / after pair for checkout / queue
+- [ ] before / after pair for freezer / cooler path
+- [ ] before / after pair for stockroom corner
+- [ ] at least one transition continuity frame
 
-Avoid:
-- warm muddy lighting
-- identical material treatment to the hero aisle
+### Store-presence proof
+- [ ] icon candidate sheet
+- [ ] final Thumbnail A
+- [ ] final Thumbnail B
+- [ ] final Thumbnail C
+- [ ] update / social shot set
+- [ ] mobile-safe crop review
+- [ ] shot log with source zones / camera setups
 
-### 5. Stockroom corner
-**Purpose:** utility, employee-only access, and slight unease.
+## Current Sprint 7 content execution status
+### Source-side rollout landed
+- Reusable signage grammar is now centralized in `project/src/ReplicatedStorage/Shared/StoreSignage.lua`.
+- Sprint 7 rollout/capture metadata is now centralized in `project/src/ReplicatedStorage/Shared/VisualTheme.lua`.
+- `project/src/Workspace/FallbackArena.server.lua` now carries a broader full-store continuity pass instead of only a narrow polished slice: more aisle coverage, hanging aisle markers, checkout support signage, freezer threshold framing, stockroom threshold framing, route arrows, and added capture anchors.
 
-Must include:
-- industrial door or threshold language
-- pallet / taped-box / utility prop family
-- employee-only / policy / hazard signage
-- a rawer floor and wall treatment than the public sales floor
+### Honest capture package status
+- The shot-plan/proof structure is prepared in `project/docs/SPRINT7-CONTENT-PACK.md` and `project/docs/proof/sprint7/SHOT-LOG.md`.
+- No Sprint 7 public screenshots are claimed as exported yet from this content pass.
+- QA should only mark store-presence proof complete once the real build images are captured and attached to the Sprint 7 proof folder.
 
-Avoid:
-- decorative hero clutter
-- unreadable darkness
-
-## Palette and signage rules for content
-| Token / rule | Use it for | Avoid using it for |
-| --- | --- | --- |
-| `fluorescent_white` | baseline fixtures, neutral bright highlights | danger and mimic emphasis |
-| `tile_gray` | main floor neutrality and architecture base | promotional callouts |
-| `powder_blue` | freezer accents and cold-zone identity | checkout focal points |
-| `safety_red` | urgent warnings, hazards, emergency support | everyday sales signage |
-| `receipt_cream` | receipt / payroll surfaces and paper props | ambient lighting |
-| `sodium_amber` | stockroom warmth and caution support | normal sales-floor dominant tone |
-| `mimic_violet` | local mimic callout only | normal environment dressing |
-| `night_blue` | blackout depth and dark UI shell support | primary text on its own |
-| `payroll_green` *(UI-only derived accent)* | success stamps and payout accents | world signage or environment light |
-
-## Typography and language direction
-- Big signs should be bold, simple, and legible at a distance.
-- Category language should feel like grocery retail, not stylized fantasy lore.
-- Employee-only and hazard signs should feel institutional and practical.
-- Sale cards get one accent color each, not multicolor event-poster energy.
-- Keep copy short enough to read quickly from camera distance or on phone.
-
-## Event-state visual brief
-### Normal
-- quiet fluorescent retail
-- readable neutral signage
-- low drama, tired late-night mood
-
-### Blackout
-- fast loss of store light
-- emergency / spill light supports silhouettes and navigation
-- no visual chaos that makes the store illegible
-
-### Mimic
-- one local uncanny cue around the affected task node
-- `mimic_violet` used sparingly
-- should feel incorrect, not magical or cosmic
-
-### Round end
-- success = receipt / payroll relief with `receipt_cream` + `payroll_green`
-- failure = warning-weighted summary using `sodium_amber` + restrained `safety_red`
-
-## UI treatment brief
-- Theme is **security terminal + receipt printer**.
-- Panels should look like store equipment and payroll printouts.
-- Preserve layout hierarchy and touch targets.
-- Alerts need three readable families: normal, danger / blackout, and mimic.
-- Round-end summary should feel like a printed result slip, not a fantasy reward chest.
-
-## Hero-shot and thumbnail direction
-Use the Sprint 6 shot list as the base and lock the following intent:
-
-### Required shots
-1. **Icon candidate**
-   - close register foreground
-   - player silhouette or hands near checkout
-   - aisle or freezer tension in background
-   - clear title-space area
-
-2. **Thumbnail A — Closing shift tension**
-   - wide checkout + aisle view
-   - readable store branding
-   - one uncanny clue in the distance
-
-3. **Thumbnail B — Blackout moment**
-   - same store identity preserved under emergency-light mood
-   - blackout must still read as this specific supermarket
-
-4. **Thumbnail C — Freezer dread**
-   - cool-toned freezer area
-   - strong silhouette and contrast
-   - no overbusy clutter
-
-5. **Update / social shot**
-   - explicit before / after reveal showing graybox-to-authored improvement
-
-### Capture rules
-- No shot should depend on HUD for meaning.
-- Foreground, midground, and background should all help sell supermarket identity.
-- Avoid generic horror-hallway compositions.
-- Keep signs, shelf language, and checkout identity visible whenever possible.
-
-## Before / after plus live proof direction
-Prepare for QA and production:
-- one locked before / after camera setup per priority zone
-- one live proof setup each for blackout, mimic, and round-end
-- at least one proof shot where the same frame clearly shows the Sprint 6 uplift over the old primitive look
-- use the exact five-zone camera intents listed in `project/docs/SPRINT6-ENVIRONMENT-UI-ART-PASS.md` so QA, content, and release surfaces are comparing like-for-like frames
-
-## Coordination rules
-- Do not rename or move gameplay-critical nodes without engineering coordination.
-- Decorative art should sit around the gameplay path, not inside it.
-- If optional imports are used, document IDs and fallback replacements.
-- If time is tight, finish materials, silhouettes, signage, and focal props before chasing bespoke detail.
-
-## Acceptance criteria
-- Content can execute the slice with no style ambiguity left.
-- The five priority zones each have a clear authored identity.
-- Signage, palette, and UI references are specific enough for implementation.
-- Hero-shot and before / after capture direction is ready for QA and release surfaces.
-- The result still reads cleanly on phone and does not require an import pipeline to succeed.
-- The authored slice package is concrete enough that engineering and QA can point to exact sign copy, zone identity, UI surface hooks, and proof angles without inventing missing content direction.
+## Content done condition
+Content is done with Sprint 7 when:
+- Tier A spaces have a consistent repeated language,
+- Tier B supports Tier A without obvious placeholder drift,
+- visible primitive leftovers are gone or hidden,
+- signage and sale-card systems are unified,
+- the public asset pack matches the real store,
+- QA and production can approve the capture set without feeling misled.

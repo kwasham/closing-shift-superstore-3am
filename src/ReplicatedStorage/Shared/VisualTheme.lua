@@ -14,6 +14,10 @@ local palette = {
 	charcoal_soft = Color3.fromRGB(30, 35, 43),
 	ink = Color3.fromRGB(39, 42, 48),
 	paper_shadow = Color3.fromRGB(220, 212, 195),
+	emergency_green = Color3.fromRGB(124, 214, 156),
+	emergency_blue = Color3.fromRGB(168, 206, 255),
+	cooler_teal = Color3.fromRGB(141, 201, 218),
+	sign_amber = Color3.fromRGB(231, 196, 124),
 }
 
 VisualTheme.Palette = palette
@@ -45,6 +49,253 @@ VisualTheme.ArtSlice = {
 		"HeroAisleHeaderHook",
 		"FreezerHeaderHook",
 		"StockroomNoticeHook",
+	},
+}
+
+VisualTheme.StoreRollout = {
+	RootFolderName = "FallbackArtSlice",
+	HooksFolderName = "Sprint7ArtHooks",
+	RuntimeGroupsFolderName = "Sprint7RuntimeGroups",
+	TierAZoneOrder = {
+		"Lobby",
+		"EntranceTransition",
+		"Checkout",
+		"Queue",
+		"AislesWest",
+		"AislesCenter",
+		"AislesEast",
+		"FreezerTransition",
+		"Freezer",
+		"StockroomTransition",
+		"Stockroom",
+	},
+	TierBZoneOrder = {
+		"Perimeter",
+		"StaffHall",
+		"SightlineCeiling",
+		"SecondaryEndcaps",
+		"TaskCorners",
+	},
+	RuntimeGroups = {
+		"AisleMarkers",
+		"CategoryHeaders",
+		"CheckoutMarkers",
+		"StaffSigns",
+		"SaleCards",
+		"EmergencyRead",
+		"FixtureBanks",
+		"BrandSigns",
+		"PlaceholderMasks",
+	},
+	CaptureHooks = {
+		"LobbyCaptureAnchor",
+		"CheckoutCaptureAnchor",
+		"AisleWestCaptureAnchor",
+		"AisleCenterCaptureAnchor",
+		"AisleEastCaptureAnchor",
+		"FreezerCaptureAnchor",
+		"StockroomCaptureAnchor",
+		"FrontContinuityAnchor",
+		"FreezerContinuityAnchor",
+		"StockroomContinuityAnchor",
+		"BlackoutReadAnchor",
+		"MimicReadAnchor",
+		"UpdateShotAnchor",
+	},
+	SignageHooks = {
+		"LobbyBrandHook",
+		"CheckoutHeaderHook",
+		"AisleWestHook",
+		"AisleCenterHook",
+		"AisleEastHook",
+		"FreezerHeaderHook",
+		"StockroomDoorHook",
+		"ExitHook",
+	},
+}
+
+VisualTheme.WorldStateStyles = {
+	[VisualTheme.LightingStates.Normal] = {
+		FixtureBanks = { mode = "base", material = Enum.Material.Neon },
+		EmergencyRead = {
+			color = palette.emergency_green,
+			transparency = 0.02,
+			material = Enum.Material.Neon,
+		},
+		AisleMarkers = { mode = "base", transparency = 0 },
+		CategoryHeaders = { mode = "base", transparency = 0 },
+		CheckoutMarkers = { mode = "base", transparency = 0 },
+		StaffSigns = { mode = "base", transparency = 0 },
+		SaleCards = { mode = "base", transparency = 0 },
+		BrandSigns = { mode = "base", transparency = 0 },
+	},
+	[VisualTheme.LightingStates.Blackout] = {
+		FixtureBanks = {
+			color = Color3.fromRGB(82, 93, 112),
+			transparency = 0.24,
+			material = Enum.Material.SmoothPlastic,
+		},
+		EmergencyRead = {
+			color = palette.emergency_green,
+			transparency = 0.01,
+			material = Enum.Material.Neon,
+		},
+		AisleMarkers = {
+			color = palette.emergency_blue,
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CategoryHeaders = {
+			color = Color3.fromRGB(196, 208, 225),
+			transparency = 0.08,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CheckoutMarkers = {
+			color = palette.receipt_cream,
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
+		StaffSigns = {
+			color = palette.emergency_green,
+			transparency = 0.02,
+			material = Enum.Material.SmoothPlastic,
+		},
+		SaleCards = {
+			color = Color3.fromRGB(103, 88, 94),
+			transparency = 0.16,
+			material = Enum.Material.SmoothPlastic,
+		},
+		BrandSigns = {
+			color = Color3.fromRGB(160, 178, 205),
+			transparency = 0.08,
+			material = Enum.Material.SmoothPlastic,
+		},
+	},
+	[VisualTheme.LightingStates.Mimic] = {
+		FixtureBanks = {
+			color = Color3.fromRGB(171, 159, 214),
+			transparency = 0.1,
+			material = Enum.Material.Neon,
+		},
+		EmergencyRead = {
+			color = palette.emergency_green,
+			transparency = 0.03,
+			material = Enum.Material.Neon,
+		},
+		AisleMarkers = {
+			color = Color3.fromRGB(232, 221, 255),
+			transparency = 0.02,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CategoryHeaders = {
+			color = Color3.fromRGB(208, 192, 244),
+			transparency = 0.02,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CheckoutMarkers = {
+			color = Color3.fromRGB(229, 216, 255),
+			transparency = 0.02,
+			material = Enum.Material.SmoothPlastic,
+		},
+		StaffSigns = {
+			color = Color3.fromRGB(195, 178, 232),
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
+		SaleCards = {
+			color = palette.mimic_violet,
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
+		BrandSigns = {
+			color = Color3.fromRGB(189, 170, 236),
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
+	},
+	[VisualTheme.LightingStates.RoundSuccess] = {
+		FixtureBanks = {
+			color = palette.fluorescent_white,
+			transparency = 0.02,
+			material = Enum.Material.Neon,
+		},
+		EmergencyRead = {
+			color = palette.emergency_green,
+			transparency = 0.02,
+			material = Enum.Material.Neon,
+		},
+		AisleMarkers = {
+			color = Color3.fromRGB(221, 241, 228),
+			transparency = 0,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CategoryHeaders = {
+			color = Color3.fromRGB(207, 230, 213),
+			transparency = 0,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CheckoutMarkers = {
+			color = Color3.fromRGB(214, 240, 220),
+			transparency = 0,
+			material = Enum.Material.SmoothPlastic,
+		},
+		StaffSigns = {
+			color = Color3.fromRGB(214, 232, 218),
+			transparency = 0.02,
+			material = Enum.Material.SmoothPlastic,
+		},
+		SaleCards = {
+			color = Color3.fromRGB(176, 84, 84),
+			transparency = 0,
+			material = Enum.Material.SmoothPlastic,
+		},
+		BrandSigns = {
+			color = Color3.fromRGB(205, 231, 212),
+			transparency = 0,
+			material = Enum.Material.SmoothPlastic,
+		},
+	},
+	[VisualTheme.LightingStates.RoundFailure] = {
+		FixtureBanks = {
+			color = Color3.fromRGB(183, 155, 121),
+			transparency = 0.08,
+			material = Enum.Material.Neon,
+		},
+		EmergencyRead = {
+			color = palette.sign_amber,
+			transparency = 0.04,
+			material = Enum.Material.Neon,
+		},
+		AisleMarkers = {
+			color = Color3.fromRGB(239, 221, 188),
+			transparency = 0.02,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CategoryHeaders = {
+			color = Color3.fromRGB(214, 187, 149),
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
+		CheckoutMarkers = {
+			color = Color3.fromRGB(233, 204, 176),
+			transparency = 0.02,
+			material = Enum.Material.SmoothPlastic,
+		},
+		StaffSigns = {
+			color = Color3.fromRGB(206, 174, 145),
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
+		SaleCards = {
+			color = Color3.fromRGB(146, 91, 73),
+			transparency = 0.05,
+			material = Enum.Material.SmoothPlastic,
+		},
+		BrandSigns = {
+			color = Color3.fromRGB(218, 189, 161),
+			transparency = 0.04,
+			material = Enum.Material.SmoothPlastic,
+		},
 	},
 }
 
@@ -201,6 +452,14 @@ end
 
 function VisualTheme.getNodeStyle(state)
 	return VisualTheme.NodeStyles[state] or VisualTheme.NodeStyles.waiting
+end
+
+function VisualTheme.getWorldStateStyle(stateName, groupName)
+	local stateStyles = VisualTheme.WorldStateStyles[stateName]
+	if stateStyles == nil then
+		stateStyles = VisualTheme.WorldStateStyles[VisualTheme.LightingStates.Normal]
+	end
+	return stateStyles[groupName] or { mode = "base" }
 end
 
 return VisualTheme

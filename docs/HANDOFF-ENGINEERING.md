@@ -1,155 +1,203 @@
-# Engineering handoff — Sprint 6 visual direction lock
+# Engineering handoff
 
-Use this file as the implementation brief for the Sprint 6 visual identity and environment art foundation pass.
+Use this file when design has a concrete implementation brief for engineering.
 
 ## Objective
-Replace the most visible primitive / graybox read in the player-facing critical path with a reusable visual foundation that makes the game feel branded and intentional **without changing core gameplay behavior**.
+Execute Sprint 7 as a full-store visual rollout plus store-presence support pass that scales the accepted Sprint 6 slice across the rest of the player-visible store without changing gameplay scope or destabilizing the runtime baseline.
 
-Engineering is responsible for making the visual rules shippable in runtime while protecting the Sprint 5 Ready baseline.
+## Protect first
+- Protect the Sprint 6 Ready baseline.
+- Do not introduce new gameplay systems, event mechanics, economy tuning, or map-expansion work.
+- Prioritize player-visible consistency, phone readability, and runtime safety over bespoke polish.
 
 ## Read first
-- `project/docs/SPRINT6-PLAN.md`
-- `project/docs/ART-BIBLE-S6.md`
-- `project/docs/ENVIRONMENT-KIT-S6.md`
-- `project/docs/HERO-SHOT-LIST-S6.md`
-- `project/docs/ART-DIRECTION.md`
+- `project/prompts/MAIN_SPRINT7_SEQUENCE.md`
+- `project/prompts/ENGINEER_SPRINT7_ART_ROLLOUT_AND_PERFORMANCE.md`
 - `project/docs/GDD.md`
+- `project/docs/ART-DIRECTION.md`
 - `project/docs/DECISIONS.md`
+- `project/docs/SPRINT7-PLAN.md`
+- `project/docs/FULL-STORE-ART-ROLLOUT-S7.md`
+- `project/docs/PERFORMANCE-BUDGET-S7.md`
+- `project/docs/STORE-PRESENCE-ASSETS-S7.md`
+- `project/docs/RUNTIME-EVIDENCE.md`
 
-## Scope lock
-In scope:
-- lobby / entrance
-- checkout zone
-- one hero aisle
-- freezer section
-- stockroom corner
-- lighting states for normal / blackout / mimic / round-end
-- HUD / UI skin refresh
-- interaction feedback polish
-- before / after and live proof support
+## Files to edit
+- runtime/source files needed to land the Sprint 7 rollout safely
+- `project/docs/RUNTIME-EVIDENCE.md`
+- any Sprint 7 proof docs or checklists required by the implementation pass
 
-Out of scope:
-- new gameplay systems
-- layout expansion beyond the connecting space needed to make the slice coherent
-- economy or progression changes
-- combat, matchmaking, or map-count changes
-- full-store bespoke art pass
+## Sprint 7 lock summary
+**Style sentence:** Closing Shift should now read as a fluorescent suburban supermarket that is modular, phone-legible, and subtly wrong—an ordinary late-night retail box where every player-traversed space shares the same signage grammar, material language, and lighting rhythm, and where the horror lands through contrast and disruption instead of bespoke hero clutter.
 
-## Non-negotiable baseline rules
-- Preserve the Sprint 5 Ready playable path.
-- Do not move, rename, or delete runtime-critical nodes without explicit coordination.
-- Collision, interaction range, and task readability must survive every art replacement.
-- Studio-first with optional imports is the asset-source rule.
-- Phone readability wins over visual flourish.
+## Zone rollout table
+| Tier | Zone | Required Sprint 7 outcome | Acceptable simplification | Proof expectation |
+| --- | --- | --- | --- | --- |
+| A | Lobby / entrance | Must read as the same product as the store interior, with clear store identity and no graybox threshold seam | Simple prop count is fine if signs, materials, and lighting continuity are present | before / after pair + public-capture-safe angle |
+| A | Main playable aisles | All traversed aisles must use approved floor / wall / ceiling / shelf language and readable department markers | Repeated modular dressing is preferred over unique aisle art | before / after pairs across representative aisle coverage |
+| A | Checkout + queue | Checkout lanes must read instantly from the front store via counter silhouette, numbering, queue language, and front-store signage | Limit clutter if needed; clarity matters more than density | before / after pair + icon / thumbnail candidate angle |
+| A | Freezer / cooler path | Freezer must be a clear colder variant of the same store, not a raw placeholder room | Keep prop count light if needed; prioritize cooler frames, signs, flooring, and readable path | before / after pair + blackout-safe proof angle |
+| A | Stockroom corner / entered back-of-house | Must look operational and authored with staff-only identity and utility materials | Lower visual density than sales floor is acceptable | before / after pair + transition proof |
+| A | Transitions between all Tier A zones | No doorway or turn may expose a raw style reset or obvious placeholder seam | Minimal dressing is acceptable if continuity holds | at least one continuity shot per transition type |
+| B | Secondary aisle edges | Must feel finished from normal player sightlines | Simplified dressing allowed away from task space | included in Tier A continuity frames |
+| B | Sightline walls / ceiling runs | Must support the full-store illusion and stop the half-graybox read | Repeated material treatment is fine | visible in before / after sweeps |
+| B | Visible staff-hall segments | Must match the stockroom support language | Light detail pass is acceptable | visible in transition or stockroom proof |
+| B | Task-adjacent corners | Must not look raw beside interactable nodes | Keep clutter low around prompts | visible in task-readable proof |
+| C | Hidden fixture backs / sealed support spaces / distant background views | Can stay simple only if they are hidden from normal play and capture | Hidden primitives are acceptable here | no public or QA hero frame may expose them |
 
-## Locked zone priority
-1. **lobby / entrance**
-2. **checkout zone**
-3. **one hero aisle**
-4. **freezer section**
-5. **stockroom corner**
+## Signage / decal rules
+### Aisle markers
+- One hanging aisle sign per aisle mouth.
+- Large numeral first, short secondary label second.
+- Keep placement consistent across the store.
 
-If time gets tight, finish higher-priority zones to a stronger level rather than spreading a half-pass across the whole map.
+### Category headers
+- Use short, phone-readable retail nouns.
+- One or two words max in the visible headline.
+- Mount over the correct shelf run or department edge.
 
-## Palette and material implementation table
-| Token / rule | Primary runtime use | Allowed locations | Engineering note |
+### Checkout numbering
+- Large numerals above or immediately behind each lane.
+- Every checkout sign uses the same family and placement logic.
+
+### Staff / hazard signs
+Use direct wording only:
+- `EMPLOYEES ONLY`
+- `STOCKROOM`
+- `FREEZER`
+- `NO ENTRY`
+- `WET FLOOR`
+- `EXIT`
+- `BACK DOOR`
+
+### Sale-card system
+- One repeated sale-card family only.
+- Accent color must stay reserved and consistent.
+- Decorative sale signage cannot compete with task prompts or round alerts.
+
+## Must-replace primitive matrix
+| Primitive / placeholder form | Tier A | Tier B visible sightlines | Tier C hidden / non-traversed |
 | --- | --- | --- | --- |
-| `fluorescent_white` | default store lighting and neutral highlight contrast | normal-shift fixtures, neutral highlight edges, readable UI highlight text | keep this as the main sales-floor light identity |
-| `tile_gray` | neutral architecture base | floor tile, neutral wall / floor breakup, non-focal shell surfaces | supports readability; should not become muddy or overly dark |
-| `powder_blue` | cold-zone accent | freezer / cooler trim, freezer signage accents, cold-zone UI tags if needed | reserve for freezer identity so the zone reads instantly |
-| `safety_red` | danger accent | hazard striping, urgent alerts, emergency language, failure support accents | do not let it dominate normal store surfaces |
-| `receipt_cream` | receipt / payroll surface language | summary cards, payout surfaces, card interiors, paper props | use to separate UI content from dark shell framing |
-| `sodium_amber` | practical warm warning support | stockroom warmth, caution-adjacent lighting, failure support tone | not a main-floor dominant color |
-| `mimic_violet` | localized mimic cue | active mimic node visual, mimic-specific alert accent, wrong-lit local emphasis | never a store-wide wash |
-| `night_blue` | blackout structure and dark shell support | blackout fill, dark UI shell, shadow depth | preserve enough contrast for silhouettes and text |
-| `payroll_green` *(UI-only derived accent)* | success confirmation | payout arrows, checks, success stamps, positive round-end accents | keep this out of environment lighting and signage |
-| Architecture baseline | commercial tile / sealed concrete, painted block or panels, fluorescent ceiling grid | all sprint-6 zones | use repeatable modular surfaces before bespoke geo |
-| Fixture baseline | coated metal shelves, laminate + metal checkout, glass + cool metal freezers | checkout / aisle / freezer families | kit reuse matters more than one-off prop heroics |
+| Raw gray floors | Must replace | Must replace if visible from normal routes | Accept only if hidden |
+| Raw gray walls | Must replace | Must replace if visible from normal routes | Accept only if hidden |
+| Raw gray ceilings / no fixture rhythm | Must replace | Must replace if clearly visible | Accept only if hidden |
+| Primitive shelf blocks | Must replace | Must replace if exposed near task routes | Accept only if unseen backsides |
+| Primitive checkout blocks | Must replace | n/a | Not acceptable in captureable space |
+| Primitive freezer cubes | Must replace | Must replace if visible from store path | Accept only if fully hidden |
+| Placeholder doors at playable thresholds | Must replace | Must replace if readable by players | Accept only behind sealed space |
+| Unlabeled cube crates / pallets in readable space | Must replace | Replace or hide if visible from play | Accept only if hidden |
+| Blank sign panels / temp text markers | Must replace | Must replace | Never acceptable in public capture |
 
-## Lighting-state intent by mode
-| Mode | Visual intent | Runtime rule | Must remain readable |
-| --- | --- | --- | --- |
-| Normal | cool fluorescent, ordinary late-night supermarket | stable top-light read, clear signs, readable neutral contrast | tasks, signs, prompts, safe movement |
-| Blackout | power loss with emergency support | main store light drops quickly; emergency / spill light preserves orientation; no full darkness soft-lock | routes, silhouettes, prompts that must visibly disable or recover |
-| Mimic | local wrongness around one affected node | one localized uncanny cue with `mimic_violet`, slight wrong emphasis or brief flicker | the targeted node, nearby space, HUD alert |
-| Round-end success | payroll relief and completion clarity | `receipt_cream` result surfaces with restrained `payroll_green` accents | payout, outcome, next action |
-| Round-end failure | warning-weighted summary | `sodium_amber` support with restrained `safety_red` emphasis | failure cause, retry / continue action |
+## Hidden-remnant rule
+A remnant is only acceptable if all of the following are true:
+1. it is outside normal player traversal,
+2. it does not appear in Tier A or Tier B sightlines,
+3. it does not appear in before / after proof,
+4. it does not appear in icon / thumbnail / update-shot capture.
 
-## UI component treatment list
-| Component | Treatment | Color behavior | Readability rule |
-| --- | --- | --- | --- |
-| HUD shell / frame | security-terminal outer shell | dark shell with `night_blue` support | no decorative noise behind text |
-| Timer | bold digital focal element | bright neutral on dark shell; danger escalation may use restrained red support | readable at a glance on phone |
-| Objective list | receipt / task-card hybrid | `receipt_cream` or high-contrast neutral interior with dark text | completed vs pending states must separate instantly |
-| Cash / payout display | receipt / payroll flavor | `receipt_cream` base with `payroll_green` only for positive confirmation | cash total cannot blend into shell |
-| Alerts — normal | concise store-system message card | neutral or `receipt_cream` support | short verb-led text |
-| Alerts — danger / blackout | urgent store warning | `safety_red` accent on dark or neutral card | urgent but not visually noisy |
-| Alerts — mimic | false-task warning | `mimic_violet` accent only on mimic-specific card | visually distinct from blackout |
-| Interaction prompt | short practical verb | high-contrast label, minimal ornament | must remain legible over world art |
-| Round-end summary | printed receipt / payroll stub | success uses `payroll_green`; failure uses `sodium_amber` + restrained `safety_red` | first card tells the outcome immediately |
-| Task-complete feedback | crisp equipment acknowledgment | neutral / positive accent, not full-screen celebration | must not block active play |
+If any one of those fails, replace or hide it this sprint.
 
-## Must-fix primitive replacement matrix
-| Zone / surface | Current graybox risk | Minimum replacement required this sprint | Preserve |
-| --- | --- | --- | --- |
-| Lobby / entrance floor and walls | first impression still reads prototype | commercial floor material, authored wall treatment, trim breakup, branded focal sign | spawn flow, sightline into store |
-| Lobby / entrance desk / frontage | plain block surfaces with no store identity | simple service/front desk language, readable counter silhouette, branded or policy signage | interaction clearance and player path |
-| Checkout counters | cubes with no authored retail language | laminate + metal-edged counter kit, scanner/register framing, bagging surface accents | close-register logic, prompt position, counter collision |
-| Queue / checkout support props | lane reads unfinished | queue definition, bags, basket touchpoints, price / lane signage | movement lane width |
-| Hero aisle shelf bays | blank primitives hide product identity | modular shelf kit with price strips, category header, repeatable product-facing silhouettes | path width and node readability |
-| Hero aisle endcap | empty or generic block | endcap shelf or sign topper that sells category identity | camera sightline and player route |
-| Freezer cases and threshold | same look as main aisle | cool metal + glass read, interior glow, powder-blue accent restraint, freezer threshold framing | freezer task node placement |
-| Stockroom door / corner | back-of-house has no authored utility read | industrial door frame, hazard / employee-only language, pallets / taped boxes, rawer floor treatment | stockroom access and navigation |
-| Small prop families across slice | primitive clutter with no system | reusable baskets, carts, caution props, labels, boxes, receipt clutter, posters | prompt visibility and collision sanity |
-| HUD panels | debug-box read | security-terminal + receipt-printer skin while preserving layout hierarchy | all existing HUD information flow |
-
-## Implementation rules
-- Prefer modular family replacements over one-off hero meshes.
-- Untouched background zones may stay low density if they inherit the same palette and material language.
-- Replace eye-level surfaces before polishing unreachable corners.
-- Separate decorative props from gameplay-critical nodes in organization and naming.
-- Document any imported asset IDs if optional imports are used.
+## Lighting continuity rules
+- Keep one readable fluorescent baseline across the store.
+- Lobby may be slightly warmer than the main floor, but it must still feel connected.
+- Freezer may be colder than the main floor, but prompt and route readability must stay intact.
+- Stockroom may be slightly dimmer and more industrial, but it cannot read as a separate game.
+- Blackout and mimic states should primarily transform the established store lighting rather than add stacks of new temporary lights.
+- Checkout, freezer, stockroom, exits, and teammate silhouettes must remain readable during blackout and mimic proof.
 
 ## Performance guardrails
-- Shipping success cannot depend on imported assets.
-- Prefer decals, materials, and silhouette upgrades before adding unique geometry density.
-- Zero particles are required for success.
-- If particles are used, keep them limited to small accent support and never core readability.
-- Blackout should use controlled light-group state changes, not spammy flashing or comfort-hostile strobing.
-- Mimic should use one localized effect cluster per active node, not a store-wide treatment.
-- Avoid decorative clutter that blocks player movement, prompt visibility, or camera readability.
-- Keep the slice performant by finishing the five zones well instead of lightly touching the entire map.
+### Reuse and asset scope
+- Prefer approved modular shelf, checkout, freezer, pallet, and signage families.
+- Default target: no new one-off hero meshes are required to finish Sprint 7.
+- If a new imported mesh family is introduced, it must either repeat across multiple views or unblock a locked public-capture need; do not add one-off vanity assets.
+- Prefer materials, tint, and decal passes before dense custom geometry.
 
-## QA proof checklist
-Engineering is not done until QA can capture or verify the following:
-- [ ] before / after comparison for lobby / entrance from the same camera angle
-- [ ] before / after comparison for checkout zone from the same camera angle
-- [ ] before / after comparison for hero aisle from the same camera angle
-- [ ] before / after comparison for freezer section from the same camera angle
-- [ ] before / after comparison for stockroom corner from the same camera angle
-- [ ] normal-shift look reads as a believable supermarket from player camera height
-- [ ] blackout look is visually distinct at a glance and does not destroy navigation readability
-- [ ] mimic cue is visible at the affected node without audio-only dependence
-- [ ] round-end success and failure are visually distinct from each other
-- [ ] HUD remains readable on phone-sized layout during normal, blackout, mimic, and round-end states
-- [ ] close-register, freezer-check, and other existing task hooks still work after art replacement
-- [ ] no runtime-critical node moved or renamed without corresponding engineering coordination
+### Lights
+- Keep always-on non-ceiling accent lights to **2 or fewer** in any normal Tier A gameplay frame.
+- Event-only emphasis lights should be localized and short-lived.
+- Use **1 localized extra event-light cluster max** at a read point; prefer toggling or recoloring existing fixtures.
+- Do not stack overlapping decorative lights in the same aisle or fixture bank.
 
-## Acceptance criteria
-- The five priority zones no longer read as obvious primitive graybox from normal player camera positions.
-- The store, signage, UI, and event states follow one consistent visual language.
-- Blackout, mimic, and round-end are distinguishable instantly in runtime proof.
-- Existing gameplay interactions remain stable.
-- Engineering hands QA a build or proof path with the above checklist unblocked.
+### Props / clutter
+- Dense clutter belongs only at focal points.
+- Task lanes, queue lanes, and prompt space stay clean.
+- Props cannot create false interaction reads near real nodes.
+- Keep floor clutter out of the main walk lane and out of the immediate prompt approach zone.
 
-## Engineer implementation status — 2026-04-05 retry
-- Shared lighting presets now exist in `project/src/ReplicatedStorage/Shared/LightingPresets.lua` for `normal`, `blackout`, `mimic`, `round_success`, and `round_failure`.
-- Client lighting state application now lives in `project/src/StarterPlayer/StarterPlayerScripts/LightingController.client.lua` and responds to the existing round / alert event path without adding new remotes.
-- `project/src/StarterPlayer/StarterPlayerScripts/HUD.client.lua` now has local fallback aliases for round-state, payout, and task-id constants so the Sprint 6 HUD skin remains runtime-safe even when broader shared-runtime constants drift.
-- `project/src/Workspace/FallbackArena.server.lua` now exposes source-backed Sprint 6 art-swap / capture hooks under `FallbackArtSlice/Sprint6ArtHooks`, plus zone attributes for lobby, checkout, hero aisle, freezer, and stockroom replacements.
-- Proof support now includes `project/scripts/sprint6_visual_probe.lua` and stronger smoke coverage for the Sprint 6 visual runtime files.
+### Decals / signage
+- Signage is readable first, decorative second.
+- Keep text systems consistent store-wide.
+- Use **one aisle number + one category header read per aisle mouth** as the default target, not stacked sign spam.
+- Use **one sale-card family only** across the store.
+- Avoid attention colors that compete with blackout / mimic / alert states.
 
-## Confirmed runtime-source risks
-- **Confirmed:** `project/src/ReplicatedStorage/Shared/Constants.lua` still does not match the richer shape expected by several dormant or partially-landed runtime consumers (`TaskRegistry`, `TaskService`, `RoundResultsService`, shop/meta UI code). This retry only hardened the Sprint 6 HUD path locally; it did **not** reconcile the whole gameplay/runtime constants contract.
-- **Confirmed:** the active bootstrap path still points at the simpler `Round/ShiftService.start()` server loop, while other round/task modules in source expect a more advanced round/task/event orchestration contract. That drift pre-dates this visual retry.
-- **Unconfirmed from this host:** full live task / close-register / 1-player / 2-player interaction proof for the current mixed runtime still needs human or Studio-backed validation beyond structural smoke/probe coverage.
+### Runtime safety rule
+If an art improvement introduces recurring hitching, blocked prompts, unreadable HUD/prompt text, or unclear blackout/mimic reads, cut the art detail before shipping.
+## Fallback order if time compresses
+1. materials / silhouette cleanup
+2. signage / wayfinding
+3. lighting continuity
+4. medium prop density
+5. optional micro-clutter
+
+## Public capture constraints
+- Only capture completed Tier A zones.
+- Do not hide unresolved Tier A seams and present the result as full-store completion.
+- Capture from the real shipped build or the exact build candidate.
+- Use only real in-game lighting states that players can actually see.
+- No overpaint or fake post-processing that the live game does not deliver.
+- Blackout and mimic capture must still preserve route and prompt readability.
+
+## QA-ready proof checklist
+### Before / after proof
+- [ ] Lobby / entrance before / after
+- [ ] Main aisle before / after
+- [ ] Checkout / queue before / after
+- [ ] Freezer / cooler path before / after
+- [ ] Stockroom corner before / after
+- [ ] At least one continuity shot proving adjacent zones read as one store
+
+### Readability proof
+- [ ] Active-shift frame in a completed Tier A zone with readable HUD and prompt
+- [ ] Blackout frame showing route and prompt readability
+- [ ] Mimic frame showing a distinct read from blackout
+- [ ] Phone-sized review that confirms HUD / prompt readability remains intact
+
+### Runtime / safety proof
+- [ ] Build green
+- [ ] Smoke green
+- [ ] 1-player sanity green after rollout
+- [ ] 2-player sanity green after rollout
+- [ ] Any exception documented by exact zone and mitigation
+
+## Engineering done condition
+Engineering is done with its side of Sprint 7 when:
+- Tier A rollout is complete,
+- Tier B visible consistency is complete,
+- Tier C remnants are hidden from play and capture,
+- signage grammar is implemented consistently,
+- blackout and mimic readability remain clear,
+- performance guardrails hold,
+- QA can judge the store as one coherent shipped space rather than a polished slice plus leftovers.
+
+## 2026-04-05 engineering implementation snapshot
+### Landed source changes
+- Added `project/src/ReplicatedStorage/Shared/StoreRollout.lua` to centralize Sprint 7 zone order, capture hooks, and runtime grouping names.
+- Expanded `project/src/ReplicatedStorage/Shared/StoreSignage.lua` to a locked Sprint 7 signage grammar: eight aisle markers, four checkout lane markers, direct staff signs, and one repeated sale-card family.
+- Extended `project/src/ReplicatedStorage/Shared/VisualTheme.lua` with Sprint 7 rollout metadata plus low-cost world-state styling for signage / fixture banks across `normal`, `blackout`, `mimic`, `round_success`, and `round_failure`.
+- Rebuilt `project/src/Workspace/FallbackArena.server.lua` into a fuller fallback store shell with Tier A coverage, Tier B sightline support, capture hooks, runtime-safe group references, and placeholder masking where safe.
+- Updated both lighting controllers so the wider store art groups preserve visual-state continuity without stacking extra effect layers.
+- Reconciled the drifted runtime bootstrap enough to keep proof support healthy: richer `Constants.lua`, `Config.lua`, `ProfileStore.lua`, `ShiftService.lua`, and `Remotes.model.json` now match the already-landed HUD / shop / proof expectations closely enough for buildable sanity.
+
+### Command-backed proof now green
+- `bash scripts/check.sh`
+- `bash scripts/build.sh`
+- `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua`
+- `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint7_art_rollout_probe.lua`
+- `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/round_bootstrap_proof.lua`
+- `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint7_two_player_sanity.lua`
+
+### QA focus after this handoff
+- Judge live player-visible continuity and capture honesty from the real build using the Tier A / transition shot list.
+- Specifically verify blackout and mimic readability in the widened store, not only the original Sprint 6 slice angles.
+- Watch for any remaining Tier B seam that appears only in motion or in wider store-presence framing.

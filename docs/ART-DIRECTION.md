@@ -1,189 +1,207 @@
-# Art direction — Sprint 6 lock
+# Art direction
 
-## Final art-style statement
-**Closing Shift: Superstore 3AM is stylized retail horror: an ordinary late-night supermarket built from clean modular forms, readable materials, and fluorescent lighting that becomes subtly wrong under pressure.**
+## Visual tone
+- Familiar suburban supermarket
+- fluorescent lighting
+- uneasy emptiness
+- retail realism with subtle paranormal wrongness
 
-## Sprint 6 scope boundary
-Sprint 6 is a visual identity and environment art foundation pass only.
+## Sprint 7 full-experience style sentence
+Closing Shift should now read as a fluorescent suburban supermarket that is modular, phone-legible, and subtly wrong—an ordinary late-night retail box where every player-traversed space shares the same signage grammar, material language, and lighting rhythm, and where the horror lands through contrast and disruption instead of bespoke hero clutter.
 
-In scope:
+## Art priorities for Sprint 7
+1. **Consistency over novelty**
+   - The full store should feel like one shipped game, not one polished slice surrounded by graybox.
+2. **Wayfinding is part of the art pass**
+   - Signs, aisle numbers, and department reads do navigation work.
+3. **Sprint 6 stays protected**
+   - The accepted Sprint 6 slice is the baseline to scale, not a direction to replace.
+4. **Phone-safe readability wins**
+   - If text, prompts, or silhouettes stop reading on a small screen, the art pass is wrong.
+5. **Honest public surfaces**
+   - Store-page images must depict the real in-game look, not a fake overpaint.
+
+## Rollout tiers
+### Tier A — production-ready this sprint
 - lobby / entrance
-- checkout zone
-- one hero aisle
-- freezer section
-- stockroom corner
-- normal / blackout / mimic / round-end lighting states
-- HUD / UI skin refresh
-- interaction feedback polish
-- before / after and hero-shot proof direction
+- all main playable aisles
+- checkout zone and queue
+- freezer / cooler path
+- stockroom corner and entered back-of-house space
+- all transitions between those spaces
 
-Out of scope:
-- new gameplay systems
-- new map or layout expansion
-- economy or progression changes
-- combat or enemy additions
-- matchmaking changes
-- full-store bespoke art pass
+### Tier B — consistent but lighter detail
+- secondary aisle edges
+- sightline background walls and ceiling runs
+- visible staff-hall segments
+- visible corners next to active task nodes
 
-## Critical-path polish order
-1. **lobby / entrance**
-2. **checkout zone**
-3. **one hero aisle**
-4. **freezer section**
-5. **stockroom corner**
+### Tier C — simple only if hidden or non-traversed
+- unseen backsides of fixtures
+- sealed support rooms
+- distant background views outside the real playable frame
 
-This order is locked for Sprint 6 and matches first-impression value, gameplay readability, and thumbnail usefulness.
+## Material and fixture language
+### Floors
+- Lobby / entrance: entry mat or threshold strip into commercial retail tile.
+- Main floor: clean commercial tile or sealed store floor finish with visible lane structure.
+- Freezer: colder sealed utility floor language.
+- Stockroom: harder-wearing utility floor, simpler than the sales floor but still authored.
 
-## Visual pillars
-1. **Retail first, horror second**
-2. **Readable on phones**
-3. **Modular, not bespoke**
-4. **Normal but wrong**
-5. **Cheap to render**
+### Walls
+- Main floor walls should use paneled or painted commercial treatments, not flat gray blocks.
+- Freezer walls should read colder, cleaner, and more sealed.
+- Stockroom walls should read practical and operational, with notice-board or staff-sign potential.
 
-## Primitive graybox exit criteria
-The following may not remain as plain primitive graybox in the polished slice unless there is a deliberate performance reason documented in handoff:
-- first-view lobby walls, floor, desk, and brand focal point
-- checkout counters, bagging surfaces, queue definition, scanner/register framing
-- hero aisle shelf silhouettes, endcaps, category signage, price-strip surfaces
-- freezer case framing, doors/glass reads, trim, and floor/wall transition
-- stockroom door frame, pallets, taped boxes, hazard / employee-only language
-- HUD panels that still read like debug boxes instead of store hardware / receipt UI
+### Ceilings
+- The whole traversed store needs a readable ceiling rhythm: grid, fixture spacing, and predictable fluorescent cadence.
+- Exposed ceiling simplicity is acceptable only when it looks intentional and consistent, not placeholder.
 
-Background spaces outside the five priority zones may stay lower density if they inherit the same material and signage rules and do not break the illusion.
+### Fixture families
+Approved repeated families for this sprint:
+- modular shelf family
+- checkout counter / bagging / scanner family
+- freezer / glass-door family
+- pallet / dolly / labeled box family
+- hanging sign and aisle-marker family
 
-## Palette tokens
-| Token | Primary use | Allowed zones / surfaces | Do not use for |
-| --- | --- | --- | --- |
-| `fluorescent_white` | baseline store light and highlight contrast | ceiling fixtures, normal-shift light balance, neutral UI text highlights | danger cards, mimic cues |
-| `tile_gray` | floor and neutral architecture base | sales floor tile, neutral wall/floor breakup, low-drama shell surfaces | call-to-action accents |
-| `powder_blue` | cold retail accent | freezer / cooler trim, cold-zone signage accents, freezer-adjacent UI tags if needed | checkout focal accents, hazard language |
-| `safety_red` | urgent warning accent | danger alerts, hazard striping, emergency signage, failure-support accents | everyday category signs, large ambient color washes |
-| `receipt_cream` | payroll / receipt surface language | summary cards, payout surfaces, secondary UI cards, paper ephemera | blackout ambient light, mimic cues |
-| `sodium_amber` | stockroom warmth and warning warmth | stockroom practical light, caution-adjacent warmth, failure support tone | normal sales-floor dominant lighting |
-| `mimic_violet` | localized uncanny wrongness | active mimic node cue, mimic alert accent, subtle local wrongness lighting | base environment palette, store branding |
-| `night_blue` | shadow support and blackout structure | blackout fill, dark UI shell, nighttime depth, silhouette support | readable primary text on its own |
-| `payroll_green` *(UI-only derived accent)* | success confirmation | payout arrows, success stamps, round-end positive accents only | environment lighting, signage, mimic or danger states |
+Do not depend on bespoke hero fixtures to make a zone work.
 
-## Material rules by zone family
-| Zone family | Required material language | Must avoid |
-| --- | --- | --- |
-| Architecture baseline | commercial tile or sealed concrete, painted block/panel walls, ceiling grid with fluorescent fixtures | decorative mall finishes, ornate trim, glossy luxury retail styling |
-| Lobby / entrance | clean commercial floor, brand wall/sign, simple service desk or frontage, readable threshold framing | empty gray foyer, generic horror warehouse look |
-| Checkout zone | laminate + metal edging, scanner accents, bagging surfaces, queue definition, register framing | floating primitives with no checkout identity |
-| Hero aisle | coated metal shelves, repeatable trim accents, consistent price strips, category header system | clutter piles that hide lane readability |
-| Freezer section | cool metal, glass-front cases, interior glow, colder floor/wall treatment, powder-blue accent restraint | same material read as the main aisle, muddy warm lighting |
-| Stockroom corner | rawer surfaces, pallets, taped boxes, industrial door frame, employee-only and hazard language, sodium-amber support warmth | decorative hero props, dense junk piles, pitch-black unreadability |
-| Small props | cardboard, bottles, cans, baskets, carts, caution props, labels, posters, clipboards, receipt rolls | one-off novelty props that break store identity |
+## Must-replace primitive forms
+These must be removed or art-shelled in Tier A and normal Tier B sightlines:
+- raw gray floor slabs
+- flat gray walls with no commercial treatment
+- raw ceiling blocks with no fixture rhythm
+- primitive shelf blocks
+- primitive checkout blocks
+- primitive freezer cubes
+- placeholder threshold doors
+- unlabeled primitive crates, boxes, and pallets in readable spaces
+- blank signage panels or temp text markers
 
-## Signage and typography rules
-### Signage hierarchy
-1. large aisle numerals / section markers
-2. category headers
-3. sale / pricing signs
-4. employee-only / hazard signs
-5. small shelf labels and policy posters
+## Acceptable hidden remnants
+These can survive only if they are hidden from ordinary play, QA proof, and public capture:
+- unseen rear faces of shelves or coolers
+- fixture internals fully occluded by approved shells
+- support-room interiors behind sealed doors
+- upper faces above normal camera sightlines
+- distant exterior/background placeholder forms outside the playable frame
 
-### Signage language
-- Signage must read like a real supermarket first.
-- Use bold, blocky, highly legible typography with clear silhouettes.
-- Wayfinding and warning signs should favor uppercase or strong title-case treatments that read from distance.
-- Sale cards get **one** accent color at a time; do not create rainbow promotional clutter.
-- Back-of-house signage uses employee-only, hazard, payroll, or policy language rather than lore-heavy horror messaging.
-- Emergency and blackout-support signs must remain readable when ambient lighting drops.
+If a remnant appears in a Tier A walkthrough, a before/after proof frame, or a store-page capture angle, it is not acceptable.
 
-### Brand rule
-The store needs one repeatable visual identity cue in the lobby / entrance that can also support thumbnails and hero shots. Keep it simple enough to reproduce with Studio geometry + decals.
+## Store-wide signage / wayfinding grammar
+### Aisle numbers
+- One hanging aisle marker at each aisle mouth.
+- Large numeral first, short secondary label second.
+- Keep numerals bold and high contrast.
+- No novelty fonts, scripts, or handwritten treatment.
 
-### Sprint 6 authored identity lock
-- The repeatable store mark for the slice is `SUPERSTORE` with a small `3AM` corner tag and optional `OPEN LATE` support line.
-- The single hero aisle for Sprint 6 is locked to **Aisle 05 — Snacks + Soda**.
-- The concrete zone, signage, small-prop, UI, and capture package for this pass is documented in `project/docs/SPRINT6-ENVIRONMENT-UI-ART-PASS.md`.
+### Category headers
+- Use short retail nouns only.
+- One or two words maximum for the visible headline.
+- Mount above the relevant shelf run or department edge.
+- Good examples: `SNACKS`, `CANNED`, `FROZEN`, `DAIRY`, `CLEANING`, `HOUSEHOLD`.
 
-### Priority-zone identity notes
-- **Lobby / entrance:** brand wall, threshold strip, basket/cart read, immediate supermarket language.
-- **Checkout zone:** lane identity, bagging/scanner surfaces, queue framing, register importance at a glance.
-- **Hero aisle:** aisle numeral + category header + price-strip rhythm + endcap read.
-- **Freezer section:** glass/cooler framing, cold glow, restrained `powder_blue`, freezer warning language.
-- **Stockroom corner:** employee-only threshold, taped boxes/pallets, payroll/policy signage, warmer `sodium_amber` support.
+### Checkout numbering
+- Large numerals above or just behind each checkout lane.
+- All checkout signs use the same shape, scale family, and placement logic.
+- Queue space should read from the front store without needing close inspection.
 
-## UI skin direction
-### Core theme
-**Security terminal + receipt printer**.
+### Staff / hazard language
+Use direct, operational language only:
+- `EMPLOYEES ONLY`
+- `STOCKROOM`
+- `FREEZER`
+- `NO ENTRY`
+- `WET FLOOR`
+- `EXIT`
+- `BACK DOOR`
+- `NOTICE BOARD`
 
-### Rules
-- Preserve current information hierarchy and button placement.
-- Panels should feel like store hardware and payroll printouts, not sci-fi HUD glass.
-- Dark shell surfaces should use `night_blue` or muted charcoal support tones.
-- Inner cards, summaries, and payout surfaces should use `receipt_cream` with strong dark text.
-- Use `safety_red` only for danger or failure weighting.
-- Use `mimic_violet` only on mimic-specific warnings or node callouts.
-- Use `payroll_green` only on success / payout confirmation.
-- Icons should be simple, flat, and legible at small sizes.
-- Short verbs win over flavor-heavy phrasing.
-- Phone readability is mandatory: no thin type, low-contrast labels, or busy patterned panel fills.
+Warning language should be sparse so it keeps authority.
 
-### Sprint 6 UI surface treatment
-- Outer HUD shell reads like mounted store equipment, not floating glass.
-- Primary information sits on a `receipt_cream` inner card with strong dark text.
-- Alerts collapse into one bottom card with clear family color cues for tutorial, blackout, mimic, success, and failure.
-- Task-node feedback uses practical readable colors first, then local event accents for blackout and mimic.
-- Source-backed token hooks live in `project/src/ReplicatedStorage/Shared/VisualTheme.lua`.
+### Sale-card rules
+- One sale-card family for the whole store.
+- Accent color is reserved and consistent.
+- Short headline plus large price read.
+- No rainbow discount spam.
+- Sale cards cannot visually compete with event alerts, prompts, or hazard signage.
 
-## Lighting and event visual rules
-### Normal shift
-- cool fluorescent top light
-- neutral readable contrast
-- clear signage visibility
-- calm, tired, ordinary late-night mood
+## Transition rules
+### Lobby -> main floor
+- The lobby starts the same store identity: palette, logo language, and sign grammar already present.
+- The threshold should expose a clean sightline toward checkout or the main aisle structure.
+- Floor and lighting shift should feel like entering the sales floor, not teleporting into a different map style.
 
-### Blackout
-- store light falls out quickly
-- emergency / spill light and limited practical sources preserve navigation
-- interaction loss must be visible without turning the map into full darkness
-- use `night_blue` structure with restrained `safety_red` or `sodium_amber` support accents where justified
-- no strobe spam and no comfort-hostile flashing
+### Main floor -> freezer
+- Cooler frames, colder tint, and utility floor treatment define the transition.
+- Freezer remains readable as part of the same store because signage, silhouettes, and fixture logic stay consistent.
+- Cold mood is allowed; murky prompt unreadability is not.
 
-### Mimic
-- cue is local to the affected node
-- use `mimic_violet` sparingly as the wrong-color accent
-- a subtle flicker, impossible emphasis, or wrong-lit highlight is acceptable
-- do not recolor the whole store purple
-- cue must still read without audio
+### Main floor -> stockroom
+- Staff-only doors and utility materials define the shift.
+- Prop density can drop, but the space must still look authored.
+- Notice-board, pallet, and operations signage should support the area, not turn it into clutter.
 
-### Round end
-- **success**: receipt / payroll framing with `receipt_cream` base and `payroll_green` positive accents
-- **failure**: warning-weighted framing with `sodium_amber` support and restrained `safety_red`
-- result state should read immediately from the first card and screen center, even on phone
+### Global transition continuity
+- Each threshold should keep the same overall production language while changing zone emphasis.
+- Do not hard-reset palette, prop density, or fixture logic between adjacent spaces.
+- No player-facing seam should expose raw placeholder geometry.
 
-## Feedback polish rules
-- task-complete feedback should feel crisp and practical, like store equipment acknowledging progress
-- close-register completion gets the strongest success feedback in the playable slice
-- blackout recovery cue should feel like systems returning, not magical relief
-- mimic trigger feedback should feel incorrect and punitive without obscuring the HUD
+## Lighting continuity rules
+- Base lighting stays fluorescent and readable across the whole store.
+- Lobby can be slightly warmer than the main floor, but still clearly part of the same retail box.
+- Freezer can skew colder than the main floor.
+- Stockroom can be slightly dimmer and more industrial than the sales floor.
+- Blackout and mimic should remix the established lighting, not replace it with unrelated spectacle.
+- Players must still be able to identify checkout, freezer, stockroom, exits, prompts, and teammates under stress states.
 
-## Asset-source policy
-Sprint 6 follows **Studio-first with optional imports**.
-- Shipping success may rely entirely on Studio-built modular parts, Roblox materials, decals, and simple team-owned assets.
-- Imported meshes / textures are optional only if they do not slow the sprint or become a dependency.
-- Reuse one shelf / counter / cooler / signage language across the slice before requesting bespoke hero art.
+## Performance-aware art boundaries
+- Reuse existing modular kits before adding imported one-offs.
+- Default target: no new one-off hero meshes are required to finish Sprint 7.
+- Prefer shared materials, recolors, and decals over extra mesh families.
+- Keep always-on non-ceiling accent lights to 2 or fewer in a normal Tier A gameplay frame.
+- Use at most 1 localized extra event-light cluster at a read point; prefer transforming existing fixtures.
+- Use dense props only at focal points; traversal and interaction lanes stay clean.
+- One aisle number plus one category-header read per aisle mouth is the default target, not stacked sign spam.
+- One sale-card family only across the store.
+- Remove or hide obsolete visible graybox once a replacement is in.
+- If a decorative pass hurts clarity, cut micro-props first, then extra decals, then non-essential accent lights.
 
-## Performance and readability guardrails
-- Prefer materials, decals, silhouette cleanup, and lighting grouping before adding unique mesh density.
-- Zero particles are required for success.
-- If flicker is used, keep it localized, brief, and readable rather than sustained or full-screen.
-- Do not bury prompts, interactables, or task silhouettes in prop clutter.
-- Maintain clear movement lanes in the hero aisle and checkout path.
-- Background zones can remain lower density if the critical path feels authored and consistent.
+## Public-facing asset direction
+### Experience icon
+- Square frame.
+- Checkout or front-store identity should read first.
+- Threat or paranormal wrongness is secondary, not abstract noise.
+- Must survive Roblox small-size readability.
 
-## Hero-shot and proof direction
-### Required visual proof
-- before / after capture for each of the five priority zones from matching camera positions
-- live proof for normal, blackout, mimic, and round-end readability
-- at least one shot that clearly shows the move away from primitive graybox
+### Thumbnail set
+1. **Store at 3AM**
+   - wide recognizable supermarket frame
+   - signage and layout clearly visible
+   - uses a real completed Tier A angle
+2. **Blackout**
+   - same store identity under emergency conditions
+   - strong silhouette and route readability
+   - no fake cinematic over-lighting
+3. **Mimic tension**
+   - uncanny wrongness in a real task zone
+   - still obviously this supermarket
+   - avoid monster-poster composition drift
 
-### Thumbnail / icon direction
-- favor checkout, aisle depth, freezer tension, and readable store branding
-- compositions must still say supermarket at 3AM, not generic horror hallway
-- keep one clean title-space area available in the icon candidate
-- use the matched five-zone camera plan in `project/docs/SPRINT6-ENVIRONMENT-UI-ART-PASS.md` for before / after proof consistency
+### Update / social shot priorities
+1. before / after visual-upgrade comparison
+2. full-store hero aisle or checkout proof shot
+3. blackout readability shot
+4. mimic readability shot
+
+## Capture honesty rules
+- Capture from the real shipped build whenever possible.
+- Use real completed Tier A zones.
+- Do not frame out unresolved Tier A seams and then imply the whole store matches the shot.
+- Do not paint over lighting, props, or geometry beyond what the live game actually ships.
+
+## UI tone
+- short verbs
+- mobile readable
+- practical with a slightly eerie edge

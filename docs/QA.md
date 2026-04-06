@@ -8,31 +8,6 @@
 - End-of-round payout is visible.
 - Smoke script can detect core services/modules without crashing.
 
-## Sprint 6 visual vertical slice gate — 2026-04-05 evidence-only rerun
-- Status: Ready
-- What was checked:
-  - Prompt requirements in `project/prompts/QA_SPRINT6_VISUAL_VERTICAL_SLICE_GATE.md`
-  - Newly appended proof in `project/docs/RUNTIME-EVIDENCE.md`
-  - Referenced capture files in `project/docs/proof/sprint6/`
-  - Previously established green baseline accepted as already proven for this rerun:
-    - `bash scripts/check.sh` — pass
-    - `bash scripts/build.sh` — pass
-    - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua` — pass
-    - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint6_visual_probe.lua` — pass
-- Result:
-  - The appended proof pack now covers all five required matched before / after pairs: lobby / entrance, checkout zone, hero aisle, freezer section, and stockroom corner.
-  - The live capture set now covers active shift, blackout, mimic, round-end success, and round-end failure with readable HUD / prompt / summary states.
-  - The five-zone slice reads as a real player-facing uplift over the prior graybox baseline and the visual language is consistent enough across signage, counters, shelving, freezer framing, stockroom dressing, lighting states, and HUD treatment to clear the Sprint 6 gate.
-  - The newly documented HUD bootstrap fix is honest enough for this rerun: the proof pack is tied to source-backed client paths in `project/src/StarterGui/HUD.client.lua`, `project/src/StarterGui/ClientEffects.client.lua`, `project/src/StarterGui/LightingController.client.lua`, and `project/default.project.json`.
-- Blockers:
-  - None for Sprint 6 visual-slice acceptance.
-- Risks:
-  - Known broader runtime-source drift remains tracked separately and is not being reopened here because the new Sprint 6 proof pack is materially complete and not shown to be dishonest.
-  - The mobile readability proof was captured from Studio mobile-view rather than external device hardware; that is acceptable for this sprint gate but still worth spot-checking later if broader runtime work resumes.
-- Next fixes:
-  - Treat remaining Sprint 6 work as non-blocking polish and release-surface follow-through, not gate blockers.
-  - Keep the broader runtime/constants reconciliation on its own track outside Sprint 6 acceptance.
-
 ## Bug report template
 - Area:
 - Build / commit:
@@ -42,3 +17,105 @@
 - Actual:
 - Severity:
 - Notes:
+
+## 2026-04-05 — Sprint 7 full-store art gate
+- Status: Not Ready
+- Gate type: evidence blocker only
+- What was checked:
+  - Sprint 7 gate prompt and acceptance docs
+  - existing command-backed build / smoke / rollout / 1-player / 2-player sanity results already recorded as green
+  - `project/docs/proof/sprint7/README.md`
+  - `project/docs/proof/sprint7/SHOT-LOG.md`
+  - proof folder contents currently present in `project/docs/proof/sprint7/`
+- Result:
+  - Build / structure sanity is already established as green.
+  - Runtime sanity is already established as green for the locked Sprint 7 command-backed checks.
+  - The required live proof/capture pack is still missing, so QA cannot honestly clear the widened-store visual/readability/public-asset gate.
+- True blockers:
+  - No Tier A before / after image pairs are attached yet.
+  - No continuity frames are attached yet.
+  - No icon candidate export is attached yet.
+  - No three-thumbnail candidate set is attached yet.
+  - No update / social shot set is attached yet.
+  - No crop-review exports are attached yet.
+  - No final live widened-store blackout / mimic readability captures are attached yet.
+- Risks:
+  - Without the live capture pack, widened-store readability and public asset honesty remain unproven even though source/runtime support is green.
+- Next fixes:
+  - Capture the exact Sprint 7 proof pack from the real build or exact release candidate and log each artifact in the shot log.
+
+## 2026-04-05 19:58 CDT — Sprint 7 full-store art evidence-only rerun
+- Status: Not Ready
+- Gate type: evidence-only rerun
+- What was checked:
+  - `project/prompts/QA_SPRINT7_FULL_STORE_ART_GATE.md`
+  - newly appended Sprint 7 capture sections in `project/docs/RUNTIME-EVIDENCE.md`
+  - `project/docs/proof/sprint7/README.md`
+  - `project/docs/proof/sprint7/SHOT-LOG.md`
+  - actual proof images now present under `project/docs/proof/sprint7/`
+- Result:
+  - Previously-green build / smoke / rollout / 1-player / 2-player sanity remains accepted as already established.
+  - The proof folder is now populated, but the new image set does not honestly satisfy the required Sprint 7 widened-store coverage or public-asset-honesty gate.
+  - The core issue is no longer missing files; it is that the attached after / continuity / public-asset exports collapse to the same checkout-front composition instead of proving the named zones and asset variants.
+- True blockers:
+  - `after_main_aisle.png`, `after_freezer.png`, and `after_stockroom.png` do not show their claimed zones; they read as the same front checkout composition as `after_lobby.png` / `after_checkout.png`, so Tier A after coverage is still unproven for widened aisle / freezer / stockroom space.
+  - `continuity_front.png` is not a distinct continuity sweep; it is effectively the same front-store checkout view, so adjacent-zone continuity is still unproven.
+  - The public asset pack is not honest enough to approve. `icon_candidate.png`, `thumbnail_candidate_01.png`, `thumbnail_candidate_02.png`, `thumbnail_candidate_03.png`, `update_shot_01.png`, `social_shot_01.png`, and the crop-review exports all resolve to slight crops / variants of the same checkout-front frame, so the required `Store at 3AM` / `Blackout` / `Mimic tension` set is not actually represented.
+  - Live widened-store proof is still incomplete: only one live aisle zone is shown across `live_active_shift.png`, `live_blackout.png`, and `live_mimic.png`; no widened-store round-end summary capture is attached; and no phone-sized widened-store HUD / prompt readability capture is attached.
+- Risks:
+  - Accepting this pack as-is would overstate store-wide coverage and public asset honesty even though runtime support remains green.
+- Next fixes:
+  - Recapture unique post-pass after images for lobby / entrance, main aisle, checkout / queue, freezer / cooler path, and stockroom corner from the real build.
+  - Add one true continuity frame that bridges connected zones.
+  - Export a distinct public asset set that actually covers icon / `Store at 3AM` / `Blackout` / `Mimic tension` / update-social framing, then rerun crop review.
+  - Add one widened-store round-end summary capture and one phone-sized widened-store active-shift readability capture.
+
+## 2026-04-05 21:36 CDT — Sprint 7 full-store art evidence-only rerun after recapture recovery
+- Status: Ready
+- Gate type: evidence-only rerun after recovery pass
+- What was checked:
+  - `project/prompts/QA_SPRINT7_FULL_STORE_ART_GATE.md`
+  - `project/docs/RUNTIME-EVIDENCE.md`
+  - `project/docs/proof/sprint7/README.md`
+  - `project/docs/proof/sprint7/SHOT-LOG.md`
+  - Tier A before / after pairs:
+    - `before_lobby.png` / `after_lobby.png`
+    - `before_main_aisle.png` / `after_main_aisle.png`
+    - `before_checkout.png` / `after_checkout.png`
+    - `before_freezer.png` / `after_freezer.png`
+    - `before_stockroom.png` / `after_stockroom.png`
+  - continuity frame: `continuity_front.png`
+  - public asset pack:
+    - `icon_candidate.png`
+    - `thumbnail_store_at_3am.png`
+    - `thumbnail_blackout.png`
+    - `thumbnail_mimic_tension.png`
+    - `update_shot_01.png`
+    - `social_shot_01.png`
+  - crop review exports:
+    - `crop_review_icon.png`
+    - `crop_review_thumb_store_at_3am.png`
+    - `crop_review_thumb_blackout.png`
+    - `crop_review_thumb_mimic_tension.png`
+    - `crop_review_update_shot.png`
+    - `crop_review_sheet.png`
+  - live widened-store readability captures:
+    - `live_active_shift.png`
+    - `live_blackout.png`
+    - `live_mimic.png`
+    - `live_round_end_summary.png`
+    - `live_active_phone.png`
+    - `live_normal_checkout.png`
+- Result:
+  - Previously-green build / smoke / rollout / 1-player / 2-player sanity remains accepted as already established.
+  - The recovery pass closes the honesty gap from the failed rerun: the Tier A after frames now read as distinct named zones rather than reused checkout crops.
+  - `continuity_front.png` now functions as a real front-store continuity sweep, and the public asset pack now honestly separates `Store at 3AM`, `Blackout`, `Mimic tension`, update, and social framing.
+  - The widened-store readability pack is now complete enough to judge: aisle-state active/blackout/mimic proof is present, checkout-zone live proof is present, round-end summary readability is attached, and phone-sized active-shift readability is attached.
+  - Known Studio host/plugin instability and viewport chrome do not invalidate the attached evidence itself.
+- True blockers:
+  - None.
+- Risks:
+  - The lobby / entrance after frame is the weakest composition in the pack, but continuity/public-facing frames still keep the overall proof honest enough for this gate.
+  - External-device capture remains a nice-to-have follow-up, not a blocker.
+- Next fixes:
+  - None required for the Sprint 7 art gate.

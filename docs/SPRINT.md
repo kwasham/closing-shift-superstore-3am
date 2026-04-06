@@ -1,83 +1,116 @@
 # Sprint
 
-## Sprint 6 — Visual Identity + Environment Art Foundation
+## Sprint 7 — Full-store art rollout + store presence
 
 ## Sprint goal
-Take the Sprint 5 Ready baseline and move the game off an obvious primitive / graybox look by shipping one polished visual vertical slice and the reusable visual rules behind it.
+Ship the widened store art/readability/public-surface proof pack for **Closing Shift: Superstore 3AM** without expanding gameplay scope.
 
 ## Scope locked for this sprint
-- lobby / entrance
-- checkout zone
-- one hero aisle
-- freezer section
-- stockroom corner
-- lighting states for normal / blackout / mimic / round-end
-- HUD / UI skin refresh
-- interaction feedback polish
-- before / after proof captures
-- live visual proof standards for QA
+In scope:
+- full-store visual rollout across remaining player-visible spaces
+- signage / wayfinding pass
+- performance-budget guardrails
+- store-presence assets: icon, thumbnails, update/social shots
+- live proof / capture needed to clear Sprint 7 QA
 
-## Explicitly out of scope
+Out of scope:
 - new gameplay systems
-- new map
-- new round event or enemy type
-- economy rebalance
-- progression expansion
-- monetization changes
-- full-store bespoke prop pass
-- photoreal rendering target
-- heavy VFX spam or cinematic-only lighting setups that hurt gameplay readability
+- new events or event mechanics
+- economy changes
+- progression creep
+- map expansion beyond the already playable / visible store
+- speculative implementation unrelated to the proof blocker
+
+## Current truth
+- **Sprint 7 is active.**
+- **Implementation is in.**
+- **QA status is Not Ready.**
+- The remaining blocker is **narrow proof / recapture work**, not broad engineering scope.
 
 ## File-ownership rule for this sprint
 To reduce merge conflicts:
 - `main` owns `project/docs/SPRINT.md`
-- `design` owns visual direction and handoff lock in docs
-- `engineer` owns implementation in `project/src/**` and proof/support scripts
-- `content` owns environment/UI art-facing docs, signage/copy/art-surface support, and capture-direction support docs
+- `design` owns design-level decisions and handoff direction
+- `engineer` owns runtime/source implementation already landed for Sprint 7
+- `content` owns capture/public-surface framing inputs and shot-pack support docs
 - `qa` owns `project/docs/QA.md` and QA follow-ups in `project/docs/BACKLOG.md`
 
-## Suggested execution order
-1. `design` locks the visual language and priority zones.
-2. `engineer` and `content` execute in parallel from the locked design contract.
-3. `qa` validates the visual vertical slice with before / after and live proof.
-4. `main` integrates status and decides whether Sprint 6 is Ready.
+## What is already done
+### Design lock
+- Sprint 7 visual direction, rollout tiers, performance guardrails, and honest store-presence direction are locked in docs.
 
-## Acceptance criteria for sprint completion
-- The critical-path slice zones no longer read as obvious graybox from player camera positions.
-- The visual slice follows one consistent art language across architecture, props, signage, lighting, and UI.
-- Blackout, mimic, and round-end are visually distinct and readable in runtime proof.
-- Phone HUD readability remains green after the skin refresh.
-- Existing gameplay interaction points remain stable after the art pass.
-- Build, smoke, and basic 1-player / 2-player runtime sanity remain green.
-- QA has before / after captures and live evidence for the key visual states.
+### Content / support work landed
+- Sprint 7 content pack and shot-log planning exist.
+- `project/docs/proof/sprint7/` is the active proof folder.
 
-## Current status
-### Ready for delegation
-- engineer implementation pass from the locked Sprint 6 visual handoff
-- content environment / UI art pass from the locked Sprint 6 visual handoff
+### Engineering implementation landed
+- Full-store rollout/runtime support is in.
+- Command-backed verification was previously established as green for:
+  - `bash scripts/check.sh`
+  - `bash scripts/build.sh`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/smoke_runner.lua`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint7_art_rollout_probe.lua`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/round_bootstrap_proof.lua`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint7_two_player_sanity.lua`
+  - `run-in-roblox --place build/ClosingShift.rbxlx --script scripts/sprint6_visual_probe.lua`
 
-### In progress
-- Sprint 6 is active as **Visual Identity + Environment Art Foundation**
-- design lock is complete
+## Current QA state
+### Verdict
+- **Not Ready**
 
-### Done
-- Sprint 1 is **Ready**
-- Sprint 2 is **Ready**
-- Sprint 3 is **Ready**
-- Sprint 4 is **Ready**
-- Sprint 5 is **Ready**
-- Sprint 6 visual direction is locked across:
-  - `project/docs/GDD.md`
-  - `project/docs/ART-DIRECTION.md`
-  - `project/docs/DECISIONS.md`
-  - `project/docs/HANDOFF-ENGINEERING.md`
-  - `project/docs/HANDOFF-CONTENT.md`
-  - `project/docs/BACKLOG.md`
+### What QA has already accepted as established
+- build / structure sanity
+- rollout/runtime support
+- 1-player / 2-player sanity coverage used for the Sprint 7 implementation pass
 
-## Risks
-- Optional imported art could cause scope slip if the team chases bespoke polish too early.
-- The sprint must preserve phone readability and the Sprint 5 gameplay baseline.
-- The team should favor Studio-first modular reuse over expensive one-off assets.
+### True blocker
+QA is still blocked on the **honesty and uniqueness of the Sprint 7 proof pack**.
+This is now a capture-quality problem, not a broad implementation problem.
+
+## Remaining blocker to clear Sprint 7
+The recapture pass still needs a proof pack that honestly covers the widened store.
+
+### Required recapture / proof items
+- one distinct post-pass `after` frame each for:
+  - lobby / entrance
+  - main aisle coverage
+  - checkout / queue
+  - freezer / cooler path
+  - stockroom corner
+- one true continuity frame showing adjacent zones reading as one store
+- one distinct live-build public asset set for:
+  - icon
+  - `Store at 3AM` thumbnail
+  - `Blackout` thumbnail
+  - `Mimic tension` thumbnail
+  - update / social shot
+- matching crop-review exports for that distinct public asset set
+- one widened-store round-end summary readability capture
+- one phone-sized widened-store active-shift readability capture
+- at least one additional live normal-shift widened-store zone frame beyond the current aisle proof
+
+## In progress now
+- narrow Sprint 7 recapture pass only
+- replacing weak or reused proof angles with distinct zone-honest framing
+- collecting the remaining readability evidence QA asked for
+
+## Explicitly not the next step
+- no new feature work
+- no scope expansion
+- no blind implementation pass
+- no reopening Sprint 7 design lock unless QA finds a real honesty blocker in the live build
+
+## Risks / operating notes
+- Roblox Studio capture work must stay **serial**; overlapping interactive capture attempts can hang/fail on this host.
+- Capture success depends on honest live-build framing; repeated crops of the same front-store view will fail QA even if files exist.
+- `project/docs/SPRINT.md` was previously stale; `main` should keep this file aligned with the active Sprint 7 proof/QA state.
+
+## Definition of done for this sprint
+Sprint 7 is done when:
+- the recaptured proof pack in `project/docs/proof/sprint7/` honestly covers the named zones and public surfaces
+- readability evidence is attached for active shift, blackout, mimic, round-end, and phone-sized review where required
+- QA reruns on evidence only and flips Sprint 7 to **Ready**
+- docs reflect the real result and next action
 
 ## Next producer action
-Dispatch Sprint 6 engineering and content in parallel from the locked visual direction handoff, then send QA on the visual vertical slice gate.
+Finish the narrow Sprint 7 recapture/proof pass, update the evidence files, and rerun QA on the recaptured evidence only.

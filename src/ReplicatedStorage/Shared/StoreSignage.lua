@@ -4,6 +4,7 @@ StoreSignage.Brand = {
 	wordmark = "SUPERSTORE",
 	tag = "3AM",
 	supportLine = "OPEN LATE",
+	checkoutHeader = "CHECKOUT",
 }
 
 StoreSignage.Aisles = {
@@ -11,49 +12,51 @@ StoreSignage.Aisles = {
 	{ id = "aisle_02", numeral = "02", label = "CLEANING" },
 	{ id = "aisle_03", numeral = "03", label = "HOUSEHOLD" },
 	{ id = "aisle_04", numeral = "04", label = "DAIRY" },
-	{ id = "aisle_05", numeral = "05", label = "SNACKS + SODA" },
-	{ id = "aisle_06", numeral = "06", label = "FROZEN" },
-}
-
-StoreSignage.SaleCards = {
-	{ id = "night_price", copy = "NIGHT PRICE" },
-	{ id = "save_now", copy = "SAVE NOW" },
-	{ id = "two_for_one", copy = "2 FOR 1" },
+	{ id = "aisle_05", numeral = "05", label = "SNACKS" },
+	{ id = "aisle_06", numeral = "06", label = "SODA" },
+	{ id = "aisle_07", numeral = "07", label = "FROZEN" },
+	{ id = "aisle_08", numeral = "08", label = "CANNED" },
 }
 
 StoreSignage.Checkout = {
-	{ id = "register_1", copy = "REGISTER 1" },
-	{ id = "register_2", copy = "REGISTER 2" },
-	{ id = "cash_out", copy = "CASH OUT" },
-	{ id = "lane_closed", copy = "LANE CLOSED" },
-	{ id = "bag_here", copy = "BAG HERE" },
+	{ id = "lane_1", numeral = "1", copy = "LANE 1" },
+	{ id = "lane_2", numeral = "2", copy = "LANE 2" },
+	{ id = "lane_3", numeral = "3", copy = "LANE 3" },
+	{ id = "lane_4", numeral = "4", copy = "LANE 4" },
 }
 
 StoreSignage.Freezer = {
-	{ id = "frozen_header", copy = "FROZEN" },
-	{ id = "keep_door_closed", copy = "KEEP DOOR CLOSED" },
-	{ id = "cold_storage", copy = "COLD STORAGE" },
+	header = "FREEZER",
+	subheader = "KEEP DOORS CLOSED",
 }
 
-StoreSignage.Stockroom = {
-	{ id = "employees_only", copy = "EMPLOYEES ONLY" },
-	{ id = "backstock", copy = "BACKSTOCK" },
-	{ id = "payroll", copy = "PAYROLL" },
-	{ id = "safety_check", copy = "SAFETY CHECK" },
-	{ id = "receiving", copy = "RECEIVING" },
+StoreSignage.Staff = {
+	employeesOnly = "EMPLOYEES ONLY",
+	stockroom = "STOCKROOM",
+	freezer = "FREEZER",
+	noEntry = "NO ENTRY",
+	wetFloor = "WET FLOOR",
+	exit = "EXIT",
+	backDoor = "BACK DOOR",
+	noticeBoard = "NOTICE BOARD",
 }
 
-StoreSignage.Decals = {
-	{ id = "price_strip", copy = "PRICE STRIP" },
-	{ id = "barcode_tab", copy = "BARCODE" },
-	{ id = "hazard_stripe", copy = "HAZARD STRIPE" },
-	{ id = "floor_arrow", copy = "FLOOR ARROW" },
-	{ id = "wet_floor", copy = "WET FLOOR" },
-	{ id = "receipt_stub", copy = "RECEIPT STUB" },
-	{ id = "payment_icons", copy = "PAYMENT ICONS" },
-	{ id = "this_side_up", copy = "THIS SIDE UP" },
-	{ id = "receiving_tag", copy = "RECEIVING TAG" },
-	{ id = "cooler_tag", copy = "COOLER SERVICE" },
+StoreSignage.SaleCard = {
+	familyId = "night_deal",
+	headline = "NIGHT DEAL",
+	prices = {
+		"2 FOR $5",
+		"SAVE $1",
+		"3 FOR $7",
+	},
+}
+
+StoreSignage.DepartmentHeaders = {
+	front = "CUSTOMER CARE",
+	checkout = "CHECKOUT",
+	frozen = "FROZEN",
+	backstock = "BACKSTOCK",
+	receiving = "RECEIVING",
 }
 
 return StoreSignage

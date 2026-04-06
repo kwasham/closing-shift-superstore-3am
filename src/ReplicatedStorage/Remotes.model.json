@@ -1,6 +1,5 @@
 {
   "ClassName": "Folder",
-  "Name": "Remotes",
   "Children": [
     {
       "ClassName": "RemoteEvent",
@@ -13,6 +12,18 @@
     {
       "ClassName": "RemoteEvent",
       "Name": "TaskProgressChanged"
+    },
+    {
+      "ClassName": "RemoteEvent",
+      "Name": "ProfileChanged"
+    },
+    {
+      "ClassName": "RemoteFunction",
+      "Name": "ShopAction"
+    },
+    {
+      "ClassName": "RemoteFunction",
+      "Name": "RoundEndShareAction"
     }
   ]
 }
